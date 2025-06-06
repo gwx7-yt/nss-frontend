@@ -1259,19 +1259,22 @@ function initWheel() {
     ctx.fill();
     ctx.stroke();
 
-    // Add pointer
-    const pointer = document.createElement('div');
-    pointer.className = 'wheel-pointer';
-    pointer.style.position = 'absolute';
-    pointer.style.top = '50%';
-    pointer.style.left = '50%';
-    pointer.style.transform = 'translate(-50%, -50%)';
-    pointer.style.width = '20px';
-    pointer.style.height = '20px';
-    pointer.style.backgroundColor = '#FF0000';
-    pointer.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
-    pointer.style.zIndex = '1';
-    document.querySelector('.wheel-container').appendChild(pointer);
+    // Add pointer only if it doesn't already exist
+    const container = document.querySelector('.wheel-container');
+    if (container && !container.querySelector('.wheel-pointer')) {
+        const pointer = document.createElement('div');
+        pointer.className = 'wheel-pointer';
+        pointer.style.position = 'absolute';
+        pointer.style.top = '50%';
+        pointer.style.left = '50%';
+        pointer.style.transform = 'translate(-50%, -50%)';
+        pointer.style.width = '20px';
+        pointer.style.height = '20px';
+        pointer.style.backgroundColor = '#FF0000';
+        pointer.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+        pointer.style.zIndex = '1';
+        container.appendChild(pointer);
+    }
 }
 
 function startSpinWheel() {
