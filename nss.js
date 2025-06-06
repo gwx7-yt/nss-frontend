@@ -1,6 +1,9 @@
 // Store company information globally
 let companyDetails = new Map();
 
+// Default credits given to new users (15 lakh)
+const DEFAULT_CREDITS = 1500000;
+
 // Loading and Tutorial Management
 let currentStep = 1;
 const totalSteps = 6;
@@ -107,7 +110,7 @@ function fetchTopLosers() {
 }
 
 function initCredits() {
-  const credits = parseInt(localStorage.getItem('credits') || '200000');
+  const credits = parseInt(localStorage.getItem('credits') || DEFAULT_CREDITS.toString());
   localStorage.setItem('credits', credits.toString());
   updateCreditDisplay();
 }
@@ -115,7 +118,7 @@ function initCredits() {
 function updateCreditDisplay() {
   const creditBalance = document.getElementById('creditBalance');
   if (creditBalance) {
-    const credits = localStorage.getItem('credits') || '200000';
+    const credits = localStorage.getItem('credits') || DEFAULT_CREDITS.toString();
     creditBalance.textContent = credits;
   }
 }
@@ -147,8 +150,13 @@ function openTradeModal(symbol) {
       // Check if elements exist before setting content
       if (modalStockSymbol) modalStockSymbol.textContent = symbol;
       if (modalStockPrice) modalStockPrice.textContent = parseFloat(data.price).toFixed(2);
-      if (modalTradeShares) modalTradeShares.value = "";
+      if (modalTradeShares) {
+        modalTradeShares.value = "";
+        modalTradeShares.removeEventListener("input", updateCostPreview);
+        modalTradeShares.addEventListener("input", updateCostPreview);
+      }
       if (modalCostPreview) modalCostPreview.textContent = "0";
+      updateCostPreview();
       if (tradeModal) {
         tradeModal.style.display = "block";
         if (modalTradeShares) modalTradeShares.focus();
@@ -177,7 +185,7 @@ function updateCostPreview() {
 
 function confirmTrade() {
   const shares = parseFloat(document.getElementById("modalTradeShares").value);
-  let credits = parseFloat(localStorage.getItem("credits")) || 200000;
+  let credits = parseFloat(localStorage.getItem("credits")) || DEFAULT_CREDITS;
 
   if (!shares || shares <= 0) {
     alert("❌ Please enter a valid number of shares!");
@@ -505,7 +513,7 @@ function updateLeaderboard() {
     let leaderboardData = JSON.parse(localStorage.getItem('leaderboardData') || '[]');
     
     // Update current user's data in the leaderboard
-    const userCredits = parseFloat(localStorage.getItem('credits') || '200000');
+    const userCredits = parseFloat(localStorage.getItem('credits') || DEFAULT_CREDITS);
     const userInvestments = JSON.parse(localStorage.getItem('investments') || '[]');
     
     // Calculate total investment value
