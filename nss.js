@@ -1,10 +1,12 @@
 // Store company information globally
 let companyDetails = new Map();
 
+
 // Default credits given to new users (1 lakh)
 const DEFAULT_CREDITS = 100000;
 // Daily bonus amount
 const DAILY_BONUS = 1000;
+
 
 // Loading and Tutorial Management
 let currentStep = 1;
@@ -258,8 +260,10 @@ function confirmTrade() {
     alert("❌ Please enter a valid number of shares!");
     return;
   }
+
   if (shares < 10) {
     alert("❌ Minimum trade is 10 shares!");
+
     return;
   }
 
@@ -1306,14 +1310,24 @@ function initWheel() {
     ctx.fill();
     ctx.stroke();
 
-    // Add pointer
-    const container = document.querySelector('.wheel-container');
-    const existingPointer = container.querySelector('.wheel-pointer');
-    if (existingPointer) existingPointer.remove();
 
-    const pointer = document.createElement('div');
-    pointer.className = 'wheel-pointer';
-    container.appendChild(pointer);
+    // Add pointer only if it doesn't already exist
+    const container = document.querySelector('.wheel-container');
+    if (container && !container.querySelector('.wheel-pointer')) {
+        const pointer = document.createElement('div');
+        pointer.className = 'wheel-pointer';
+        pointer.style.position = 'absolute';
+        pointer.style.top = '50%';
+        pointer.style.left = '50%';
+        pointer.style.transform = 'translate(-50%, -50%)';
+        pointer.style.width = '20px';
+        pointer.style.height = '20px';
+        pointer.style.backgroundColor = '#FF0000';
+        pointer.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+        pointer.style.zIndex = '1';
+        container.appendChild(pointer);
+    }
+
 }
 
 function startSpinWheel() {
