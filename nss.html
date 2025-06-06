@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NSS - Nepal Stock Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="nss.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -23,7 +25,7 @@
         <h2>Welcome to NSS! 👋</h2>
         <p>Let's learn how to use the Nepal Stock Simulator. First, let's understand the credit system.</p>
         <p>💰 1 Credit = 1 NPR (Nepali Rupee)</p>
-        <p>You start with 10,000 credits. Earn more through daily bonuses and weekly spins!</p>
+        <p>You start with 1,500,000 credits. Earn more through daily bonuses and weekly spins!</p>
       </div>
 
       <div class="tutorial-step" data-step="2">
@@ -41,9 +43,9 @@
         <h2>How to Buy Stocks 🛒</h2>
         <p>1. Find a stock you want to buy</p>
         <p>2. Click the "Trade" button</p>
-        <p>3. Enter the amount of credits you want to invest</p>
+        <p>3. Enter the number of shares you want to buy</p>
         <p>4. Confirm your purchase</p>
-        <p>Note: Minimum purchase is 1000 credits</p>
+        <p>Note: Minimum purchase is 500 shares</p>
       </div>
 
       <div class="tutorial-step" data-step="4">
@@ -448,12 +450,16 @@
       </div>
 
       <div class="trade-input-group">
-        <label for="modalTradeAmount">Amount to Invest (Credits)</label>
-        <input type="number" id="modalTradeAmount" min="1" step="1" placeholder="Enter amount in credits">
+        <label for="modalTradeShares">Shares to Buy</label>
+        <input type="number" id="modalTradeShares" min="500" step="1" placeholder="Enter number of shares">
       </div>
 
       <div class="quantity-preview">
-        <p>You will receive: <span class="quantity" id="modalQuantityPreview">0</span> shares</p>
+        <p>Share price: <span id="modalPricePreview">0</span> credits</p>
+        <p>0.6% broker fee: <span id="modalBrokerFeePreview">0</span> credits</p>
+        <p>0.015% SEBON fee: <span id="modalSebonFeePreview">0</span> credits</p>
+        <p>0.1% DP fee: <span id="modalDpFeePreview">0</span> credits</p>
+        <p>Total: <span class="quantity" id="modalCostPreview">0</span> credits</p>
       </div>
 
       <div class="modal-buttons">

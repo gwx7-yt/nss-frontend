@@ -1,6 +1,9 @@
 // Store company information globally
 let companyDetails = new Map();
 
+// Default credits given to new users (15 lakh)
+const DEFAULT_CREDITS = 1500000;
+
 // Loading and Tutorial Management
 let currentStep = 1;
 const totalSteps = 6;
@@ -107,7 +110,7 @@ function fetchTopLosers() {
 }
 
 function initCredits() {
-  const credits = parseInt(localStorage.getItem('credits') || '10000');
+  const credits = parseInt(localStorage.getItem('credits') || DEFAULT_CREDITS.toString());
   localStorage.setItem('credits', credits.toString());
   updateCreditDisplay();
 }
@@ -115,7 +118,7 @@ function initCredits() {
 function updateCreditDisplay() {
   const creditBalance = document.getElementById('creditBalance');
   if (creditBalance) {
-    const credits = localStorage.getItem('credits') || '2000';
+    const credits = localStorage.getItem('credits') || DEFAULT_CREDITS.toString();
     creditBalance.textContent = credits;
   }
 }
@@ -140,18 +143,31 @@ function openTradeModal(symbol) {
       // Get modal elements
       const modalStockSymbol = document.getElementById("modalStockSymbol");
       const modalStockPrice = document.getElementById("modalStockPrice");
-      const modalTradeAmount = document.getElementById("modalTradeAmount");
-      const modalQuantityPreview = document.getElementById("modalQuantityPreview");
+      const modalTradeShares = document.getElementById("modalTradeShares");
+      const modalPricePreview = document.getElementById("modalPricePreview");
+      const modalBrokerFeePreview = document.getElementById("modalBrokerFeePreview");
+      const modalSebonFeePreview = document.getElementById("modalSebonFeePreview");
+      const modalDpFeePreview = document.getElementById("modalDpFeePreview");
+      const modalCostPreview = document.getElementById("modalCostPreview");
       const tradeModal = document.getElementById("tradeModal");
       
       // Check if elements exist before setting content
       if (modalStockSymbol) modalStockSymbol.textContent = symbol;
       if (modalStockPrice) modalStockPrice.textContent = parseFloat(data.price).toFixed(2);
-      if (modalTradeAmount) modalTradeAmount.value = "";
-      if (modalQuantityPreview) modalQuantityPreview.textContent = "0";
+      if (modalTradeShares) {
+        modalTradeShares.value = "";
+        modalTradeShares.removeEventListener("input", updateCostPreview);
+        modalTradeShares.addEventListener("input", updateCostPreview);
+      }
+      if (modalPricePreview) modalPricePreview.textContent = "0";
+      if (modalBrokerFeePreview) modalBrokerFeePreview.textContent = "0";
+      if (modalSebonFeePreview) modalSebonFeePreview.textContent = "0";
+      if (modalDpFeePreview) modalDpFeePreview.textContent = "0";
+      if (modalCostPreview) modalCostPreview.textContent = "0";
+      updateCostPreview();
       if (tradeModal) {
         tradeModal.style.display = "block";
-        if (modalTradeAmount) modalTradeAmount.focus();
+        if (modalTradeShares) modalTradeShares.focus();
       }
     })
     .catch(error => {
@@ -165,45 +181,65 @@ function closeTradeModal() {
   currentStockData = null;
 }
 
-function updateQuantityPreview() {
-  const amount = parseFloat(document.getElementById("modalTradeAmount").value) || 0;
+function updateCostPreview() {
+  const shares = parseFloat(document.getElementById("modalTradeShares").value) || 0;
   const price = currentStockData ? parseFloat(currentStockData.price) : 0;
-  const quantity = price > 0 ? amount / price : 0;
-  const quantityPreview = document.getElementById("modalQuantityPreview");
-  if (quantityPreview) {
-    quantityPreview.textContent = quantity.toFixed(4);
-  }
+  const base = shares * price;
+  const brokerFee = base * 0.006;
+  const sebonFee = base * 0.00015;
+  const dpFee = base * 0.001;
+  const total = base + brokerFee + sebonFee + dpFee;
+
+  const pricePreview = document.getElementById("modalPricePreview");
+  const brokerFeePreview = document.getElementById("modalBrokerFeePreview");
+  const sebonFeePreview = document.getElementById("modalSebonFeePreview");
+  const dpFeePreview = document.getElementById("modalDpFeePreview");
+  const costPreview = document.getElementById("modalCostPreview");
+
+  if (pricePreview) pricePreview.textContent = base.toFixed(2);
+  if (brokerFeePreview) brokerFeePreview.textContent = brokerFee.toFixed(2);
+  if (sebonFeePreview) sebonFeePreview.textContent = sebonFee.toFixed(2);
+  if (dpFeePreview) dpFeePreview.textContent = dpFee.toFixed(2);
+  if (costPreview) costPreview.textContent = total.toFixed(2);
 }
 
 function confirmTrade() {
-  const amount = parseFloat(document.getElementById("modalTradeAmount").value);
-  let credits = parseFloat(localStorage.getItem("credits")) || 2000;
+  const shares = parseFloat(document.getElementById("modalTradeShares").value);
+  let credits = parseFloat(localStorage.getItem("credits")) || DEFAULT_CREDITS;
 
-  if (!amount || amount <= 0) {
-    alert("❌ Please enter a valid amount!");
+  if (!shares || shares <= 0) {
+    alert("❌ Please enter a valid number of shares!");
+    return;
+  }
+  if (shares < 500) {
+    alert("❌ Minimum trade is 500 shares!");
     return;
   }
 
-      if (amount > credits) {
-    alert("❌ Not enough credits!");
-        return;
-      }
-
   const symbol = currentStockData.symbol;
   const price = parseFloat(currentStockData.price);
-  const quantity = amount / price;
+  const base = shares * price;
+  const brokerFee = base * 0.006;
+  const sebonFee = base * 0.00015;
+  const dpFee = base * 0.001;
+  const total = base + brokerFee + sebonFee + dpFee;
+
+  if (total > credits) {
+    alert("❌ Not enough credits!");
+    return;
+  }
 
   // Update credits
-      credits -= amount;
+  credits -= total;
   localStorage.setItem("credits", credits.toString());
-      updateCreditDisplay();
+  updateCreditDisplay();
 
   // Save investment
   const investment = {
     symbol,
-    amount: amount.toString(),
+    amount: total.toString(),
     price: price.toString(),
-    quantity: quantity.toString(),
+    quantity: shares.toString(),
     date: new Date().toLocaleDateString()
   };
 
@@ -214,7 +250,7 @@ function confirmTrade() {
   // Update UI
   updatePortfolio();
   closeTradeModal();
-  alert(`✅ Successfully invested ${amount} credits in ${symbol}!`);
+  alert(`✅ Purchased ${shares} shares of ${symbol} for ${total.toFixed(2)} credits!`);
 }
 
 // Update search result click handler
@@ -308,11 +344,11 @@ document.getElementById("stockSearch").addEventListener("input", (e) => {
 
 // Add event listener for trade amount input
 document.addEventListener('DOMContentLoaded', () => {
-  const modalTradeAmount = document.getElementById("modalTradeAmount");
+  const modalTradeShares = document.getElementById("modalTradeShares");
   const tradeModal = document.getElementById("tradeModal");
   
-  if (modalTradeAmount) {
-    modalTradeAmount.addEventListener("input", updateQuantityPreview);
+  if (modalTradeShares) {
+    modalTradeShares.addEventListener("input", updateCostPreview);
   }
   
   if (tradeModal) {
@@ -501,7 +537,7 @@ function updateLeaderboard() {
     let leaderboardData = JSON.parse(localStorage.getItem('leaderboardData') || '[]');
     
     // Update current user's data in the leaderboard
-    const userCredits = parseFloat(localStorage.getItem('credits') || '2000');
+    const userCredits = parseFloat(localStorage.getItem('credits') || DEFAULT_CREDITS);
     const userInvestments = JSON.parse(localStorage.getItem('investments') || '[]');
     
     // Calculate total investment value
@@ -715,7 +751,6 @@ const translations = {
         english: 'English',
         nepali: 'Nepali',
         tradeStock: 'Trade Stock',
-        receiveShares: 'You will receive:',
         back: 'Back',
         confirm: 'Confirm Trade',
         settingsSaved: 'Settings saved automatically',
@@ -826,7 +861,6 @@ const translations = {
         english: 'अंग्रेजी',
         nepali: 'नेपाली',
         tradeStock: 'शेयर व्यापार',
-        receiveShares: 'तपाईंले प्राप्त गर्नुहुनेछ:',
         back: 'पछाडि',
         confirm: 'व्यापार पुष्टि गर्नुहोस्',
         settingsSaved: 'सेटिङ स्वचालित रूपमा सेभ भयो',
@@ -997,8 +1031,6 @@ function updateDynamicContent(language) {
         const modalTitle = tradeModal.querySelector('h2');
         if (modalTitle) modalTitle.textContent = texts.tradeStock || 'Trade Stock';
 
-        const quantityPreview = tradeModal.querySelector('.quantity-preview p');
-        if (quantityPreview) quantityPreview.textContent = texts.receiveShares || 'You will receive: ';
 
         const backBtn = tradeModal.querySelector('.modal-btn.back');
         if (backBtn) backBtn.textContent = texts.back || 'Back';
