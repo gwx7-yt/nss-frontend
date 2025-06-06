@@ -1,5 +1,7 @@
 :root {
-  --font-family: 'Poppins', 'Roboto', sans-serif;
+
+  --font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
+
   --nav-bg: linear-gradient(90deg, #2c3e50, #3498db);
   --net-worth-bg: #1e88e5;
   --total-profit-bg: #2ecc71;
@@ -19,13 +21,16 @@
   --border-radius: 12px;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
+  --background-gradient: linear-gradient(180deg, #f0f4f8 0%, #ffffff 100%);
 }
 
 body {
   margin: 0;
   padding: 0;
   font-family: var(--font-family);
-  background-color: var(--background-color);
+
+  background: var(--background-gradient);
+
   color: var(--text-color);
 }
 
@@ -816,6 +821,14 @@ section {
   overflow-x: auto;
 }
 
+.portfolio-note {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
+  text-align: center;
+  font-style: italic;
+}
+
 #investmentHistory {
   width: 100%;
   border-collapse: separate;
@@ -1344,6 +1357,7 @@ section {
   --text-color: #f5f5f5;
   --card-background: #1e1e1e;
   --background-color: #121212;
+  --background-gradient: linear-gradient(180deg, #1a1a1a 0%, #000000 100%);
   --primary-color: #64b5f6;
   --secondary-color: #43a047;
   --border-color: #444;
@@ -1351,7 +1365,7 @@ section {
 }
 
 [data-theme="dark"] body {
-  background-color: var(--background-color);
+  background: var(--background-gradient);
 }
 
 [data-theme="dark"] .top-nav {
@@ -1768,15 +1782,16 @@ section {
 
 .wheel-pointer {
     position: absolute;
-    top: 50%;
+    top: -18px;
     left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    background-color: #FF0000;
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    z-index: 1;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 25px solid #FF0000;
+    z-index: 2;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
 #wheelCanvas {
@@ -2385,4 +2400,25 @@ section {
   .login-btn, .register-btn {
     width: 100%;
   }
+}
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transition: opacity 0.5s ease, bottom 0.5s ease;
+  z-index: 1000;
+}
+
+.toast.visible {
+  opacity: 1;
+  bottom: 40px;
 }

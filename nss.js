@@ -1,8 +1,12 @@
 // Store company information globally
 let companyDetails = new Map();
 
-// Default credits given to new users (15 lakh)
-const DEFAULT_CREDITS = 1500000;
+
+// Default credits given to new users (1 lakh)
+const DEFAULT_CREDITS = 100000;
+// Daily bonus amount
+const DAILY_BONUS = 1000;
+
 
 // Loading and Tutorial Management
 let currentStep = 1;
@@ -55,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchTopGainers();
   fetchTopLosers();
   initCredits();
+  upgradeOldUsers();
   updatePortfolio();
   initNavigation();
 
@@ -112,6 +117,19 @@ function fetchTopLosers() {
 function initCredits() {
   const credits = parseInt(localStorage.getItem('credits') || DEFAULT_CREDITS.toString());
   localStorage.setItem('credits', credits.toString());
+
+  // Ensure a user object exists
+  let user = {};
+  try {
+    user = JSON.parse(localStorage.getItem('user')) || {};
+  } catch (e) {
+    user = {};
+  }
+  if (!user.credits) {
+    user.credits = credits;
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
   updateCreditDisplay();
 }
 
@@ -120,6 +138,37 @@ function updateCreditDisplay() {
   if (creditBalance) {
     const credits = localStorage.getItem('credits') || DEFAULT_CREDITS.toString();
     creditBalance.textContent = credits;
+  }
+}
+
+// Simple toast notification
+function showToast(message) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('visible'));
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    toast.addEventListener('transitionend', () => toast.remove());
+  }, 3000);
+}
+
+// Upgrade legacy users to new starter pack
+function upgradeOldUsers() {
+  let user;
+  try {
+    user = JSON.parse(localStorage.getItem('user'));
+  } catch (e) {
+    user = null;
+  }
+  if (!user) return;
+  if (user.credits < DEFAULT_CREDITS && !user.updatedToNewStarterPack) {
+    user.credits = DEFAULT_CREDITS;
+    user.updatedToNewStarterPack = true;
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('credits', user.credits.toString());
+    showToast("🎉 You've been upgraded to 1 lakh credits!");
   }
 }
 
@@ -211,8 +260,10 @@ function confirmTrade() {
     alert("❌ Please enter a valid number of shares!");
     return;
   }
-  if (shares < 500) {
-    alert("❌ Minimum trade is 500 shares!");
+
+  if (shares < 10) {
+    alert("❌ Minimum trade is 10 shares!");
+
     return;
   }
 
@@ -1119,7 +1170,7 @@ function showBonusModal() {
             <div class="bonus-modal-content">
                 <div class="bonus-section daily-bonus">
                     <h2>${texts.dailyBonus}</h2>
-                    <p>${texts.bonusAmount} 500 ${texts.credits}</p>
+                    <p>${texts.bonusAmount} ${DAILY_BONUS} ${texts.credits}</p>
                     <button id="claimDailyBonus" class="bonus-btn">${texts.claim}</button>
                     <p id="dailyTimer" class="timer"></p>
                 </div>
@@ -1208,14 +1259,14 @@ function updateWeeklyTimer(remainingTime) {
 
 function claimDailyBonus() {
     const currentCredits = parseInt(localStorage.getItem('credits') || '0');
-    localStorage.setItem('credits', (currentCredits + 500).toString());
+    localStorage.setItem('credits', (currentCredits + DAILY_BONUS).toString());
     localStorage.setItem('lastDailyBonus', new Date().getTime().toString());
     
     updateCreditDisplay();
     checkBonusAvailability();
     
     // Show success message
-    alert('Daily bonus of 500 credits claimed!');
+    alert(`Daily bonus of ${DAILY_BONUS} credits claimed!`);
 }
 
 function initWheel() {
@@ -1259,6 +1310,7 @@ function initWheel() {
     ctx.fill();
     ctx.stroke();
 
+
     // Add pointer only if it doesn't already exist
     const container = document.querySelector('.wheel-container');
     if (container && !container.querySelector('.wheel-pointer')) {
@@ -1275,6 +1327,7 @@ function initWheel() {
         pointer.style.zIndex = '1';
         container.appendChild(pointer);
     }
+
 }
 
 function startSpinWheel() {
@@ -1288,7 +1341,7 @@ function startSpinWheel() {
     // Calculate rotation
     const baseRotations = 5; // Number of full rotations
     const segmentAngle = 360 / values.length;
-    const targetAngle = randomIndex * segmentAngle;
+    const targetAngle = randomIndex * segmentAngle + segmentAngle / 2;
     const totalRotation = (baseRotations * 360) + targetAngle;
     
     // Apply rotation with easing
