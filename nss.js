@@ -3,6 +3,8 @@ let companyDetails = new Map();
 
 // Default credits given to new users (1 lakh)
 const DEFAULT_CREDITS = 100000;
+// Daily bonus amount
+const DAILY_BONUS = 1000;
 
 // Loading and Tutorial Management
 let currentStep = 1;
@@ -1164,7 +1166,7 @@ function showBonusModal() {
             <div class="bonus-modal-content">
                 <div class="bonus-section daily-bonus">
                     <h2>${texts.dailyBonus}</h2>
-                    <p>${texts.bonusAmount} 500 ${texts.credits}</p>
+                    <p>${texts.bonusAmount} ${DAILY_BONUS} ${texts.credits}</p>
                     <button id="claimDailyBonus" class="bonus-btn">${texts.claim}</button>
                     <p id="dailyTimer" class="timer"></p>
                 </div>
@@ -1253,14 +1255,14 @@ function updateWeeklyTimer(remainingTime) {
 
 function claimDailyBonus() {
     const currentCredits = parseInt(localStorage.getItem('credits') || '0');
-    localStorage.setItem('credits', (currentCredits + 500).toString());
+    localStorage.setItem('credits', (currentCredits + DAILY_BONUS).toString());
     localStorage.setItem('lastDailyBonus', new Date().getTime().toString());
     
     updateCreditDisplay();
     checkBonusAvailability();
     
     // Show success message
-    alert('Daily bonus of 500 credits claimed!');
+    alert(`Daily bonus of ${DAILY_BONUS} credits claimed!`);
 }
 
 function initWheel() {
@@ -1305,18 +1307,13 @@ function initWheel() {
     ctx.stroke();
 
     // Add pointer
+    const container = document.querySelector('.wheel-container');
+    const existingPointer = container.querySelector('.wheel-pointer');
+    if (existingPointer) existingPointer.remove();
+
     const pointer = document.createElement('div');
     pointer.className = 'wheel-pointer';
-    pointer.style.position = 'absolute';
-    pointer.style.top = '50%';
-    pointer.style.left = '50%';
-    pointer.style.transform = 'translate(-50%, -50%)';
-    pointer.style.width = '20px';
-    pointer.style.height = '20px';
-    pointer.style.backgroundColor = '#FF0000';
-    pointer.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
-    pointer.style.zIndex = '1';
-    document.querySelector('.wheel-container').appendChild(pointer);
+    container.appendChild(pointer);
 }
 
 function startSpinWheel() {
@@ -1330,7 +1327,7 @@ function startSpinWheel() {
     // Calculate rotation
     const baseRotations = 5; // Number of full rotations
     const segmentAngle = 360 / values.length;
-    const targetAngle = randomIndex * segmentAngle;
+    const targetAngle = randomIndex * segmentAngle + segmentAngle / 2;
     const totalRotation = (baseRotations * 360) + targetAngle;
     
     // Apply rotation with easing
