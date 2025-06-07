@@ -1,6 +1,130 @@
 // Store company information globally
 let companyDetails = new Map();
 
+// Default credits given to new users (1 lakh)
+const DEFAULT_CREDITS = 100000;
+// Daily bonus amount
+const DAILY_BONUS = 1000;
+
+let nepseChart = null;
+let stockChart = null;
+let portfolioChart = null;
+
+function generateLineData(days = 30, start = 1000) {
+  const labels = [];
+  const data = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    labels.push(date.toLocaleDateString());
+    start += (Math.random() - 0.5) * 10;
+    data.push(start.toFixed(2));
+  }
+  return { labels, data };
+}
+
+function initNepseLineChart() {
+  const ctx = document.getElementById('lineChart-nepse');
+  if (!ctx) return;
+  const { labels, data } = generateLineData();
+  nepseChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: 'rgba(137,207,240,1)',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        tension: 0.2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
+    }
+  });
+}
+
+function initStockLineChart(symbol) {
+  const canvas = document.getElementById('lineChart-stock');
+  if (!canvas) return;
+  canvas.id = `lineChart-stock-${symbol}`;
+  const { labels, data } = generateLineData();
+  if (stockChart) stockChart.destroy();
+  stockChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: 'rgba(137,207,240,1)',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        tension: 0.2
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+}
+
+function loadTradingView(symbol) {
+  const container = document.getElementById(`candlestick-chart-${symbol}`);
+  if (!container) return;
+  if (container.dataset.loaded) return;
+  if (typeof TradingView === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/tv.js';
+    script.onload = () => createWidget();
+    document.head.appendChild(script);
+  } else {
+    createWidget();
+  }
+
+  function createWidget() {
+    new TradingView.widget({
+      symbol: symbol,
+      interval: 'D',
+      container_id: `candlestick-chart-${symbol}`,
+      theme: 'light',
+      autosize: true,
+      hide_legend: true
+    });
+    container.dataset.loaded = 'true';
+  }
+}
+
+function initPortfolioPieChart() {
+  const canvas = document.getElementById('portfolioPieChart');
+  const placeholder = document.getElementById('portfolioPieChartPlaceholder');
+  if (!canvas) return;
+  const investments = JSON.parse(localStorage.getItem('investments')) || [];
+  if (investments.length === 0) {
+    canvas.style.display = 'none';
+    if (placeholder) placeholder.style.display = 'block';
+    return;
+  }
+  canvas.style.display = 'block';
+  if (placeholder) placeholder.style.display = 'none';
+  const totals = {};
+  investments.forEach(inv => {
+    const amt = parseFloat(inv.amount);
+    totals[inv.symbol] = (totals[inv.symbol] || 0) + amt;
+  });
+  const labels = Object.keys(totals);
+  const data = labels.map(l => totals[l]);
+  const colors = ['#A8D0E6','#FFB6B9','#C1E1C1','#FDE2A7','#B5B9FF'];
+  if (portfolioChart) portfolioChart.destroy();
+  portfolioChart = new Chart(canvas, {
+    type: 'pie',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: labels.map((_,i)=>colors[i%colors.length]) }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+}
+
 // Loading and Tutorial Management
 let currentStep = 1;
 const totalSteps = 6;
@@ -52,7 +176,10 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchTopGainers();
   fetchTopLosers();
   initCredits();
+  upgradeOldUsers();
   updatePortfolio();
+  initNepseLineChart();
+  initPortfolioPieChart();
   initNavigation();
 
   if (!localStorage.getItem('allUsers')) {
@@ -107,16 +234,60 @@ function fetchTopLosers() {
 }
 
 function initCredits() {
-  const credits = parseInt(localStorage.getItem('credits') || '10000');
+  const credits = parseInt(localStorage.getItem('credits') || DEFAULT_CREDITS.toString());
   localStorage.setItem('credits', credits.toString());
+
+  // Ensure a user object exists
+  let user = {};
+  try {
+    user = JSON.parse(localStorage.getItem('user')) || {};
+  } catch (e) {
+    user = {};
+  }
+  if (!user.credits) {
+    user.credits = credits;
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
   updateCreditDisplay();
 }
 
 function updateCreditDisplay() {
   const creditBalance = document.getElementById('creditBalance');
   if (creditBalance) {
-    const credits = localStorage.getItem('credits') || '2000';
+    const credits = localStorage.getItem('credits') || DEFAULT_CREDITS.toString();
     creditBalance.textContent = credits;
+  }
+}
+
+// Simple toast notification
+function showToast(message) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('visible'));
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    toast.addEventListener('transitionend', () => toast.remove());
+  }, 3000);
+}
+
+// Upgrade legacy users to new starter pack
+function upgradeOldUsers() {
+  let user;
+  try {
+    user = JSON.parse(localStorage.getItem('user'));
+  } catch (e) {
+    user = null;
+  }
+  if (!user) return;
+  if (user.credits < DEFAULT_CREDITS && !user.updatedToNewStarterPack) {
+    user.credits = DEFAULT_CREDITS;
+    user.updatedToNewStarterPack = true;
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('credits', user.credits.toString());
+    showToast("🎉 You've been upgraded to 1 lakh credits!");
   }
 }
 
@@ -140,18 +311,45 @@ function openTradeModal(symbol) {
       // Get modal elements
       const modalStockSymbol = document.getElementById("modalStockSymbol");
       const modalStockPrice = document.getElementById("modalStockPrice");
-      const modalTradeAmount = document.getElementById("modalTradeAmount");
-      const modalQuantityPreview = document.getElementById("modalQuantityPreview");
+      const modalTradeShares = document.getElementById("modalTradeShares");
+      const modalPricePreview = document.getElementById("modalPricePreview");
+      const modalBrokerFeePreview = document.getElementById("modalBrokerFeePreview");
+      const modalSebonFeePreview = document.getElementById("modalSebonFeePreview");
+      const modalDpFeePreview = document.getElementById("modalDpFeePreview");
+      const modalCostPreview = document.getElementById("modalCostPreview");
       const tradeModal = document.getElementById("tradeModal");
-      
+      const lineChartCanvas = document.getElementById("lineChart-stock");
+      const technicalContent = document.getElementById("technicalContent");
+      const candleContainer = document.getElementById("candlestick-chart");
+      const toggleBtn = document.getElementById("toggleTechnical");
+
       // Check if elements exist before setting content
       if (modalStockSymbol) modalStockSymbol.textContent = symbol;
       if (modalStockPrice) modalStockPrice.textContent = parseFloat(data.price).toFixed(2);
-      if (modalTradeAmount) modalTradeAmount.value = "";
-      if (modalQuantityPreview) modalQuantityPreview.textContent = "0";
+      if (modalTradeShares) {
+        modalTradeShares.value = "";
+        modalTradeShares.removeEventListener("input", updateCostPreview);
+        modalTradeShares.addEventListener("input", updateCostPreview);
+      }
+      if (modalPricePreview) modalPricePreview.textContent = "0";
+      if (modalBrokerFeePreview) modalBrokerFeePreview.textContent = "0";
+      if (modalSebonFeePreview) modalSebonFeePreview.textContent = "0";
+      if (modalDpFeePreview) modalDpFeePreview.textContent = "0";
+      if (modalCostPreview) modalCostPreview.textContent = "0";
+      if (lineChartCanvas) lineChartCanvas.id = `lineChart-stock-${symbol}`;
+      if (candleContainer) candleContainer.id = `candlestick-chart-${symbol}`;
+      updateCostPreview();
+      initStockLineChart(symbol);
+      if (technicalContent) {
+        technicalContent.style.display = 'none';
+        technicalContent.dataset.loaded = 'false';
+      }
+      if (toggleBtn) {
+        toggleBtn.onclick = () => toggleTechnicalAnalysis(symbol);
+      }
       if (tradeModal) {
         tradeModal.style.display = "block";
-        if (modalTradeAmount) modalTradeAmount.focus();
+        if (modalTradeShares) modalTradeShares.focus();
       }
     })
     .catch(error => {
@@ -163,47 +361,71 @@ function openTradeModal(symbol) {
 function closeTradeModal() {
   document.getElementById("tradeModal").style.display = "none";
   currentStockData = null;
+  if (stockChart) {
+    stockChart.destroy();
+    stockChart = null;
+  }
 }
 
-function updateQuantityPreview() {
-  const amount = parseFloat(document.getElementById("modalTradeAmount").value) || 0;
+function updateCostPreview() {
+  const shares = parseFloat(document.getElementById("modalTradeShares").value) || 0;
   const price = currentStockData ? parseFloat(currentStockData.price) : 0;
-  const quantity = price > 0 ? amount / price : 0;
-  const quantityPreview = document.getElementById("modalQuantityPreview");
-  if (quantityPreview) {
-    quantityPreview.textContent = quantity.toFixed(4);
-  }
+  const base = shares * price;
+  const brokerFee = base * 0.006;
+  const sebonFee = base * 0.00015;
+  const dpFee = base * 0.001;
+  const total = base + brokerFee + sebonFee + dpFee;
+
+  const pricePreview = document.getElementById("modalPricePreview");
+  const brokerFeePreview = document.getElementById("modalBrokerFeePreview");
+  const sebonFeePreview = document.getElementById("modalSebonFeePreview");
+  const dpFeePreview = document.getElementById("modalDpFeePreview");
+  const costPreview = document.getElementById("modalCostPreview");
+
+  if (pricePreview) pricePreview.textContent = base.toFixed(2);
+  if (brokerFeePreview) brokerFeePreview.textContent = brokerFee.toFixed(2);
+  if (sebonFeePreview) sebonFeePreview.textContent = sebonFee.toFixed(2);
+  if (dpFeePreview) dpFeePreview.textContent = dpFee.toFixed(2);
+  if (costPreview) costPreview.textContent = total.toFixed(2);
 }
 
 function confirmTrade() {
-  const amount = parseFloat(document.getElementById("modalTradeAmount").value);
-  let credits = parseFloat(localStorage.getItem("credits")) || 2000;
+  const shares = parseFloat(document.getElementById("modalTradeShares").value);
+  let credits = parseFloat(localStorage.getItem("credits")) || DEFAULT_CREDITS;
 
-  if (!amount || amount <= 0) {
-    alert("❌ Please enter a valid amount!");
+  if (!shares || shares <= 0) {
+    alert("❌ Please enter a valid number of shares!");
+    return;
+  }
+  if (shares < 10) {
+    alert("❌ Minimum trade is 10 shares!");
     return;
   }
 
-      if (amount > credits) {
-    alert("❌ Not enough credits!");
-        return;
-      }
-
   const symbol = currentStockData.symbol;
   const price = parseFloat(currentStockData.price);
-  const quantity = amount / price;
+  const base = shares * price;
+  const brokerFee = base * 0.006;
+  const sebonFee = base * 0.00015;
+  const dpFee = base * 0.001;
+  const total = base + brokerFee + sebonFee + dpFee;
+
+  if (total > credits) {
+    alert("❌ Not enough credits!");
+    return;
+  }
 
   // Update credits
-      credits -= amount;
+  credits -= total;
   localStorage.setItem("credits", credits.toString());
-      updateCreditDisplay();
+  updateCreditDisplay();
 
   // Save investment
   const investment = {
     symbol,
-    amount: amount.toString(),
+    amount: total.toString(),
     price: price.toString(),
-    quantity: quantity.toString(),
+    quantity: shares.toString(),
     date: new Date().toLocaleDateString()
   };
 
@@ -213,8 +435,23 @@ function confirmTrade() {
 
   // Update UI
   updatePortfolio();
+  initPortfolioPieChart();
   closeTradeModal();
-  alert(`✅ Successfully invested ${amount} credits in ${symbol}!`);
+  alert(`✅ Purchased ${shares} shares of ${symbol} for ${total.toFixed(2)} credits!`);
+}
+
+function toggleTechnicalAnalysis(symbol) {
+  const content = document.getElementById('technicalContent');
+  if (!content) return;
+  if (content.style.display === 'block') {
+    content.style.display = 'none';
+    return;
+  }
+  content.style.display = 'block';
+  if (content.dataset.loaded !== 'true') {
+    loadTradingView(symbol);
+    content.dataset.loaded = 'true';
+  }
 }
 
 // Update search result click handler
@@ -308,11 +545,11 @@ document.getElementById("stockSearch").addEventListener("input", (e) => {
 
 // Add event listener for trade amount input
 document.addEventListener('DOMContentLoaded', () => {
-  const modalTradeAmount = document.getElementById("modalTradeAmount");
+  const modalTradeShares = document.getElementById("modalTradeShares");
   const tradeModal = document.getElementById("tradeModal");
   
-  if (modalTradeAmount) {
-    modalTradeAmount.addEventListener("input", updateQuantityPreview);
+  if (modalTradeShares) {
+    modalTradeShares.addEventListener("input", updateCostPreview);
   }
   
   if (tradeModal) {
@@ -451,6 +688,8 @@ async function updatePortfolio() {
     totalProfit.textContent = profitValue.toFixed(2);
     totalProfit.className = profitValue >= 0 ? 'stat-value gain' : 'stat-value loss';
   }
+
+  initPortfolioPieChart();
 }
 
 function sellInvestment(index) {
@@ -488,6 +727,7 @@ function sellInvestment(index) {
       localStorage.setItem("investments", JSON.stringify(investments));
 
       updatePortfolio();
+      initPortfolioPieChart();
       alert(`✅ Sold ${inv.symbol} for ${sellAmount.toFixed(2)} credits!`);
     })
     .catch(() => {
@@ -501,7 +741,7 @@ function updateLeaderboard() {
     let leaderboardData = JSON.parse(localStorage.getItem('leaderboardData') || '[]');
     
     // Update current user's data in the leaderboard
-    const userCredits = parseFloat(localStorage.getItem('credits') || '2000');
+    const userCredits = parseFloat(localStorage.getItem('credits') || DEFAULT_CREDITS);
     const userInvestments = JSON.parse(localStorage.getItem('investments') || '[]');
     
     // Calculate total investment value
@@ -715,7 +955,6 @@ const translations = {
         english: 'English',
         nepali: 'Nepali',
         tradeStock: 'Trade Stock',
-        receiveShares: 'You will receive:',
         back: 'Back',
         confirm: 'Confirm Trade',
         settingsSaved: 'Settings saved automatically',
@@ -826,7 +1065,6 @@ const translations = {
         english: 'अंग्रेजी',
         nepali: 'नेपाली',
         tradeStock: 'शेयर व्यापार',
-        receiveShares: 'तपाईंले प्राप्त गर्नुहुनेछ:',
         back: 'पछाडि',
         confirm: 'व्यापार पुष्टि गर्नुहोस्',
         settingsSaved: 'सेटिङ स्वचालित रूपमा सेभ भयो',
@@ -997,8 +1235,6 @@ function updateDynamicContent(language) {
         const modalTitle = tradeModal.querySelector('h2');
         if (modalTitle) modalTitle.textContent = texts.tradeStock || 'Trade Stock';
 
-        const quantityPreview = tradeModal.querySelector('.quantity-preview p');
-        if (quantityPreview) quantityPreview.textContent = texts.receiveShares || 'You will receive: ';
 
         const backBtn = tradeModal.querySelector('.modal-btn.back');
         if (backBtn) backBtn.textContent = texts.back || 'Back';
@@ -1087,7 +1323,7 @@ function showBonusModal() {
             <div class="bonus-modal-content">
                 <div class="bonus-section daily-bonus">
                     <h2>${texts.dailyBonus}</h2>
-                    <p>${texts.bonusAmount} 500 ${texts.credits}</p>
+                    <p>${texts.bonusAmount} ${DAILY_BONUS} ${texts.credits}</p>
                     <button id="claimDailyBonus" class="bonus-btn">${texts.claim}</button>
                     <p id="dailyTimer" class="timer"></p>
                 </div>
@@ -1176,14 +1412,14 @@ function updateWeeklyTimer(remainingTime) {
 
 function claimDailyBonus() {
     const currentCredits = parseInt(localStorage.getItem('credits') || '0');
-    localStorage.setItem('credits', (currentCredits + 500).toString());
+    localStorage.setItem('credits', (currentCredits + DAILY_BONUS).toString());
     localStorage.setItem('lastDailyBonus', new Date().getTime().toString());
     
     updateCreditDisplay();
     checkBonusAvailability();
     
     // Show success message
-    alert('Daily bonus of 500 credits claimed!');
+    alert(`Daily bonus of ${DAILY_BONUS} credits claimed!`);
 }
 
 function initWheel() {
@@ -1228,18 +1464,13 @@ function initWheel() {
     ctx.stroke();
 
     // Add pointer
+    const container = document.querySelector('.wheel-container');
+    const existingPointer = container.querySelector('.wheel-pointer');
+    if (existingPointer) existingPointer.remove();
+
     const pointer = document.createElement('div');
     pointer.className = 'wheel-pointer';
-    pointer.style.position = 'absolute';
-    pointer.style.top = '50%';
-    pointer.style.left = '50%';
-    pointer.style.transform = 'translate(-50%, -50%)';
-    pointer.style.width = '20px';
-    pointer.style.height = '20px';
-    pointer.style.backgroundColor = '#FF0000';
-    pointer.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
-    pointer.style.zIndex = '1';
-    document.querySelector('.wheel-container').appendChild(pointer);
+    container.appendChild(pointer);
 }
 
 function startSpinWheel() {
@@ -1253,7 +1484,7 @@ function startSpinWheel() {
     // Calculate rotation
     const baseRotations = 5; // Number of full rotations
     const segmentAngle = 360 / values.length;
-    const targetAngle = randomIndex * segmentAngle;
+    const targetAngle = randomIndex * segmentAngle + segmentAngle / 2;
     const totalRotation = (baseRotations * 360) + targetAngle;
     
     // Apply rotation with easing
