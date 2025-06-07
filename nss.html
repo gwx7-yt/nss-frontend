@@ -168,7 +168,7 @@
       <div class="market-content">
         <div class="market-search">
           <div class="search-container">
-            <input type="text" id="stockSearch" data-translate-placeholder="search" placeholder="🔍 Search by company name or symbol...">
+            <input type="text" id="stockSearch" data-translate-placeholder="searchPlaceholder" placeholder="🔍 Search by company name or symbol...">
             <div id="searchResults" class="search-results"></div>
           </div>
         </div>
@@ -482,6 +482,8 @@
         <p>Total: <span class="quantity" id="modalCostPreview">0</span> credits</p>
       </div>
 
+      <p class="analysis-link"><a href="#" id="openFullChart">View technical analysis chart</a></p>
+
       <div class="modal-buttons">
         <button class="modal-btn back" onclick="closeTradeModal()">Back</button>
         <button class="modal-btn confirm" onclick="confirmTrade()">Confirm Trade</button>
@@ -513,6 +515,17 @@
           <button class="register-btn" onclick="showRegisterModal()">Register</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Analysis Modal -->
+  <div id="analysisModal" class="analysis-modal" style="display:none;">
+    <div class="analysis-content">
+      <button class="close-analysis" onclick="closeAnalysisModal()">×</button>
+      <div class="chart-container">
+        <canvas id="analysisLineChart"></canvas>
+      </div>
+      <div id="analysisCandle" class="chart-container"></div>
     </div>
   </div>
 

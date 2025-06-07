@@ -8,6 +8,7 @@ const DAILY_BONUS = 1000;
 
 let nepseChart = null;
 let stockChart = null;
+let analysisChart = null;
 let portfolioChart = null;
 
 function generateLineData(days = 30, start = 1000) {
@@ -17,7 +18,7 @@ function generateLineData(days = 30, start = 1000) {
     const date = new Date();
     date.setDate(date.getDate() - i);
     labels.push(date.toLocaleDateString());
-    start += (Math.random() - 0.5) * 10;
+    start += Math.sin(i / 5) * 2 + (Math.random() - 0.5) * 2;
     data.push(start.toFixed(2));
   }
   return { labels, data };
@@ -81,14 +82,18 @@ async function initNepseLineChart() {
   });
 }
 
-async function initStockLineChart(symbol) {
-  const canvas = document.getElementById('lineChart-stock');
+async function initStockLineChart(symbol, canvasId = 'lineChart-stock') {
+  const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
   const { labels, data } = await getStockHistory(symbol);
 
-  if (stockChart) stockChart.destroy();
-  stockChart = new Chart(canvas, {
+  if (canvasId === 'analysisLineChart' && analysisChart) {
+    analysisChart.destroy();
+  } else if (canvasId === 'lineChart-stock' && stockChart) {
+    stockChart.destroy();
+  }
+  const chart = new Chart(canvas, {
     type: 'line',
     data: {
       labels,
@@ -102,10 +107,16 @@ async function initStockLineChart(symbol) {
     },
     options: { responsive: true, maintainAspectRatio: false }
   });
+  if (canvasId === 'analysisLineChart') {
+    analysisChart = chart;
+  } else {
+    stockChart = chart;
+  }
+  return chart;
 }
 
-function loadTradingView(symbol) {
-  const container = document.getElementById(`candlestick-chart-${symbol}`);
+function loadTradingView(symbol, containerId) {
+  const container = document.getElementById(containerId || `candlestick-chart-${symbol}`);
   if (!container) return;
   if (container.dataset.loaded) return;
   if (typeof TradingView === 'undefined') {
@@ -121,7 +132,7 @@ function loadTradingView(symbol) {
     new TradingView.widget({
       symbol: symbol,
       interval: 'D',
-      container_id: `candlestick-chart-${symbol}`,
+      container_id: containerId || `candlestick-chart-${symbol}`,
       theme: 'light',
       autosize: true,
       hide_legend: true
@@ -402,6 +413,26 @@ function closeTradeModal() {
   }
 }
 
+function openAnalysisModal(symbol) {
+  const modal = document.getElementById('analysisModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  const candle = document.getElementById('analysisCandle');
+  if (candle) candle.dataset.loaded = '';
+  initStockLineChart(symbol, 'analysisLineChart');
+  loadTradingView(symbol, 'analysisCandle');
+  modal.dataset.symbol = symbol;
+}
+
+function closeAnalysisModal() {
+  const modal = document.getElementById('analysisModal');
+  if (modal) modal.style.display = 'none';
+  if (analysisChart) {
+    analysisChart.destroy();
+    analysisChart = null;
+  }
+}
+
 function updateCostPreview() {
   const shares = parseFloat(document.getElementById("modalTradeShares").value) || 0;
   const price = currentStockData ? parseFloat(currentStockData.price) : 0;
@@ -489,7 +520,7 @@ function toggleTechnicalAnalysis(symbol) {
   content.style.display = 'block';
   btn.classList.add('active');
   if (content.dataset.loaded !== 'true') {
-    loadTradingView(symbol);
+    loadTradingView(symbol, content.querySelector('div').id);
     content.dataset.loaded = 'true';
   }
 }
@@ -527,6 +558,11 @@ function loadAllStocks() {
             <td class="${changeClass}">${changeSymbol}${stock.changePercent}%</td>
             <td><button onclick="openTradeModal('${stock.symbol}')" class="trade-btn">Trade</button></td>
           `;
+          row.addEventListener('click', (e) => {
+            if (!e.target.closest('button')) {
+              openAnalysisModal(stock.symbol);
+            }
+          });
           tbody.appendChild(row);
         });
       }
@@ -597,6 +633,24 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target.classList.contains("trade-modal")) {
         closeTradeModal();
       }
+    });
+  }
+
+  const analysisModal = document.getElementById('analysisModal');
+  if (analysisModal) {
+    analysisModal.addEventListener('click', (e) => {
+      if (e.target.classList.contains('analysis-modal')) {
+        closeAnalysisModal();
+      }
+    });
+  }
+
+  const fullChartLink = document.getElementById('openFullChart');
+  if (fullChartLink) {
+    fullChartLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      const symbol = document.getElementById('modalStockSymbol').textContent;
+      openAnalysisModal(symbol);
     });
   }
   
@@ -1617,4 +1671,13 @@ function initializeApp() {
       welcomeMessage.textContent = `Welcome, ${investorName}!`;
     }
   }
+}
+
+// Placeholder login handlers to avoid errors
+function handleLogin() {
+  alert('Login feature is not implemented yet.');
+}
+
+function showRegisterModal() {
+  alert('Registration feature coming soon!');
 }
