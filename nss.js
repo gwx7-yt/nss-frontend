@@ -23,10 +23,45 @@ function generateLineData(days = 30, start = 1000) {
   return { labels, data };
 }
 
-function initNepseLineChart() {
+async function getNepseHistory(days = 30) {
+  try {
+    const res = await fetch(`https://nss-c26z.onrender.com/IndexHistory?days=${days}`);
+    const data = await res.json();
+    if (Array.isArray(data) && data.length) {
+      return {
+        labels: data.map(d => d.date),
+        data: data.map(d => parseFloat(d.close))
+      };
+    }
+  } catch (err) {
+    console.error('Error fetching NEPSE history:', err);
+  }
+  return generateLineData(days);
+}
+
+async function getStockHistory(symbol, days = 30) {
+  try {
+    const res = await fetch(`https://nss-c26z.onrender.com/StockHistory?symbol=${symbol}&days=${days}`);
+    const data = await res.json();
+    if (Array.isArray(data) && data.length) {
+      return {
+        labels: data.map(d => d.date),
+        data: data.map(d => parseFloat(d.close))
+      };
+    }
+  } catch (err) {
+    console.error('Error fetching history for', symbol, err);
+  }
+  return generateLineData(days);
+}
+
+async function initNepseLineChart() {
   const ctx = document.getElementById('lineChart-nepse');
   if (!ctx) return;
-  const { labels, data } = generateLineData();
+
+  const { labels, data } = await getNepseHistory();
+
+  if (nepseChart) nepseChart.destroy();
   nepseChart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -46,11 +81,12 @@ function initNepseLineChart() {
   });
 }
 
-function initStockLineChart(symbol) {
+async function initStockLineChart(symbol) {
   const canvas = document.getElementById('lineChart-stock');
   if (!canvas) return;
-  canvas.id = `lineChart-stock-${symbol}`;
-  const { labels, data } = generateLineData();
+
+  const { labels, data } = await getStockHistory(symbol);
+
   if (stockChart) stockChart.destroy();
   stockChart = new Chart(canvas, {
     type: 'line',
@@ -336,7 +372,6 @@ function openTradeModal(symbol) {
       if (modalSebonFeePreview) modalSebonFeePreview.textContent = "0";
       if (modalDpFeePreview) modalDpFeePreview.textContent = "0";
       if (modalCostPreview) modalCostPreview.textContent = "0";
-      if (lineChartCanvas) lineChartCanvas.id = `lineChart-stock-${symbol}`;
       if (candleContainer) candleContainer.id = `candlestick-chart-${symbol}`;
       updateCostPreview();
       initStockLineChart(symbol);
@@ -442,12 +477,17 @@ function confirmTrade() {
 
 function toggleTechnicalAnalysis(symbol) {
   const content = document.getElementById('technicalContent');
-  if (!content) return;
+  const btn = document.getElementById('toggleTechnical');
+  if (!content || !btn) return;
+
   if (content.style.display === 'block') {
     content.style.display = 'none';
+    btn.classList.remove('active');
     return;
   }
+
   content.style.display = 'block';
+  btn.classList.add('active');
   if (content.dataset.loaded !== 'true') {
     loadTradingView(symbol);
     content.dataset.loaded = 'true';

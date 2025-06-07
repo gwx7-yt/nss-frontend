@@ -2433,12 +2433,29 @@ section {
 .technical-section button {
   width: 100%;
   margin: 10px 0;
-  padding: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: none;
+  border-radius: var(--border-radius);
   cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.technical-section button:hover {
+  background-color: var(--secondary-color);
+}
+
+.technical-section button.active {
+  background-color: var(--secondary-color);
 }
 
 .technical-content {
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
 }
