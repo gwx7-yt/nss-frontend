@@ -6,114 +6,8 @@ const DEFAULT_CREDITS = 100000;
 // Daily bonus amount
 const DAILY_BONUS = 1000;
 
-let nepseChart = null;
-let stockChart = null;
-let analysisChart = null;
 let portfolioChart = null;
 
-function generateLineData(days = 30, start = 1000) {
-  const labels = [];
-  const data = [];
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    labels.push(date.toLocaleDateString());
-    start += Math.sin(i / 5) * 2 + (Math.random() - 0.5) * 2;
-    data.push(start.toFixed(2));
-  }
-  return { labels, data };
-}
-
-async function getNepseHistory(days = 30) {
-  try {
-    const res = await fetch(`https://nss-c26z.onrender.com/IndexHistory?days=${days}`);
-    const data = await res.json();
-    if (Array.isArray(data) && data.length) {
-      return {
-        labels: data.map(d => d.date),
-        data: data.map(d => parseFloat(d.close))
-      };
-    }
-  } catch (err) {
-    console.error('Error fetching NEPSE history:', err);
-  }
-  return generateLineData(days);
-}
-
-async function getStockHistory(symbol, days = 30) {
-  try {
-    const res = await fetch(`https://nss-c26z.onrender.com/StockHistory?symbol=${symbol}&days=${days}`);
-    const data = await res.json();
-    if (Array.isArray(data) && data.length) {
-      return {
-        labels: data.map(d => d.date),
-        data: data.map(d => parseFloat(d.close))
-      };
-    }
-  } catch (err) {
-    console.error('Error fetching history for', symbol, err);
-  }
-  return generateLineData(days);
-}
-
-async function initNepseLineChart() {
-  const ctx = document.getElementById('lineChart-nepse');
-  if (!ctx) return;
-
-  const { labels, data } = await getNepseHistory();
-
-  if (nepseChart) nepseChart.destroy();
-  nepseChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        borderColor: 'rgba(137,207,240,1)',
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        tension: 0.2
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false
-    }
-  });
-}
-
-async function initStockLineChart(symbol, canvasId = 'lineChart-stock') {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-
-  const { labels, data } = await getStockHistory(symbol);
-
-  if (canvasId === 'analysisLineChart' && analysisChart) {
-    analysisChart.destroy();
-  } else if (canvasId === 'lineChart-stock' && stockChart) {
-    stockChart.destroy();
-  }
-  const chart = new Chart(canvas, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        borderColor: 'rgba(137,207,240,1)',
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        tension: 0.2
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
-  if (canvasId === 'analysisLineChart') {
-    analysisChart = chart;
-  } else {
-    stockChart = chart;
-  }
-  return chart;
-}
 
 function loadTradingView(symbol, containerId) {
   const container = document.getElementById(containerId || `candlestick-chart-${symbol}`);
@@ -225,7 +119,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initCredits();
   upgradeOldUsers();
   updatePortfolio();
-  initNepseLineChart();
   initPortfolioPieChart();
   initNavigation();
 
@@ -365,7 +258,6 @@ function openTradeModal(symbol) {
       const modalDpFeePreview = document.getElementById("modalDpFeePreview");
       const modalCostPreview = document.getElementById("modalCostPreview");
       const tradeModal = document.getElementById("tradeModal");
-      const lineChartCanvas = document.getElementById("lineChart-stock");
       const technicalContent = document.getElementById("technicalContent");
       const candleContainer = document.getElementById("candlestick-chart");
       const toggleBtn = document.getElementById("toggleTechnical");
@@ -385,7 +277,6 @@ function openTradeModal(symbol) {
       if (modalCostPreview) modalCostPreview.textContent = "0";
       if (candleContainer) candleContainer.id = `candlestick-chart-${symbol}`;
       updateCostPreview();
-      initStockLineChart(symbol);
       if (technicalContent) {
         technicalContent.style.display = 'none';
         technicalContent.dataset.loaded = 'false';
@@ -407,10 +298,6 @@ function openTradeModal(symbol) {
 function closeTradeModal() {
   document.getElementById("tradeModal").style.display = "none";
   currentStockData = null;
-  if (stockChart) {
-    stockChart.destroy();
-    stockChart = null;
-  }
 }
 
 function openAnalysisModal(symbol) {
@@ -419,7 +306,6 @@ function openAnalysisModal(symbol) {
   modal.style.display = 'flex';
   const candle = document.getElementById('analysisCandle');
   if (candle) candle.dataset.loaded = '';
-  initStockLineChart(symbol, 'analysisLineChart');
   loadTradingView(symbol, 'analysisCandle');
   modal.dataset.symbol = symbol;
 }
@@ -427,10 +313,6 @@ function openAnalysisModal(symbol) {
 function closeAnalysisModal() {
   const modal = document.getElementById('analysisModal');
   if (modal) modal.style.display = 'none';
-  if (analysisChart) {
-    analysisChart.destroy();
-    analysisChart = null;
-  }
 }
 
 function updateCostPreview() {
