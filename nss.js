@@ -154,6 +154,34 @@ function showToast(message) {
   }, 3000);
 }
 
+// Confetti animation
+function launchConfetti() {
+    for (let i = 0; i < 30; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.backgroundColor = `hsl(${Math.random() * 360},70%,50%)`;
+        piece.style.animationDelay = Math.random() + 's';
+        document.body.appendChild(piece);
+        piece.addEventListener('animationend', () => piece.remove());
+    }
+}
+
+// Display spin result overlay
+function showSpinResult(message) {
+    const result = document.getElementById('spinResult');
+    const container = result?.closest('.spin-wheel');
+    if (!result || !container) return;
+    result.textContent = message;
+    result.classList.remove('hidden');
+    container.classList.add('blur');
+    launchConfetti();
+    setTimeout(() => {
+        result.classList.add('hidden');
+        container.classList.remove('blur');
+    }, 3000);
+}
+
 // Upgrade legacy users to new starter pack
 function upgradeOldUsers() {
   let user;
@@ -221,7 +249,7 @@ function openTradeModal(symbol) {
     })
     .catch(error => {
       console.error("Error fetching stock price:", error);
-      alert(`❌ Error: ${error.message || "Could not fetch stock price. Please try again."}`);
+      showToast(`❌ Error: ${error.message || 'Could not fetch stock price. Please try again.'}`);
     });
 }
 
@@ -257,12 +285,12 @@ function confirmTrade() {
   let credits = parseFloat(localStorage.getItem("credits")) || DEFAULT_CREDITS;
 
   if (!shares || shares <= 0) {
-    alert("❌ Please enter a valid number of shares!");
+    showToast("❌ Please enter a valid number of shares!");
     return;
   }
 
   if (shares < 10) {
-    alert("❌ Minimum trade is 10 shares!");
+    showToast("❌ Minimum trade is 10 shares!");
 
     return;
   }
@@ -276,7 +304,7 @@ function confirmTrade() {
   const total = base + brokerFee + sebonFee + dpFee;
 
   if (total > credits) {
-    alert("❌ Not enough credits!");
+    showToast("❌ Not enough credits!");
     return;
   }
 
@@ -301,7 +329,7 @@ function confirmTrade() {
   // Update UI
   updatePortfolio();
   closeTradeModal();
-  alert(`✅ Purchased ${shares} shares of ${symbol} for ${total.toFixed(2)} credits!`);
+  showToast(`✅ Purchased ${shares} shares of ${symbol} for ${total.toFixed(2)} credits!`);
 }
 
 // Update search result click handler
@@ -547,7 +575,7 @@ function sellInvestment(index) {
 
   if (!inv || !inv.symbol || !inv.quantity) {
     console.error("❌ Invalid investment data:", inv);
-    alert("❌ Investment or quantity missing. Please check your portfolio.");
+    showToast("❌ Investment or quantity missing. Please check your portfolio.");
     return;
   }
 
@@ -556,7 +584,7 @@ function sellInvestment(index) {
     .then(res => res.json())
     .then(data => {
       if (data.error) {
-        alert("❌ Error fetching current price. Please try again.");
+        showToast("❌ Error fetching current price. Please try again.");
         return;
       }
 
@@ -575,10 +603,10 @@ function sellInvestment(index) {
       localStorage.setItem("investments", JSON.stringify(investments));
 
       updatePortfolio();
-      alert(`✅ Sold ${inv.symbol} for ${sellAmount.toFixed(2)} credits!`);
+      showToast(`✅ Sold ${inv.symbol} for ${sellAmount.toFixed(2)} credits!`);
     })
     .catch(() => {
-      alert("❌ Could not fetch the stock price. Please try again.");
+      showToast("❌ Could not fetch the stock price. Please try again.");
     });
 }
 
@@ -1179,12 +1207,13 @@ function showBonusModal() {
                     <h2>${texts.weeklySpinTitle}</h2>
                     <div class="spin-wheel">
                         <div class="wheel-container">
-                            <div class="wheel-pointer"></div>
-                            <canvas id="wheelCanvas" width="300" height="300"></canvas>
-                        </div>
-                        <button id="spinWheel" class="spin-btn">${texts.spinButton}</button>
+                        <div class="wheel-pointer"></div>
+                        <canvas id="wheelCanvas" width="300" height="300"></canvas>
                     </div>
-                    <p id="weeklyTimer" class="timer"></p>
+                    <button id="spinWheel" class="spin-btn">${texts.spinButton}</button>
+                    <div id="spinResult" class="spin-result hidden"></div>
+                </div>
+                <p id="weeklyTimer" class="timer"></p>
                 </div>
                 
                 <button class="close-modal" onclick="closeBonusModal()">${texts.closeButton}</button>
@@ -1277,7 +1306,7 @@ function claimDailyBonus() {
     checkBonusAvailability();
     
     // Show success message
-    alert(`Daily bonus of ${DAILY_BONUS} credits claimed!`);
+    showToast(`Daily bonus of ${DAILY_BONUS} credits claimed!`);
 }
 
 function initWheel() {
@@ -1382,7 +1411,7 @@ function startSpinWheel() {
         // Show success message
         const currentLanguage = localStorage.getItem('language') || 'english';
         const texts = translations[currentLanguage];
-        showToast(`${texts.spinResult} ${winAmount} ${texts.credits}!`);
+        showSpinResult(`${texts.spinResult} ${winAmount} ${texts.credits}!`);
     }, 4000);
 }
 
@@ -1426,7 +1455,7 @@ document.getElementById('tutorialStart')?.addEventListener('click', () => {
   const investorName = nameInput.value.trim();
   
   if (!investorName) {
-    alert('Please enter your name to continue!');
+    showToast('Please enter your name to continue!');
     return;
   }
   
