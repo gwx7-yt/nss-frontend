@@ -1789,9 +1789,54 @@ section {
     height: 0;
     border-left: 15px solid transparent;
     border-right: 15px solid transparent;
-    border-bottom: 25px solid #FF0000;
+    border-top: 25px solid #FF0000;
     z-index: 2;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* Spin result overlay */
+.spin-wheel {
+    position: relative;
+}
+
+.spin-wheel.blur .wheel-container,
+.spin-wheel.blur .spin-btn {
+    filter: blur(4px);
+}
+
+.spin-result {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    border-radius: var(--border-radius);
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    z-index: 3;
+}
+
+.spin-result.hidden {
+    display: none;
+}
+
+/* Confetti animation */
+.confetti {
+    position: fixed;
+    top: -10px;
+    width: 8px;
+    height: 8px;
+    opacity: 0.9;
+    pointer-events: none;
+    animation: confetti-fall 3s linear forwards;
+}
+
+@keyframes confetti-fall {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
 }
 
 #wheelCanvas {

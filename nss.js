@@ -154,6 +154,34 @@ function showToast(message) {
   }, 3000);
 }
 
+// Confetti animation
+function launchConfetti() {
+    for (let i = 0; i < 30; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.backgroundColor = `hsl(${Math.random() * 360},70%,50%)`;
+        piece.style.animationDelay = Math.random() + 's';
+        document.body.appendChild(piece);
+        piece.addEventListener('animationend', () => piece.remove());
+    }
+}
+
+// Display spin result overlay
+function showSpinResult(message) {
+    const result = document.getElementById('spinResult');
+    const container = result?.closest('.spin-wheel');
+    if (!result || !container) return;
+    result.textContent = message;
+    result.classList.remove('hidden');
+    container.classList.add('blur');
+    launchConfetti();
+    setTimeout(() => {
+        result.classList.add('hidden');
+        container.classList.remove('blur');
+    }, 3000);
+}
+
 // Upgrade legacy users to new starter pack
 function upgradeOldUsers() {
   let user;
@@ -221,7 +249,7 @@ function openTradeModal(symbol) {
     })
     .catch(error => {
       console.error("Error fetching stock price:", error);
-      alert(`❌ Error: ${error.message || "Could not fetch stock price. Please try again."}`);
+      showToast(`❌ Error: ${error.message || 'Could not fetch stock price. Please try again.'}`);
     });
 }
 
@@ -257,12 +285,12 @@ function confirmTrade() {
   let credits = parseFloat(localStorage.getItem("credits")) || DEFAULT_CREDITS;
 
   if (!shares || shares <= 0) {
-    alert("❌ Please enter a valid number of shares!");
+    showToast("❌ Please enter a valid number of shares!");
     return;
   }
 
   if (shares < 10) {
-    alert("❌ Minimum trade is 10 shares!");
+    showToast("❌ Minimum trade is 10 shares!");
 
     return;
   }
@@ -276,7 +304,7 @@ function confirmTrade() {
   const total = base + brokerFee + sebonFee + dpFee;
 
   if (total > credits) {
-    alert("❌ Not enough credits!");
+    showToast("❌ Not enough credits!");
     return;
   }
 
@@ -301,7 +329,7 @@ function confirmTrade() {
   // Update UI
   updatePortfolio();
   closeTradeModal();
-  alert(`✅ Purchased ${shares} shares of ${symbol} for ${total.toFixed(2)} credits!`);
+  showToast(`✅ Purchased ${shares} shares of ${symbol} for ${total.toFixed(2)} credits!`);
 }
 
 // Update search result click handler
@@ -547,7 +575,7 @@ function sellInvestment(index) {
 
   if (!inv || !inv.symbol || !inv.quantity) {
     console.error("❌ Invalid investment data:", inv);
-    alert("❌ Investment or quantity missing. Please check your portfolio.");
+    showToast("❌ Investment or quantity missing. Please check your portfolio.");
     return;
   }
 
@@ -556,7 +584,7 @@ function sellInvestment(index) {
     .then(res => res.json())
     .then(data => {
       if (data.error) {
-        alert("❌ Error fetching current price. Please try again.");
+        showToast("❌ Error fetching current price. Please try again.");
         return;
       }
 
@@ -575,10 +603,10 @@ function sellInvestment(index) {
       localStorage.setItem("investments", JSON.stringify(investments));
 
       updatePortfolio();
-      alert(`✅ Sold ${inv.symbol} for ${sellAmount.toFixed(2)} credits!`);
+      showToast(`✅ Sold ${inv.symbol} for ${sellAmount.toFixed(2)} credits!`);
     })
     .catch(() => {
-      alert("❌ Could not fetch the stock price. Please try again.");
+      showToast("❌ Could not fetch the stock price. Please try again.");
     });
 }
 
@@ -1179,12 +1207,13 @@ function showBonusModal() {
                     <h2>${texts.weeklySpinTitle}</h2>
                     <div class="spin-wheel">
                         <div class="wheel-container">
-                            <div class="wheel-pointer"></div>
-                            <canvas id="wheelCanvas" width="300" height="300"></canvas>
-                        </div>
-                        <button id="spinWheel" class="spin-btn">${texts.spinButton}</button>
+                        <div class="wheel-pointer"></div>
+                        <canvas id="wheelCanvas" width="300" height="300"></canvas>
                     </div>
-                    <p id="weeklyTimer" class="timer"></p>
+                    <button id="spinWheel" class="spin-btn">${texts.spinButton}</button>
+                    <div id="spinResult" class="spin-result hidden"></div>
+                </div>
+                <p id="weeklyTimer" class="timer"></p>
                 </div>
                 
                 <button class="close-modal" onclick="closeBonusModal()">${texts.closeButton}</button>
@@ -1222,14 +1251,20 @@ function checkBonusAvailability() {
     }
     
     // Check weekly spin
+    const spinBtn = document.getElementById('spinWheel');
     const lastWeeklySpin = localStorage.getItem('lastWeeklySpin');
     if (lastWeeklySpin) {
-        const timeElapsed = now - parseInt(lastWeeklySpin);
+        const timeElapsed = now - parseInt(lastWeeklySpin, 10);
         if (timeElapsed < 7 * 24 * 60 * 60 * 1000) { // 7 days
             const remainingTime = 7 * 24 * 60 * 60 * 1000 - timeElapsed;
             updateWeeklyTimer(remainingTime);
-            document.getElementById('spinWheel').disabled = true;
+            if (spinBtn) spinBtn.disabled = true;
+        } else {
+            if (spinBtn) spinBtn.disabled = false;
+            updateWeeklyTimer(0);
         }
+    } else if (spinBtn) {
+        spinBtn.disabled = false;
     }
 }
 
@@ -1248,10 +1283,15 @@ function updateDailyTimer(remainingTime) {
 function updateWeeklyTimer(remainingTime) {
     const timer = document.getElementById('weeklyTimer');
     if (!timer) return;
-    
+
+    if (remainingTime <= 0) {
+        timer.textContent = '';
+        return;
+    }
+
     const days = Math.floor(remainingTime / (24 * 60 * 60 * 1000));
     const hours = Math.floor((remainingTime % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-    
+
     const currentLanguage = localStorage.getItem('language') || 'english';
     const texts = translations[currentLanguage];
     timer.textContent = `${texts.nextAvailable} ${days}d ${hours}h`;
@@ -1266,7 +1306,7 @@ function claimDailyBonus() {
     checkBonusAvailability();
     
     // Show success message
-    alert(`Daily bonus of ${DAILY_BONUS} credits claimed!`);
+    showToast(`Daily bonus of ${DAILY_BONUS} credits claimed!`);
 }
 
 function initWheel() {
@@ -1317,14 +1357,16 @@ function initWheel() {
         const pointer = document.createElement('div');
         pointer.className = 'wheel-pointer';
         pointer.style.position = 'absolute';
-        pointer.style.top = '50%';
+        pointer.style.top = '-18px';
         pointer.style.left = '50%';
-        pointer.style.transform = 'translate(-50%, -50%)';
-        pointer.style.width = '20px';
-        pointer.style.height = '20px';
-        pointer.style.backgroundColor = '#FF0000';
-        pointer.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+        pointer.style.transform = 'translateX(-50%)';
+        pointer.style.width = '0';
+        pointer.style.height = '0';
+        pointer.style.borderLeft = '15px solid transparent';
+        pointer.style.borderRight = '15px solid transparent';
+        pointer.style.borderTop = '25px solid #FF0000';
         pointer.style.zIndex = '1';
+        pointer.style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))';
         container.appendChild(pointer);
     }
 
@@ -1333,7 +1375,14 @@ function initWheel() {
 function startSpinWheel() {
     const spinButton = document.getElementById('spinWheel');
     spinButton.disabled = true;
-    
+
+    const canvas = document.getElementById('wheelCanvas');
+    // Reset any previous rotation
+    canvas.style.transition = 'none';
+    canvas.style.transform = 'rotate(0deg)';
+    // Force reflow so the reset takes effect before spinning
+    void canvas.offsetWidth;
+
     const values = [0, 1000, 2000, 3000, 4000, 5000];
     const randomIndex = Math.floor(Math.random() * values.length);
     const winAmount = values[randomIndex];
@@ -1342,10 +1391,11 @@ function startSpinWheel() {
     const baseRotations = 5; // Number of full rotations
     const segmentAngle = 360 / values.length;
     const targetAngle = randomIndex * segmentAngle + segmentAngle / 2;
-    const totalRotation = (baseRotations * 360) + targetAngle;
+    const pointerOffset = 270; // pointer position at top
+    const extraRotation = (pointerOffset - targetAngle + 360) % 360;
+    const totalRotation = (baseRotations * 360) + extraRotation;
     
     // Apply rotation with easing
-    const canvas = document.getElementById('wheelCanvas');
     canvas.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
     canvas.style.transform = `rotate(${totalRotation}deg)`;
     
@@ -1361,7 +1411,7 @@ function startSpinWheel() {
         // Show success message
         const currentLanguage = localStorage.getItem('language') || 'english';
         const texts = translations[currentLanguage];
-        alert(`${texts.spinResult} ${winAmount} ${texts.credits}!`);
+        showSpinResult(`${texts.spinResult} ${winAmount} ${texts.credits}!`);
     }, 4000);
 }
 
@@ -1405,7 +1455,7 @@ document.getElementById('tutorialStart')?.addEventListener('click', () => {
   const investorName = nameInput.value.trim();
   
   if (!investorName) {
-    alert('Please enter your name to continue!');
+    showToast('Please enter your name to continue!');
     return;
   }
   
