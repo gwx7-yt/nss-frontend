@@ -1328,14 +1328,16 @@ function initWheel() {
         const pointer = document.createElement('div');
         pointer.className = 'wheel-pointer';
         pointer.style.position = 'absolute';
-        pointer.style.top = '50%';
+        pointer.style.top = '-18px';
         pointer.style.left = '50%';
-        pointer.style.transform = 'translate(-50%, -50%)';
-        pointer.style.width = '20px';
-        pointer.style.height = '20px';
-        pointer.style.backgroundColor = '#FF0000';
-        pointer.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+        pointer.style.transform = 'translateX(-50%)';
+        pointer.style.width = '0';
+        pointer.style.height = '0';
+        pointer.style.borderLeft = '15px solid transparent';
+        pointer.style.borderRight = '15px solid transparent';
+        pointer.style.borderTop = '25px solid #FF0000';
         pointer.style.zIndex = '1';
+        pointer.style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))';
         container.appendChild(pointer);
     }
 
@@ -1360,7 +1362,9 @@ function startSpinWheel() {
     const baseRotations = 5; // Number of full rotations
     const segmentAngle = 360 / values.length;
     const targetAngle = randomIndex * segmentAngle + segmentAngle / 2;
-    const totalRotation = (baseRotations * 360) + targetAngle;
+    const pointerOffset = 270; // pointer position at top
+    const extraRotation = (pointerOffset - targetAngle + 360) % 360;
+    const totalRotation = (baseRotations * 360) + extraRotation;
     
     // Apply rotation with easing
     canvas.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
@@ -1378,7 +1382,7 @@ function startSpinWheel() {
         // Show success message
         const currentLanguage = localStorage.getItem('language') || 'english';
         const texts = translations[currentLanguage];
-        alert(`${texts.spinResult} ${winAmount} ${texts.credits}!`);
+        showToast(`${texts.spinResult} ${winAmount} ${texts.credits}!`);
     }, 4000);
 }
 
