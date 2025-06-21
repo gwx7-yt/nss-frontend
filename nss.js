@@ -1222,14 +1222,20 @@ function checkBonusAvailability() {
     }
     
     // Check weekly spin
+    const spinBtn = document.getElementById('spinWheel');
     const lastWeeklySpin = localStorage.getItem('lastWeeklySpin');
     if (lastWeeklySpin) {
-        const timeElapsed = now - parseInt(lastWeeklySpin);
+        const timeElapsed = now - parseInt(lastWeeklySpin, 10);
         if (timeElapsed < 7 * 24 * 60 * 60 * 1000) { // 7 days
             const remainingTime = 7 * 24 * 60 * 60 * 1000 - timeElapsed;
             updateWeeklyTimer(remainingTime);
-            document.getElementById('spinWheel').disabled = true;
+            if (spinBtn) spinBtn.disabled = true;
+        } else {
+            if (spinBtn) spinBtn.disabled = false;
+            updateWeeklyTimer(0);
         }
+    } else if (spinBtn) {
+        spinBtn.disabled = false;
     }
 }
 
@@ -1248,10 +1254,15 @@ function updateDailyTimer(remainingTime) {
 function updateWeeklyTimer(remainingTime) {
     const timer = document.getElementById('weeklyTimer');
     if (!timer) return;
-    
+
+    if (remainingTime <= 0) {
+        timer.textContent = '';
+        return;
+    }
+
     const days = Math.floor(remainingTime / (24 * 60 * 60 * 1000));
     const hours = Math.floor((remainingTime % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-    
+
     const currentLanguage = localStorage.getItem('language') || 'english';
     const texts = translations[currentLanguage];
     timer.textContent = `${texts.nextAvailable} ${days}d ${hours}h`;
@@ -1333,7 +1344,14 @@ function initWheel() {
 function startSpinWheel() {
     const spinButton = document.getElementById('spinWheel');
     spinButton.disabled = true;
-    
+
+    const canvas = document.getElementById('wheelCanvas');
+    // Reset any previous rotation
+    canvas.style.transition = 'none';
+    canvas.style.transform = 'rotate(0deg)';
+    // Force reflow so the reset takes effect before spinning
+    void canvas.offsetWidth;
+
     const values = [0, 1000, 2000, 3000, 4000, 5000];
     const randomIndex = Math.floor(Math.random() * values.length);
     const winAmount = values[randomIndex];
@@ -1345,7 +1363,6 @@ function startSpinWheel() {
     const totalRotation = (baseRotations * 360) + targetAngle;
     
     // Apply rotation with easing
-    const canvas = document.getElementById('wheelCanvas');
     canvas.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
     canvas.style.transform = `rotate(${totalRotation}deg)`;
     
