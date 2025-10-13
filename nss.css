@@ -681,6 +681,61 @@ section {
   font-size: 1.4rem;
 }
 
+[data-theme="dark"] .team-header p {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+[data-theme="dark"] .team-card {
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] .team-card:hover {
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .member-avatar {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .member-initials {
+  background: rgba(15, 23, 42, 0.5);
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .member-role {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="dark"] .member-name {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .category-label.management {
+  background-color: rgba(255, 159, 67, 0.15);
+  color: #ffb981;
+  border-color: rgba(255, 159, 67, 0.45);
+}
+
+[data-theme="dark"] .category-label.research {
+  background-color: rgba(100, 181, 246, 0.15);
+  color: #8ecbff;
+  border-color: rgba(100, 181, 246, 0.45);
+}
+
+[data-theme="dark"] .category-label.finance {
+  background-color: rgba(241, 196, 15, 0.15);
+  color: #f7d86d;
+  border-color: rgba(241, 196, 15, 0.45);
+}
+
+[data-theme="dark"] .category-label.marketing {
+  background-color: rgba(76, 217, 100, 0.15);
+  color: #8ef2a2;
+  border-color: rgba(76, 217, 100, 0.45);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .market-movers {
