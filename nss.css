@@ -340,6 +340,85 @@ section {
   display: none;
 }
 
+.sector-categories {
+  background: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.sector-header h3 {
+  margin: 0;
+  color: var(--primary-color);
+}
+
+.selected-sector {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.sector-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.sector-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(0, 180, 216, 0.08);
+  color: var(--primary-color);
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.sector-chip .chip-count {
+  background: rgba(0, 180, 216, 0.15);
+  color: var(--primary-color);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.sector-chip:hover {
+  background: rgba(0, 180, 216, 0.15);
+  transform: translateY(-1px);
+}
+
+.sector-chip.active {
+  background: var(--primary-color);
+  color: #ffffff;
+  border-color: var(--primary-color);
+}
+
+.sector-chip.active .chip-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.sector-empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
 /* Market Movers */
 .movers-container {
   display: grid;
@@ -476,6 +555,15 @@ section {
 }
 
 @media (max-width: 768px) {
+  .sector-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .selected-sector {
+    align-self: flex-start;
+  }
+
   .movers-container {
     grid-template-columns: 1fr;
   }
