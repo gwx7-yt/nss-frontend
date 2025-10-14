@@ -176,6 +176,15 @@
           </div>
         </div>
 
+        <div class="sector-categories">
+          <div class="sector-header">
+            <h3 data-translate="browseBySector">Browse by Sector</h3>
+            <span id="selectedSectorLabel" class="selected-sector" data-translate="allSectors">All Sectors</span>
+          </div>
+          <div id="sectorFilters" class="sector-chip-group"></div>
+          <p id="sectorEmptyState" class="sector-empty" style="display: none;" data-translate="noSectorResults">No stocks found for this sector.</p>
+        </div>
+
         <div class="market-movers">
           <div class="movers-container">
             <div class="gainers-table">
@@ -214,6 +223,7 @@
               <tr>
                 <th data-translate="symbol">Symbol</th>
                 <th data-translate="companyName">Company Name</th>
+                <th data-translate="sector">Sector</th>
                 <th data-translate="ltp">LTP</th>
                 <th data-translate="change">Change</th>
                 <th data-translate="action">Action</th>
