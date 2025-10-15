@@ -3,6 +3,61 @@ let companyDetails = new Map();
 let currentSectorFilter = 'All';
 let latestSectorCounts = new Map();
 
+const SECTOR_TRANSLATIONS = {
+  english: {
+    'Commercial Banks': 'Commercial Banks',
+    'Development Banks': 'Development Banks',
+    Finance: 'Finance',
+    'Hotels And Tourism': 'Hotels And Tourism',
+    'Hydro Power': 'Hydro Power',
+    Investment: 'Investment',
+    'Life Insurance': 'Life Insurance',
+    'Manufacturing And Processing': 'Manufacturing And Processing',
+    Microfinance: 'Microfinance',
+    'Mutual Fund': 'Mutual Fund',
+    'Non Life Insurance': 'Non Life Insurance',
+    Others: 'Others',
+    Tradings: 'Tradings',
+    Trading: 'Trading',
+    'N/A': 'N/A'
+  },
+  nepali: {
+    'Commercial Banks': 'वाणिज्य बैंक',
+    'Development Banks': 'विकास बैंक',
+    Finance: 'वित्त',
+    'Hotels And Tourism': 'होटल तथा पर्यटन',
+    'Hydro Power': 'जलविद्युत',
+    Investment: 'लगानी',
+    'Life Insurance': 'जीवन बीमा',
+    'Manufacturing And Processing': 'उत्पादन तथा प्रशोधन',
+    Microfinance: 'सूक्ष्म वित्त',
+    'Mutual Fund': 'म्यूचुअल फन्ड',
+    'Non Life Insurance': 'गैर-जीवन बीमा',
+    Others: 'अन्य',
+    Tradings: 'व्यापार',
+    Trading: 'व्यापार',
+    'N/A': 'उपलब्ध छैन'
+  }
+};
+
+function getLocalizedSectorName(sectorName, language = 'english') {
+  if (!sectorName) {
+    return '';
+  }
+  const normalized = sectorName.trim() || 'N/A';
+  const translations = SECTOR_TRANSLATIONS[language] || SECTOR_TRANSLATIONS.english;
+  if (translations[normalized]) {
+    return translations[normalized];
+  }
+  const matchKey = Object.keys(translations).find(
+    key => key.toLowerCase() === normalized.toLowerCase()
+  );
+  if (matchKey) {
+    return translations[matchKey];
+  }
+  return normalized;
+}
+
 
 // Default credits given to new users (1 lakh)
 const DEFAULT_CREDITS = 100000;
@@ -28,7 +83,7 @@ function fetchCompanyDetails() {
       data.forEach(company => {
         companyDetails.set(company.symbol, {
           name: company.companyName,
-          sector: company.sectorName,
+          sector: company.sectorName || 'N/A',
           type: company.instrumentType
         });
       });
@@ -498,14 +553,16 @@ document.getElementById("stockSearch").addEventListener("input", (e) => {
       });
 
       if (matches.length > 0) {
+        const currentLanguage = localStorage.getItem('language') || 'english';
         resultsDiv.innerHTML = matches.slice(0, 5).map(stock => {
           const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: 'N/A' };
+          const sectorLabel = getLocalizedSectorName(companyInfo.sector, currentLanguage);
           return `
             <div class="search-result" onclick="handleSearchResultClick('${stock.symbol}')">
               <div class="stock-info">
                 <strong>${stock.symbol}</strong>
                 <span>${companyInfo.name}</span>
-                <small>${companyInfo.sector}</small>
+                <small>${sectorLabel}</small>
               </div>
               <div class="stock-price ${parseFloat(stock.changePercent) >= 0 ? 'gain' : 'loss'}">
                 ${parseFloat(stock.price).toFixed(2)}
