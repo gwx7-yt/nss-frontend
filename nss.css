@@ -340,6 +340,71 @@ section {
   display: none;
 }
 
+.market-categories {
+  margin: 2rem 0 1.5rem;
+  background: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.market-categories-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.market-categories-status {
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.sector-chip-list {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.sector-chip {
+  border: none;
+  background: rgba(52, 152, 219, 0.12);
+  color: var(--primary-color);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.sector-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(52, 152, 219, 0.2);
+}
+
+.sector-chip:focus-visible {
+  outline: 3px solid rgba(52, 152, 219, 0.35);
+  outline-offset: 2px;
+}
+
+.sector-chip.active {
+  background: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 10px 16px rgba(52, 152, 219, 0.25);
+}
+
+.sector-empty {
+  margin-top: 1rem;
+  padding: 1rem;
+  text-align: center;
+  border-radius: var(--border-radius);
+  background: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.65);
+  display: none;
+}
+
 /* Market Movers */
 .movers-container {
   display: grid;
@@ -1627,9 +1692,24 @@ section {
 [data-theme="dark"] .rankings-list,
 [data-theme="dark"] .table-container,
 [data-theme="dark"] .market-content table,
-[data-theme="dark"] .search-results {
+[data-theme="dark"] .search-results,
+[data-theme="dark"] .market-categories {
   background-color: var(--card-background);
   color: var(--text-color);
+}
+
+[data-theme="dark"] .market-categories-status {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="dark"] .sector-chip {
+  background: rgba(100, 181, 246, 0.18);
+  color: var(--primary-color);
+}
+
+[data-theme="dark"] .sector-empty {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 [data-theme="dark"] .theme-btn,
@@ -2358,7 +2438,7 @@ section {
   .top-nav {
     padding: 0.5rem;
   }
-  
+
   .nav-left {
     gap: 0.5rem;
   }
@@ -2378,7 +2458,21 @@ section {
   .market-content {
     padding: 0.5rem;
   }
-  
+
+  .market-categories {
+    padding: 1rem;
+  }
+
+  .market-categories-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .market-categories-status {
+    width: 100%;
+  }
+
   .all-stocks table {
     font-size: 0.9rem;
   }
@@ -2416,7 +2510,7 @@ section {
   .nav-icon {
     padding: 0.3rem;
   }
-  
+
   .nav-img {
     width: 20px;
     height: 20px;
@@ -2435,7 +2529,16 @@ section {
   .welcome-section h1 {
     font-size: 1.5rem;
   }
-  
+
+  .market-categories {
+    margin: 1.5rem 0 1rem;
+  }
+
+  .sector-chip {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
   .stat-card h2 {
     font-size: 1.1rem;
   }

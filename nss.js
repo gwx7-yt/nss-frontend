@@ -1,6 +1,94 @@
 // Store company information globally
 let companyDetails = new Map();
 
+const DEFAULT_SECTOR = 'N/A';
+const ALL_SECTORS = 'ALL';
+let allStocksCache = [];
+let sectorList = [];
+let activeSectorFilter = ALL_SECTORS;
+let lastSearchTerm = '';
+let lastSearchResults = [];
+
+const SECTOR_TRANSLATIONS = {
+  english: {
+    'Commercial Banks': 'Commercial Banks',
+    'Development Banks': 'Development Banks',
+    Finance: 'Finance',
+    'Hotels And Tourism': 'Hotels And Tourism',
+    'Hydro Power': 'Hydro Power',
+    Investment: 'Investment',
+    'Life Insurance': 'Life Insurance',
+    'Manufacturing And Processing': 'Manufacturing And Processing',
+    Microfinance: 'Microfinance',
+    'Mutual Fund': 'Mutual Fund',
+    'Non Life Insurance': 'Non Life Insurance',
+    Others: 'Others',
+    Tradings: 'Tradings',
+    Trading: 'Trading',
+    'N/A': 'N/A'
+  },
+  nepali: {
+    'Commercial Banks': 'वाणिज्य बैंक',
+    'Development Banks': 'विकास बैंक',
+    Finance: 'वित्त',
+    'Hotels And Tourism': 'होटल तथा पर्यटन',
+    'Hydro Power': 'जलविद्युत',
+    Investment: 'लगानी',
+    'Life Insurance': 'जीवन बीमा',
+    'Manufacturing And Processing': 'उत्पादन तथा प्रशोधन',
+    Microfinance: 'सूक्ष्म वित्त',
+    'Mutual Fund': 'म्यूचुअल फन्ड',
+    'Non Life Insurance': 'गैर-जीवन बीमा',
+    Others: 'अन्य',
+    Tradings: 'व्यापार',
+    Trading: 'व्यापार',
+    'N/A': 'उपलब्ध छैन'
+  }
+};
+
+function getLocalizedSectorName(sectorName, language = 'english') {
+  if (!sectorName) {
+    return '';
+  }
+  const normalized = sectorName.trim() || DEFAULT_SECTOR;
+  const translations = SECTOR_TRANSLATIONS[language] || SECTOR_TRANSLATIONS.english;
+  if (translations[normalized]) {
+    return translations[normalized];
+  }
+  const matchKey = Object.keys(translations).find(
+    key => key.toLowerCase() === normalized.toLowerCase()
+  );
+  if (matchKey) {
+    return translations[matchKey];
+  }
+  return normalized;
+}
+
+function getCurrentLanguage() {
+  return localStorage.getItem('language') || 'english';
+}
+
+function formatPrice(value, rawValue) {
+  if (Number.isFinite(value)) {
+    return value.toFixed(2);
+  }
+  if (rawValue === null || rawValue === undefined || rawValue === '') {
+    return '0.00';
+  }
+  return String(rawValue);
+}
+
+function formatPercentage(value, rawValue) {
+  if (Number.isFinite(value)) {
+    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+  }
+  if (rawValue === null || rawValue === undefined || rawValue === '') {
+    return '0%';
+  }
+  const rawString = String(rawValue);
+  return rawString.includes('%') ? rawString : `${rawString}%`;
+}
+
 
 // Default credits given to new users (1 lakh)
 const DEFAULT_CREDITS = 100000;
@@ -26,7 +114,7 @@ function fetchCompanyDetails() {
       data.forEach(company => {
         companyDetails.set(company.symbol, {
           name: company.companyName,
-          sector: company.sectorName,
+          sector: company.sectorName || DEFAULT_SECTOR,
           type: company.instrumentType
         });
       });
@@ -334,6 +422,14 @@ function confirmTrade() {
 
 // Update search result click handler
 function handleSearchResultClick(symbol) {
+  const matchingStock = allStocksCache.find(stock => stock.symbol === symbol);
+  if (matchingStock && activeSectorFilter !== ALL_SECTORS && matchingStock.sector !== activeSectorFilter) {
+    activeSectorFilter = ALL_SECTORS;
+    const language = getCurrentLanguage();
+    renderSectorFilters(language);
+    renderAllStocksTable(language);
+  }
+
   const stockRow = document.querySelector(`#allStocksTable tr[data-symbol="${symbol}"]`);
   if (stockRow) {
     stockRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -348,25 +444,49 @@ function loadAllStocks() {
   fetch("https://nss-c26z.onrender.com/AllStocks")
     .then(res => res.json())
     .then(data => {
-      const tbody = document.querySelector("#allStocksTable tbody");
-      if (tbody) {
-        tbody.innerHTML = "";
-        data.forEach(stock => {
-          const row = document.createElement("tr");
-          row.setAttribute('data-symbol', stock.symbol);
-          const changeClass = parseFloat(stock.changePercent) >= 0 ? "gain" : "loss";
-          const changeSymbol = parseFloat(stock.changePercent) >= 0 ? "+" : "";
-          const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: 'N/A' };
-          
-          row.innerHTML = `
-            <td>${stock.symbol}</td>
-            <td>${companyInfo.name}</td>
-            <td>${parseFloat(stock.price).toFixed(2)}</td>
-            <td class="${changeClass}">${changeSymbol}${stock.changePercent}%</td>
-            <td><button onclick="openTradeModal('${stock.symbol}')" class="trade-btn">Trade</button></td>
-          `;
-          tbody.appendChild(row);
-        });
+      const preparedStocks = data.map(stock => {
+        const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: DEFAULT_SECTOR };
+        const priceValue = parseFloat(stock.price);
+        const changeValue = parseFloat(stock.changePercent);
+        return {
+          symbol: stock.symbol,
+          price: Number.isFinite(priceValue) ? priceValue : null,
+          changePercent: Number.isFinite(changeValue) ? changeValue : null,
+          companyName: companyInfo.name || stock.symbol,
+          sector: companyInfo.sector || DEFAULT_SECTOR,
+          rawPrice: stock.price,
+          rawChange: stock.changePercent
+        };
+      });
+
+      allStocksCache = preparedStocks;
+
+      const sectors = new Set();
+      preparedStocks.forEach(stock => {
+        if (stock.sector) {
+          sectors.add(stock.sector);
+        }
+      });
+      sectorList = Array.from(sectors);
+      if (activeSectorFilter !== ALL_SECTORS && !sectors.has(activeSectorFilter)) {
+        activeSectorFilter = ALL_SECTORS;
+      }
+
+      const language = getCurrentLanguage();
+      renderSectorFilters(language);
+      renderAllStocksTable(language);
+
+      if (lastSearchTerm.length >= 2) {
+        const searchInput = document.getElementById('stockSearch');
+        if (searchInput && searchInput.value.trim().toLowerCase() === lastSearchTerm) {
+          const matches = allStocksCache.filter(stock => {
+            const symbolMatch = stock.symbol.toLowerCase().includes(lastSearchTerm);
+            const nameMatch = (stock.companyName || '').toLowerCase().includes(lastSearchTerm);
+            return symbolMatch || nameMatch;
+          });
+          lastSearchResults = matches.slice(0, 5);
+          renderSearchResults(lastSearchResults, language);
+        }
       }
     })
     .catch(() => {
@@ -374,13 +494,213 @@ function loadAllStocks() {
     });
 }
 
+function renderSectorFilters(language = getCurrentLanguage()) {
+  const filtersContainer = document.getElementById('sectorFilters');
+  if (!filtersContainer) {
+    return;
+  }
+
+  const texts = translations[language] || translations.english;
+  filtersContainer.innerHTML = '';
+
+  const createChip = (label, value) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'sector-chip';
+    if (value === activeSectorFilter) {
+      chip.classList.add('active');
+    }
+    chip.textContent = label;
+    chip.addEventListener('click', () => {
+      if (activeSectorFilter === value) {
+        return;
+      }
+      activeSectorFilter = value;
+      const currentLanguage = getCurrentLanguage();
+      renderSectorFilters(currentLanguage);
+      renderAllStocksTable(currentLanguage);
+    });
+    filtersContainer.appendChild(chip);
+  };
+
+  createChip(texts.allSectors || 'All Sectors', ALL_SECTORS);
+
+  const sortedSectors = [...sectorList];
+  sortedSectors.sort((a, b) => {
+    if (a === DEFAULT_SECTOR) return 1;
+    if (b === DEFAULT_SECTOR) return -1;
+    return getLocalizedSectorName(a, language).localeCompare(getLocalizedSectorName(b, language));
+  });
+
+  sortedSectors.forEach(sector => {
+    createChip(getLocalizedSectorName(sector, language), sector);
+  });
+
+  updateActiveSectorStatus(language);
+}
+
+function updateActiveSectorStatus(language = getCurrentLanguage()) {
+  const statusEl = document.getElementById('activeSectorStatus');
+  if (!statusEl) {
+    return;
+  }
+
+  const texts = translations[language] || translations.english;
+  const sectorLabel = activeSectorFilter === ALL_SECTORS
+    ? texts.allSectors || 'All Sectors'
+    : getLocalizedSectorName(activeSectorFilter, language);
+  const template = texts.showingSector || 'Showing: {sector}';
+  statusEl.textContent = template.replace('{sector}', sectorLabel);
+}
+
+function renderAllStocksTable(language = getCurrentLanguage()) {
+  const tbody = document.querySelector('#allStocksTable tbody');
+  if (!tbody) {
+    return;
+  }
+
+  const texts = translations[language] || translations.english;
+  tbody.innerHTML = '';
+
+  const emptyState = document.getElementById('sectorEmptyState');
+  const filteredStocks = allStocksCache.filter(stock => {
+    if (activeSectorFilter === ALL_SECTORS) {
+      return true;
+    }
+    return stock.sector === activeSectorFilter;
+  });
+
+  const sortedStocks = filteredStocks.slice().sort((a, b) => a.symbol.localeCompare(b.symbol));
+
+  if (sortedStocks.length === 0) {
+    if (emptyState) {
+      if (allStocksCache.length === 0) {
+        emptyState.style.display = 'none';
+      } else {
+        emptyState.textContent = texts.sectorEmpty || 'No stocks available for this sector.';
+        emptyState.style.display = 'block';
+      }
+    }
+    updateActiveSectorStatus(language);
+    return;
+  }
+
+  if (emptyState) {
+    emptyState.style.display = 'none';
+  }
+
+  sortedStocks.forEach(stock => {
+    const row = document.createElement('tr');
+    row.setAttribute('data-symbol', stock.symbol);
+    row.setAttribute('data-sector', stock.sector);
+
+    const numericChange = Number.isFinite(stock.changePercent)
+      ? stock.changePercent
+      : parseFloat(stock.rawChange);
+    const changeClass = Number.isFinite(numericChange)
+      ? (numericChange >= 0 ? 'gain' : 'loss')
+      : 'gain';
+    const changeText = formatPercentage(stock.changePercent, stock.rawChange);
+    const priceText = formatPrice(stock.price, stock.rawPrice);
+    const sectorLabel = getLocalizedSectorName(stock.sector, language) || texts.sector || 'Sector';
+    const tradeLabel = texts.trade || 'Trade';
+
+    row.innerHTML = `
+      <td>${stock.symbol}</td>
+      <td>${stock.companyName}</td>
+      <td>${sectorLabel}</td>
+      <td>${priceText}</td>
+      <td class="${changeClass}">${changeText}</td>
+      <td><button type="button" onclick="openTradeModal('${stock.symbol}')" class="trade-btn">${tradeLabel}</button></td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  updateActiveSectorStatus(language);
+}
+
+function renderSearchResults(results, language = getCurrentLanguage()) {
+  const resultsDiv = document.getElementById('searchResults');
+  if (!resultsDiv) {
+    return;
+  }
+
+  const texts = translations[language] || translations.english;
+
+  if (!results || results.length === 0) {
+    resultsDiv.innerHTML = `<div class="no-results">${texts.noMatches || 'No matches found'}</div>`;
+    resultsDiv.style.display = 'block';
+    return;
+  }
+
+  const limitedResults = results.slice(0, 5);
+  resultsDiv.innerHTML = limitedResults.map(result => {
+    const numericChange = Number.isFinite(result.changePercent)
+      ? result.changePercent
+      : parseFloat(result.rawChange);
+    const changeClass = Number.isFinite(numericChange)
+      ? (numericChange >= 0 ? 'gain' : 'loss')
+      : 'gain';
+    const changeText = formatPercentage(result.changePercent, result.rawChange);
+    const priceText = formatPrice(result.price, result.rawPrice);
+    const sectorLabel = getLocalizedSectorName(result.sector, language) || texts.sector || 'Sector';
+    return `
+      <div class="search-result" onclick="handleSearchResultClick('${result.symbol}')">
+        <div class="stock-info">
+          <strong>${result.symbol}</strong>
+          <span>${result.companyName}</span>
+          <small>${sectorLabel}</small>
+        </div>
+        <div class="stock-price ${changeClass}">
+          ${priceText}
+          (${changeText})
+        </div>
+      </div>
+    `;
+  }).join('');
+  resultsDiv.style.display = 'block';
+}
+
+function refreshSearchResultsLanguage(language = getCurrentLanguage()) {
+  const resultsDiv = document.getElementById('searchResults');
+  if (!resultsDiv || resultsDiv.style.display === 'none') {
+    return;
+  }
+  if (lastSearchTerm.length >= 2) {
+    renderSearchResults(lastSearchResults, language);
+  }
+}
+
 // Update search functionality
-document.getElementById("stockSearch").addEventListener("input", (e) => {
-  const searchTerm = e.target.value.toLowerCase();
-  const resultsDiv = document.getElementById("searchResults");
-  
+const stockSearchInput = document.getElementById('stockSearch');
+if (stockSearchInput) {
+  stockSearchInput.addEventListener('input', handleStockSearchInput);
+}
+
+function handleStockSearchInput(event) {
+  const searchTerm = event.target.value.trim().toLowerCase();
+  lastSearchTerm = searchTerm;
+
+  const resultsDiv = document.getElementById('searchResults');
+  if (!resultsDiv) {
+    return;
+  }
+
   if (searchTerm.length < 2) {
-    resultsDiv.style.display = "none";
+    resultsDiv.style.display = 'none';
+    resultsDiv.innerHTML = '';
+    lastSearchResults = [];
+    return;
+  }
+
+  if (allStocksCache.length) {
+    const matches = allStocksCache.filter(stock => {
+      const symbolMatch = stock.symbol.toLowerCase().includes(searchTerm);
+      const nameMatch = (stock.companyName || '').toLowerCase().includes(searchTerm);
+      return symbolMatch || nameMatch;
+    });
+    lastSearchResults = matches.slice(0, 5);
+    renderSearchResults(lastSearchResults, getCurrentLanguage());
     return;
   }
 
@@ -389,37 +709,30 @@ document.getElementById("stockSearch").addEventListener("input", (e) => {
     .then(data => {
       const matches = data.filter(stock => {
         const companyInfo = companyDetails.get(stock.symbol);
-        return stock.symbol.toLowerCase().includes(searchTerm) ||
-          (companyInfo && companyInfo.name.toLowerCase().includes(searchTerm));
+        const name = companyInfo ? companyInfo.name : stock.symbol;
+        return stock.symbol.toLowerCase().includes(searchTerm) || name.toLowerCase().includes(searchTerm);
+      }).map(stock => {
+        const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: DEFAULT_SECTOR };
+        const priceValue = parseFloat(stock.price);
+        const changeValue = parseFloat(stock.changePercent);
+        return {
+          symbol: stock.symbol,
+          price: Number.isFinite(priceValue) ? priceValue : null,
+          changePercent: Number.isFinite(changeValue) ? changeValue : null,
+          companyName: companyInfo.name || stock.symbol,
+          sector: companyInfo.sector || DEFAULT_SECTOR,
+          rawPrice: stock.price,
+          rawChange: stock.changePercent
+        };
       });
 
-      if (matches.length > 0) {
-        resultsDiv.innerHTML = matches.slice(0, 5).map(stock => {
-          const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: 'N/A' };
-          return `
-            <div class="search-result" onclick="handleSearchResultClick('${stock.symbol}')">
-              <div class="stock-info">
-                <strong>${stock.symbol}</strong>
-                <span>${companyInfo.name}</span>
-                <small>${companyInfo.sector}</small>
-              </div>
-              <div class="stock-price ${parseFloat(stock.changePercent) >= 0 ? 'gain' : 'loss'}">
-                ${parseFloat(stock.price).toFixed(2)}
-                (${parseFloat(stock.changePercent) >= 0 ? '+' : ''}${stock.changePercent}%)
-              </div>
-            </div>
-          `;
-        }).join('');
-        resultsDiv.style.display = "block";
-      } else {
-        resultsDiv.innerHTML = '<div class="no-results">No matches found</div>';
-        resultsDiv.style.display = "block";
-      }
+      lastSearchResults = matches.slice(0, 5);
+      renderSearchResults(lastSearchResults, getCurrentLanguage());
     })
     .catch(() => {
-      console.error("⚠️ Error searching stocks");
+      console.error('⚠️ Error searching stocks');
     });
-});
+}
 
 // Add event listener for trade amount input
 document.addEventListener('DOMContentLoaded', () => {
@@ -804,11 +1117,17 @@ const translations = {
         allStocks: 'All Stocks',
         symbol: 'Symbol',
         companyName: 'Company Name',
+        sector: 'Sector',
         price: 'Price',
         ltp: 'LTP',
         change: 'Change',
         action: 'Action',
         trade: 'Trade',
+        browseBySector: 'Browse by Sector',
+        allSectors: 'All Sectors',
+        showingSector: 'Showing: {sector}',
+        sectorEmpty: 'No stocks available for this sector.',
+        noMatches: 'No matches found',
         buyPrice: 'Buy Price',
         currentPrice: 'Current Price',
         creditsInvested: 'Credits Invested',
@@ -943,11 +1262,17 @@ const translations = {
         allStocks: 'सबै शेयर',
         symbol: 'प्रतीक',
         companyName: 'कम्पनी',
+        sector: 'सेक्टर',
         price: 'मूल्य',
         ltp: 'अन्तिम मूल्य',
         change: 'परिवर्तन',
         action: 'कार्य',
         trade: 'बेचौं',
+        browseBySector: 'सेक्टर अनुसार हेर्नुहोस्',
+        allSectors: 'सबै सेक्टर',
+        showingSector: 'देखाइरहेको: {sector}',
+        sectorEmpty: 'यस सेक्टरमा कुनै शेयर फेला परेनन्।',
+        noMatches: 'कुनै मेल खान्न',
         buyPrice: 'किन्दाको मूल्य',
         currentPrice: 'हालको मूल्य',
         creditsInvested: 'लगानी गर्दाको क्रेडिट',
@@ -1178,6 +1503,11 @@ function updateDynamicContent(language) {
 
     // Update table headers dynamically
     updateTableHeaders(language);
+
+    // Refresh sector filters, listings, and search results to match the new language
+    renderSectorFilters(language);
+    renderAllStocksTable(language);
+    refreshSearchResultsLanguage(language);
 }
 
 // Update table headers with translations
@@ -1206,11 +1536,14 @@ function updateTableHeaders(language) {
     const allStocksTable = document.getElementById('allStocksTable');
     if (allStocksTable) {
         const headers = allStocksTable.querySelectorAll('th');
-        headers[0].textContent = texts.symbol || 'Symbol';
-        headers[1].textContent = texts.companyName || 'Company Name';
-        headers[2].textContent = texts.ltp || 'LTP';
-        headers[3].textContent = texts.change || 'Change';
-        headers[4].textContent = texts.action || 'Action';
+        if (headers.length >= 6) {
+            headers[0].textContent = texts.symbol || 'Symbol';
+            headers[1].textContent = texts.companyName || 'Company Name';
+            headers[2].textContent = texts.sector || 'Sector';
+            headers[3].textContent = texts.ltp || 'LTP';
+            headers[4].textContent = texts.change || 'Change';
+            headers[5].textContent = texts.action || 'Action';
+        }
     }
 
     // Update investment history table
