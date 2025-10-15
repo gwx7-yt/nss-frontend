@@ -17,31 +17,70 @@ const NEPALI_DIGITS = {
   '9': '९'
 };
 
-const SECTOR_TRANSLATIONS = {
+const NEPALI_TO_ENGLISH_DIGITS = {
+  '०': '0',
+  '१': '1',
+  '२': '2',
+  '३': '3',
+  '४': '4',
+  '५': '5',
+  '६': '6',
+  '७': '7',
+  '८': '8',
+  '९': '9'
+};
+
+const TEXT_NODE_FILTER = typeof NodeFilter !== 'undefined' ? NodeFilter.SHOW_TEXT : 4;
+
+function normalizeSectorKey(value) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+const RAW_SECTOR_TRANSLATIONS = {
   'commercial banks': 'वाणिज्य बैंक',
   'development banks': 'विकास बैंक',
   'finance': 'वित्त',
   'hydropower': 'जलविद्युत',
+  'hydro power': 'जलविद्युत',
+  'hydro electric power': 'जलविद्युत',
   'hotels and tourism': 'होटल तथा पर्यटन',
+  'hotels & tourism': 'होटल तथा पर्यटन',
   'investment': 'लगानी',
   'life insurance': 'जीवन बीमा',
   'manufacturing and processing': 'उत्पादन तथा प्रशोधन',
-  'microfinance': 'सूक्ष्म वित्त',
-  'mutual fund': 'म्युचुअल फण्ड',
-  'non life insurance': 'अजीवन बीमा',
-  'others': 'अन्य',
-  'trading': 'व्यापार',
-  'corporate debentures': 'निगमित डिबेन्चर',
-  'preferred stock': 'प्राथमिकता शेयर',
-  'promoter share': 'प्रवर्द्धक शेयर',
+  'manufacturing': 'उत्पादन',
   'manufacturing and processing companies': 'उत्पादन तथा प्रशोधन कम्पनीहरू',
   'manufacturing and processing company': 'उत्पादन तथा प्रशोधन कम्पनी',
   'manufacturing and processing industries': 'उत्पादन तथा प्रशोधन उद्योगहरू',
   'manufacturing and processing industry': 'उत्पादन तथा प्रशोधन उद्योग',
-  'manufacturing': 'उत्पादन',
+  'microfinance': 'सूक्ष्म वित्त',
   'micro finance': 'सूक्ष्म वित्त',
-  'micro finance companies': 'सूक्ष्म वित्त कम्पनीहरू'
+  'micro finance companies': 'सूक्ष्म वित्त कम्पनीहरू',
+  'mutual fund': 'म्युचुअल फण्ड',
+  'non life insurance': 'अजीवन बीमा',
+  'non-life insurance': 'अजीवन बीमा',
+  'others': 'अन्य',
+  'trading': 'व्यापार',
+  'trade': 'व्यापार',
+  'corporate debentures': 'निगमित डिबेन्चर',
+  'preferred stock': 'प्राथमिकता शेयर',
+  'promoter share': 'प्रवर्द्धक शेयर',
+  'services': 'सेवा क्षेत्र',
+  'banking': 'बैंकिङ',
+  'investment companies': 'लगानी कम्पनीहरू'
 };
+
+const SECTOR_TRANSLATIONS = Object.entries(RAW_SECTOR_TRANSLATIONS).reduce((acc, [key, value]) => {
+  acc[normalizeSectorKey(key)] = value;
+  return acc;
+}, {});
 
 function getCurrentLanguage() {
   return localStorage.getItem('language') || 'english';
@@ -52,6 +91,13 @@ function convertDigitsToNepali(value) {
   return value
     .toString()
     .replace(/[0-9]/g, digit => NEPALI_DIGITS[digit] || digit);
+}
+
+function convertDigitsFromNepali(value) {
+  if (value === null || value === undefined) return '';
+  return value
+    .toString()
+    .replace(/[०१२३४५६७८९]/g, digit => NEPALI_TO_ENGLISH_DIGITS[digit] || digit);
 }
 
 function formatNumberForLanguage(value, fractionDigits = null) {
@@ -88,10 +134,126 @@ function localizeTextWithNumbers(text) {
   return getCurrentLanguage() === 'nepali' ? convertDigitsToNepali(text) : text;
 }
 
+function localizeDigitsInElement(element, language) {
+  if (!element) return;
+
+  const replaceDigits = language === 'nepali' ? convertDigitsToNepali : convertDigitsFromNepali;
+
+  const walker = element.ownerDocument && typeof element.ownerDocument.createTreeWalker === 'function'
+    ? element.ownerDocument.createTreeWalker(element, TEXT_NODE_FILTER, null, false)
+    : null;
+  if (!walker) {
+    const childNodes = element.childNodes ? Array.from(element.childNodes) : [];
+    if (childNodes.length === 0 && typeof element.textContent === 'string') {
+      const localized = replaceDigits(element.textContent);
+      if (localized !== element.textContent) {
+        element.textContent = localized;
+      }
+    } else {
+      childNodes.forEach(child => {
+        if (child.nodeType === 3) {
+          const localized = replaceDigits(child.textContent);
+          if (localized !== child.textContent) {
+            child.textContent = localized;
+          }
+        } else if (child.nodeType === 1) {
+          localizeDigitsInElement(child, language);
+        }
+      });
+    }
+    return;
+  }
+  const textNodes = [];
+  while (walker.nextNode()) {
+    const currentNode = walker.currentNode;
+    const parentElement = currentNode.parentElement;
+    if (!parentElement) continue;
+    const tagName = parentElement.tagName;
+    if (tagName === 'SCRIPT' || tagName === 'STYLE') continue;
+    textNodes.push(currentNode);
+  }
+
+  textNodes.forEach(node => {
+    const localizedText = replaceDigits(node.textContent);
+    if (localizedText !== node.textContent) {
+      node.textContent = localizedText;
+    }
+  });
+
+  const inputElements = element.querySelectorAll
+    ? element.querySelectorAll('input:not([type="number"]), textarea')
+    : [];
+  inputElements.forEach(input => {
+    if (input.value) {
+      const localizedValue = replaceDigits(input.value);
+      if (localizedValue !== input.value) {
+        input.value = localizedValue;
+      }
+    }
+    if (input.placeholder) {
+      const localizedPlaceholder = replaceDigits(input.placeholder);
+      if (localizedPlaceholder !== input.placeholder) {
+        input.placeholder = localizedPlaceholder;
+      }
+    }
+  });
+}
+
+let digitLocalizationObserver = null;
+
+function applyDigitLocalization(language) {
+  if (digitLocalizationObserver) {
+    digitLocalizationObserver.disconnect();
+    digitLocalizationObserver = null;
+  }
+
+  if (typeof document === 'undefined' || !document.body) return;
+
+  const replaceDigits = language === 'nepali' ? convertDigitsToNepali : convertDigitsFromNepali;
+
+  const updateDocumentDigits = () => {
+    localizeDigitsInElement(document.body, language);
+  };
+
+  updateDocumentDigits();
+
+  if (language === 'nepali') {
+    digitLocalizationObserver = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'characterData' && mutation.target?.textContent !== undefined) {
+          const localized = replaceDigits(mutation.target.textContent);
+          if (localized !== mutation.target.textContent) {
+            mutation.target.textContent = localized;
+          }
+        }
+
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) {
+              const localized = replaceDigits(node.textContent);
+              if (localized !== node.textContent) {
+                node.textContent = localized;
+              }
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+              localizeDigitsInElement(node, language);
+            }
+          });
+        }
+      });
+    });
+
+    digitLocalizationObserver.observe(document.body, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+  }
+}
+
 function translateSectorName(sector, language = getCurrentLanguage()) {
   if (sector === null || sector === undefined) return sector;
   if (language !== 'nepali') return sector;
-  const normalized = sector.toString().trim().toLowerCase();
+  const normalized = normalizeSectorKey(sector);
   return SECTOR_TRANSLATIONS[normalized] || sector;
 }
 
@@ -454,6 +616,8 @@ function loadAllStocks() {
       if (tbody) {
         const sectorCounts = new Map();
         tbody.innerHTML = "";
+        const languageTexts = translations[getCurrentLanguage()] || translations.english;
+        const tradeButtonLabel = languageTexts.trade || 'Trade';
         data.forEach(stock => {
           const row = document.createElement("tr");
           row.setAttribute('data-symbol', stock.symbol);
@@ -475,7 +639,7 @@ function loadAllStocks() {
             <td>${displaySectorName}</td>
             <td>${priceText}</td>
             <td class="${changeClass}">${changeSymbol}${changeText}%</td>
-            <td><button onclick="openTradeModal('${stock.symbol}')" class="trade-btn">Trade</button></td>
+            <td><button onclick="openTradeModal('${stock.symbol}')" class="trade-btn">${tradeButtonLabel}</button></td>
           `;
           tbody.appendChild(row);
         });
@@ -708,6 +872,8 @@ async function updatePortfolio() {
   const tableBody = document.getElementById("investmentHistory");
   const noInvestments = document.getElementById("noInvestments");
   const tableContainer = document.querySelector(".table-container");
+  const languageTexts = translations[getCurrentLanguage()] || translations.english;
+  const sellButtonLabel = languageTexts.sell || 'Sell';
   
   if (!tableBody) return;
   
@@ -768,7 +934,7 @@ async function updatePortfolio() {
         <td>${quantityText} 📊</td>
         <td class="${profitLossClass}">${profitLossSign}${profitLossAmountText} ${profitLossSymbol}</td>
         <td class="${profitLossClass}">${profitLossSign}${profitLossPercentText}% ${profitLossSymbol}</td>
-        <td><button onclick="sellInvestment(${investments.indexOf(investment)})" class="sell-btn">Sell</button></td>
+        <td><button onclick="sellInvestment(${investments.indexOf(investment)})" class="sell-btn">${sellButtonLabel}</button></td>
       `;
       tbody.appendChild(row);
     } catch (error) {
@@ -1368,7 +1534,8 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
 
 // Update text content based on selected language
 function updateLanguage(language) {
-    const texts = translations[language];
+    const effectiveLanguage = translations[language] ? language : 'english';
+    const texts = translations[effectiveLanguage] || translations.english || {};
     
     // Update all translatable elements
     document.querySelectorAll('[data-translate]').forEach(element => {
@@ -1377,7 +1544,7 @@ function updateLanguage(language) {
             if (key === 'welcome') {
                 const investorName = localStorage.getItem('investorName');
                 if (investorName) {
-                    if (language === 'english') {
+                    if (effectiveLanguage === 'english') {
                         element.textContent = `Welcome, ${investorName}!`;
                     } else {
                         element.textContent = `स्वागत छ, ${investorName}!`;
@@ -1402,7 +1569,9 @@ function updateLanguage(language) {
     });
 
     // Update dynamic content
-    updateDynamicContent(language);
+    updateDynamicContent(effectiveLanguage);
+
+    applyDigitLocalization(effectiveLanguage);
 }
 
 // Update dynamic content that's added through JavaScript
