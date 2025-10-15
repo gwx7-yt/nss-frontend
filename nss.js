@@ -1,5 +1,7 @@
 // Store company information globally
 let companyDetails = new Map();
+let currentSectorFilter = 'All';
+let latestSectorCounts = new Map();
 
 
 // Default credits given to new users (1 lakh)
@@ -24,10 +26,11 @@ function fetchCompanyDetails() {
     .then(data => {
       companyDetails.clear();
       data.forEach(company => {
+        const sectorName = (company.sectorName || '').trim();
         companyDetails.set(company.symbol, {
           name: company.companyName,
-          sector: company.sectorName,
-          type: company.instrumentType
+          sector: sectorName || 'N/A',
+          type: (company.instrumentType || '').trim()
         });
       });
       // After getting company details, load stocks
@@ -350,6 +353,7 @@ function loadAllStocks() {
     .then(data => {
       const tbody = document.querySelector("#allStocksTable tbody");
       if (tbody) {
+        const sectorCounts = new Map();
         tbody.innerHTML = "";
         data.forEach(stock => {
           const row = document.createElement("tr");
@@ -357,21 +361,183 @@ function loadAllStocks() {
           const changeClass = parseFloat(stock.changePercent) >= 0 ? "gain" : "loss";
           const changeSymbol = parseFloat(stock.changePercent) >= 0 ? "+" : "";
           const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: 'N/A' };
-          
+          const normalizedSector = (companyInfo.sector || 'N/A').trim() || 'N/A';
+          const sectorDisplay = translateSectorName(normalizedSector);
+
+          row.dataset.sector = normalizedSector;
+          sectorCounts.set(normalizedSector, (sectorCounts.get(normalizedSector) || 0) + 1);
+
           row.innerHTML = `
             <td>${stock.symbol}</td>
             <td>${companyInfo.name}</td>
+            <td>${sectorDisplay}</td>
             <td>${parseFloat(stock.price).toFixed(2)}</td>
             <td class="${changeClass}">${changeSymbol}${stock.changePercent}%</td>
             <td><button onclick="openTradeModal('${stock.symbol}')" class="trade-btn">Trade</button></td>
           `;
           tbody.appendChild(row);
         });
+
+        latestSectorCounts = new Map(sectorCounts);
+        renderSectorFilters(latestSectorCounts);
+        applySectorFilter();
       }
     })
     .catch(() => {
       console.error("⚠️ Error loading all stocks");
     });
+}
+
+function getCurrentLanguage() {
+  return localStorage.getItem('language') || 'english';
+}
+
+function translateSectorName(sectorName, language = getCurrentLanguage()) {
+  const normalized = (sectorName || '').trim();
+  const texts = translations[language] || {};
+  if (!normalized) {
+    return texts.sectorNotAvailable || 'N/A';
+  }
+  const normalizedUpper = normalized.toUpperCase();
+  if (normalizedUpper === 'N/A') {
+    return texts.sectorNotAvailable || 'N/A';
+  }
+  const sectorTranslations = texts.sectorNames || {};
+  if (sectorTranslations[normalized]) {
+    return sectorTranslations[normalized];
+  }
+  const lowerNormalized = normalized.toLowerCase();
+  const matchedKey = Object.keys(sectorTranslations).find(
+    key => key.toLowerCase() === lowerNormalized
+  );
+  if (matchedKey) {
+    return sectorTranslations[matchedKey];
+  }
+  return normalized;
+}
+
+function getTranslationValue(key, fallback = '') {
+  const currentLanguage = getCurrentLanguage();
+  const languageTexts = translations[currentLanguage] || {};
+  return languageTexts[key] || fallback;
+}
+
+function renderSectorFilters(sectorCounts) {
+  const container = document.getElementById('sectorFilters');
+  if (!container) return;
+
+  const countsMap = sectorCounts instanceof Map ? sectorCounts : new Map(sectorCounts);
+  const language = getCurrentLanguage();
+
+  if (currentSectorFilter !== 'All' && !countsMap.has(currentSectorFilter)) {
+    currentSectorFilter = 'All';
+  }
+
+  const totalCount = Array.from(countsMap.values()).reduce((sum, value) => sum + value, 0);
+  container.innerHTML = '';
+
+  const createChip = (label, count, value) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'sector-chip';
+    chip.dataset.sector = value;
+    chip.innerHTML = `
+      <span class="chip-label">${label}</span>
+      <span class="chip-count">${count}</span>
+    `;
+
+    if (value === currentSectorFilter) {
+      chip.classList.add('active');
+    }
+
+    chip.addEventListener('click', () => {
+      currentSectorFilter = value;
+      document.querySelectorAll('.sector-chip').forEach(item => item.classList.remove('active'));
+      chip.classList.add('active');
+      applySectorFilter();
+    });
+
+    container.appendChild(chip);
+  };
+
+  createChip(getTranslationValue('allSectors', 'All Sectors'), totalCount, 'All');
+
+  const sortedSectors = Array.from(countsMap.entries())
+    .map(([sector, count]) => ({
+      sector,
+      count,
+      label: translateSectorName(sector, language)
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  sortedSectors.forEach(({ sector, count, label }) => {
+    createChip(label, count, sector);
+  });
+
+  updateSelectedSectorLabel();
+}
+
+function updateSelectedSectorLabel() {
+  const label = document.getElementById('selectedSectorLabel');
+  if (!label) return;
+
+  const language = getCurrentLanguage();
+  if (currentSectorFilter === 'All') {
+    label.textContent = getTranslationValue('allSectors', 'All Sectors');
+  } else {
+    label.textContent = translateSectorName(currentSectorFilter, language);
+  }
+}
+
+function applySectorFilter() {
+  const tbody = document.querySelector('#allStocksTable tbody');
+  if (!tbody) return;
+
+  const rows = tbody.querySelectorAll('tr');
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    const sector = row.getAttribute('data-sector') || 'N/A';
+    const shouldShow = currentSectorFilter === 'All' || sector === currentSectorFilter;
+    row.style.display = shouldShow ? '' : 'none';
+    if (shouldShow) {
+      visibleCount += 1;
+    }
+  });
+
+  const emptyState = document.getElementById('sectorEmptyState');
+  if (emptyState) {
+    emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+    if (visibleCount === 0) {
+      emptyState.textContent = getTranslationValue('noSectorResults', 'No stocks found for this sector.');
+    }
+  }
+
+  updateSelectedSectorLabel();
+}
+
+function updateSectorCellLanguage(language = getCurrentLanguage()) {
+  const rows = document.querySelectorAll('#allStocksTable tbody tr');
+  rows.forEach(row => {
+    const sectorKey = row.getAttribute('data-sector') || 'N/A';
+    const cell = row.querySelector('td:nth-child(3)');
+    if (cell) {
+      cell.textContent = translateSectorName(sectorKey, language);
+    }
+  });
+}
+
+function updateSearchResultLanguage(language = getCurrentLanguage()) {
+  const entries = document.querySelectorAll('#searchResults .search-result .stock-info small');
+  entries.forEach(entry => {
+    const sectorKey = entry.getAttribute('data-sector-key');
+    if (sectorKey) {
+      const decodedKey = sectorKey
+        .replace(/&quot;/g, '"')
+        .replace(/&amp;/g, '&');
+      entry.textContent = translateSectorName(decodedKey, language);
+    }
+  });
 }
 
 // Update search functionality
@@ -396,12 +562,17 @@ document.getElementById("stockSearch").addEventListener("input", (e) => {
       if (matches.length > 0) {
         resultsDiv.innerHTML = matches.slice(0, 5).map(stock => {
           const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: 'N/A' };
+          const normalizedSector = (companyInfo.sector || 'N/A').trim() || 'N/A';
+          const sectorAttr = normalizedSector
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;');
+          const sectorDisplay = translateSectorName(normalizedSector);
           return `
             <div class="search-result" onclick="handleSearchResultClick('${stock.symbol}')">
               <div class="stock-info">
                 <strong>${stock.symbol}</strong>
                 <span>${companyInfo.name}</span>
-                <small>${companyInfo.sector}</small>
+                <small data-sector-key="${sectorAttr}">${sectorDisplay}</small>
               </div>
               <div class="stock-price ${parseFloat(stock.changePercent) >= 0 ? 'gain' : 'loss'}">
                 ${parseFloat(stock.price).toFixed(2)}
@@ -804,6 +975,44 @@ const translations = {
         allStocks: 'All Stocks',
         symbol: 'Symbol',
         companyName: 'Company Name',
+        sector: 'Sector',
+        sectorNames: {
+            'Commercial Banks': 'Commercial Banks',
+            'Commercial Bank': 'Commercial Bank',
+            'Development Banks': 'Development Banks',
+            'Development Bank': 'Development Bank',
+            'Finance': 'Finance',
+            'Hotels And Tourism': 'Hotels and Tourism',
+            'Hotels and Tourism': 'Hotels and Tourism',
+            'Hotels & Tourism': 'Hotels and Tourism',
+            'Hydro Power': 'Hydro Power',
+            'HydroPower': 'Hydro Power',
+            'Hydropower': 'Hydro Power',
+            'Investment': 'Investment',
+            'Life Insurance': 'Life Insurance',
+            'Manufacturing And Processing': 'Manufacturing and Processing',
+            'Manufacturing and Processing': 'Manufacturing and Processing',
+            'Manufacturing & Processing': 'Manufacturing and Processing',
+            'Microfinance': 'Microfinance',
+            'Micro Finance': 'Microfinance',
+            'Mutual Fund': 'Mutual Fund',
+            'Mutual Funds': 'Mutual Funds',
+            'Non Life Insurance': 'Non-Life Insurance',
+            'Non-Life Insurance': 'Non-Life Insurance',
+            'Others': 'Others',
+            'Other': 'Other',
+            'Trading': 'Trading',
+            'Tradings': 'Trading',
+            'Corporate Debenture': 'Corporate Debenture',
+            'Corporate Debentures': 'Corporate Debentures',
+            'Promoter Share': 'Promoter Share',
+            'Promoter Shares': 'Promoter Shares',
+            'Preferred Stock': 'Preferred Stock',
+            'Preference Share': 'Preference Share',
+            'Preference Shares': 'Preference Shares',
+            'N/A': 'Not Available'
+        },
+        sectorNotAvailable: 'Not Available',
         price: 'Price',
         ltp: 'LTP',
         change: 'Change',
@@ -867,6 +1076,9 @@ const translations = {
         portfolioGoalsDesc: 'Set and track your investment objectives',
         portfolioAnalysis: 'Portfolio Analysis',
         portfolioAnalysisDesc: 'In-depth analysis of your investment strategy',
+        browseBySector: 'Browse by Sector',
+        allSectors: 'All Sectors',
+        noSectorResults: 'No stocks found for this sector.',
         nssTitle: "Nepal Stock Simulator (NSS)",
         nssDesc: "A virtual stock trading platform designed to help beginners learn about the Nepal Stock Exchange (NEPSE) in a risk-free environment. Practice trading with virtual credits, track your portfolio, and compete with other investors on the leaderboard.",
         feature1: "Virtual Trading",
@@ -943,6 +1155,44 @@ const translations = {
         allStocks: 'सबै शेयर',
         symbol: 'प्रतीक',
         companyName: 'कम्पनी',
+        sector: 'सेक्टर',
+        sectorNames: {
+            'Commercial Banks': 'व्यावसायिक बैंक',
+            'Commercial Bank': 'व्यावसायिक बैंक',
+            'Development Banks': 'विकास बैंक',
+            'Development Bank': 'विकास बैंक',
+            'Finance': 'वित्त',
+            'Hotels And Tourism': 'होटल र पर्यटन',
+            'Hotels and Tourism': 'होटल र पर्यटन',
+            'Hotels & Tourism': 'होटल र पर्यटन',
+            'Hydro Power': 'जलविद्युत',
+            'HydroPower': 'जलविद्युत',
+            'Hydropower': 'जलविद्युत',
+            'Investment': 'लगानी',
+            'Life Insurance': 'जीवन बीमा',
+            'Manufacturing And Processing': 'उत्पादन र प्रशोधन',
+            'Manufacturing and Processing': 'उत्पादन र प्रशोधन',
+            'Manufacturing & Processing': 'उत्पादन र प्रशोधन',
+            'Microfinance': 'सूक्ष्मवित्त',
+            'Micro Finance': 'सूक्ष्मवित्त',
+            'Mutual Fund': 'म्युचुअल फन्ड',
+            'Mutual Funds': 'म्युचुअल फन्ड',
+            'Non Life Insurance': 'गैरजीवन बीमा',
+            'Non-Life Insurance': 'गैरजीवन बीमा',
+            'Others': 'अन्य',
+            'Other': 'अन्य',
+            'Trading': 'व्यापार',
+            'Tradings': 'व्यापार',
+            'Corporate Debenture': 'कर्पोरेट डिबेन्चर',
+            'Corporate Debentures': 'कर्पोरेट डिबेन्चर',
+            'Promoter Share': 'प्रवर्धक सेयर',
+            'Promoter Shares': 'प्रवर्धक सेयर',
+            'Preferred Stock': 'प्राथमिकता सेयर',
+            'Preference Share': 'प्राथमिकता सेयर',
+            'Preference Shares': 'प्राथमिकता सेयर',
+            'N/A': 'उपलब्ध छैन'
+        },
+        sectorNotAvailable: 'उपलब्ध छैन',
         price: 'मूल्य',
         ltp: 'अन्तिम मूल्य',
         change: 'परिवर्तन',
@@ -1006,6 +1256,9 @@ const translations = {
         portfolioGoalsDesc: 'आफ्नो लगानी उद्देश्यहरू सेट र ट्र्याक गर्नुहोस्',
         portfolioAnalysis: 'पोर्टफोलियो विश्लेषण',
         portfolioAnalysisDesc: 'तपाईंको लगानी रणनीतिको गहिरो विश्लेषण',
+        browseBySector: 'सेक्टर अनुसार हेर्नुहोस्',
+        allSectors: 'सबै सेक्टर',
+        noSectorResults: 'यस सेक्टरमा कुनै शेयर भेटिएन।',
         nssTitle: "नेपाल स्टक सिमुलेटर (NSS)",
         nssDesc: "जोखिम-मुक्त वातावरणमा नेपाल स्टक एक्सचेन्ज (NEPSE) को बारेमा सिक्न सुरुवात गर्नेहरूलाई मद्दत गर्न डिजाइन गरिएको एक आभासी स्टक ट्रेडिङ प्लेटफर्म। आभासी क्रेडिटहरूसँग अभ्यास गर्नुहोस्, आफ्नो पोर्टफोलियो ट्र्याक गर्नुहोस्, र लिडरबोर्डमा अन्य लगानीकर्ताहरूसँग प्रतिस्पर्धा गर्नुहोस्।",
         feature1: "आभासी ट्रेडिङ",
@@ -1168,7 +1421,6 @@ function updateDynamicContent(language) {
         const modalTitle = tradeModal.querySelector('h2');
         if (modalTitle) modalTitle.textContent = texts.tradeStock || 'Trade Stock';
 
-
         const backBtn = tradeModal.querySelector('.modal-btn.back');
         if (backBtn) backBtn.textContent = texts.back || 'Back';
 
@@ -1178,6 +1430,12 @@ function updateDynamicContent(language) {
 
     // Update table headers dynamically
     updateTableHeaders(language);
+
+    // Update sector filters with translated labels
+    renderSectorFilters(latestSectorCounts);
+    applySectorFilter();
+    updateSectorCellLanguage(language);
+    updateSearchResultLanguage(language);
 }
 
 // Update table headers with translations
@@ -1208,9 +1466,10 @@ function updateTableHeaders(language) {
         const headers = allStocksTable.querySelectorAll('th');
         headers[0].textContent = texts.symbol || 'Symbol';
         headers[1].textContent = texts.companyName || 'Company Name';
-        headers[2].textContent = texts.ltp || 'LTP';
-        headers[3].textContent = texts.change || 'Change';
-        headers[4].textContent = texts.action || 'Action';
+        headers[2].textContent = texts.sector || 'Sector';
+        headers[3].textContent = texts.ltp || 'LTP';
+        headers[4].textContent = texts.change || 'Change';
+        headers[5].textContent = texts.action || 'Action';
     }
 
     // Update investment history table
