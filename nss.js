@@ -4,6 +4,260 @@ let currentSectorFilter = 'All';
 let latestSectorCounts = new Map();
 
 
+const NEPALI_DIGITS = {
+  '0': '०',
+  '1': '१',
+  '2': '२',
+  '3': '३',
+  '4': '४',
+  '5': '५',
+  '6': '६',
+  '7': '७',
+  '8': '८',
+  '9': '९'
+};
+
+const NEPALI_TO_ENGLISH_DIGITS = {
+  '०': '0',
+  '१': '1',
+  '२': '2',
+  '३': '3',
+  '४': '4',
+  '५': '5',
+  '६': '6',
+  '७': '7',
+  '८': '8',
+  '९': '9'
+};
+
+const TEXT_NODE_FILTER = typeof NodeFilter !== 'undefined' ? NodeFilter.SHOW_TEXT : 4;
+
+function normalizeSectorKey(value) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+const RAW_SECTOR_TRANSLATIONS = {
+  'commercial banks': 'वाणिज्य बैंक',
+  'development banks': 'विकास बैंक',
+  'finance': 'वित्त',
+  'hydropower': 'जलविद्युत',
+  'hydro power': 'जलविद्युत',
+  'hydro electric power': 'जलविद्युत',
+  'hotels and tourism': 'होटल तथा पर्यटन',
+  'hotels & tourism': 'होटल तथा पर्यटन',
+  'investment': 'लगानी',
+  'life insurance': 'जीवन बीमा',
+  'manufacturing and processing': 'उत्पादन तथा प्रशोधन',
+  'manufacturing': 'उत्पादन',
+  'manufacturing and processing companies': 'उत्पादन तथा प्रशोधन कम्पनीहरू',
+  'manufacturing and processing company': 'उत्पादन तथा प्रशोधन कम्पनी',
+  'manufacturing and processing industries': 'उत्पादन तथा प्रशोधन उद्योगहरू',
+  'manufacturing and processing industry': 'उत्पादन तथा प्रशोधन उद्योग',
+  'microfinance': 'सूक्ष्म वित्त',
+  'micro finance': 'सूक्ष्म वित्त',
+  'micro finance companies': 'सूक्ष्म वित्त कम्पनीहरू',
+  'mutual fund': 'म्युचुअल फण्ड',
+  'non life insurance': 'अजीवन बीमा',
+  'non-life insurance': 'अजीवन बीमा',
+  'others': 'अन्य',
+  'trading': 'व्यापार',
+  'trade': 'व्यापार',
+  'corporate debentures': 'निगमित डिबेन्चर',
+  'preferred stock': 'प्राथमिकता शेयर',
+  'promoter share': 'प्रवर्द्धक शेयर',
+  'services': 'सेवा क्षेत्र',
+  'banking': 'बैंकिङ',
+  'investment companies': 'लगानी कम्पनीहरू'
+};
+
+const SECTOR_TRANSLATIONS = Object.entries(RAW_SECTOR_TRANSLATIONS).reduce((acc, [key, value]) => {
+  acc[normalizeSectorKey(key)] = value;
+  return acc;
+}, {});
+
+function getCurrentLanguage() {
+  return localStorage.getItem('language') || 'english';
+}
+
+function convertDigitsToNepali(value) {
+  if (value === null || value === undefined) return '';
+  return value
+    .toString()
+    .replace(/[0-9]/g, digit => NEPALI_DIGITS[digit] || digit);
+}
+
+function convertDigitsFromNepali(value) {
+  if (value === null || value === undefined) return '';
+  return value
+    .toString()
+    .replace(/[०१२३४५६७८९]/g, digit => NEPALI_TO_ENGLISH_DIGITS[digit] || digit);
+}
+
+function formatNumberForLanguage(value, fractionDigits = null) {
+  if (value === null || value === undefined || value === '') return '';
+
+  let numericValue = value;
+  let isNumericInput = typeof value === 'number';
+  if (isNumericInput === false && typeof value === 'string') {
+    const parsed = parseFloat(value);
+    if (Number.isNaN(parsed) === false) {
+      numericValue = parsed;
+      isNumericInput = true;
+    }
+  }
+
+  let formattedValue;
+  if (isNumericInput && fractionDigits !== null) {
+    formattedValue = Number(numericValue).toFixed(fractionDigits);
+  } else {
+    formattedValue = value.toString();
+  }
+
+  if (getCurrentLanguage() === 'nepali') {
+    return convertDigitsToNepali(formattedValue);
+  }
+
+  return formattedValue;
+}
+
+function localizeTextWithNumbers(text) {
+  if (typeof text !== 'string') {
+    return text;
+  }
+  return getCurrentLanguage() === 'nepali' ? convertDigitsToNepali(text) : text;
+}
+
+function localizeDigitsInElement(element, language) {
+  if (!element) return;
+
+  const replaceDigits = language === 'nepali' ? convertDigitsToNepali : convertDigitsFromNepali;
+
+  const walker = element.ownerDocument && typeof element.ownerDocument.createTreeWalker === 'function'
+    ? element.ownerDocument.createTreeWalker(element, TEXT_NODE_FILTER, null, false)
+    : null;
+  if (!walker) {
+    const childNodes = element.childNodes ? Array.from(element.childNodes) : [];
+    if (childNodes.length === 0 && typeof element.textContent === 'string') {
+      const localized = replaceDigits(element.textContent);
+      if (localized !== element.textContent) {
+        element.textContent = localized;
+      }
+    } else {
+      childNodes.forEach(child => {
+        if (child.nodeType === 3) {
+          const localized = replaceDigits(child.textContent);
+          if (localized !== child.textContent) {
+            child.textContent = localized;
+          }
+        } else if (child.nodeType === 1) {
+          localizeDigitsInElement(child, language);
+        }
+      });
+    }
+    return;
+  }
+  const textNodes = [];
+  while (walker.nextNode()) {
+    const currentNode = walker.currentNode;
+    const parentElement = currentNode.parentElement;
+    if (!parentElement) continue;
+    const tagName = parentElement.tagName;
+    if (tagName === 'SCRIPT' || tagName === 'STYLE') continue;
+    textNodes.push(currentNode);
+  }
+
+  textNodes.forEach(node => {
+    const localizedText = replaceDigits(node.textContent);
+    if (localizedText !== node.textContent) {
+      node.textContent = localizedText;
+    }
+  });
+
+  const inputElements = element.querySelectorAll
+    ? element.querySelectorAll('input:not([type="number"]), textarea')
+    : [];
+  inputElements.forEach(input => {
+    if (input.value) {
+      const localizedValue = replaceDigits(input.value);
+      if (localizedValue !== input.value) {
+        input.value = localizedValue;
+      }
+    }
+    if (input.placeholder) {
+      const localizedPlaceholder = replaceDigits(input.placeholder);
+      if (localizedPlaceholder !== input.placeholder) {
+        input.placeholder = localizedPlaceholder;
+      }
+    }
+  });
+}
+
+let digitLocalizationObserver = null;
+
+function applyDigitLocalization(language) {
+  if (digitLocalizationObserver) {
+    digitLocalizationObserver.disconnect();
+    digitLocalizationObserver = null;
+  }
+
+  if (typeof document === 'undefined' || !document.body) return;
+
+  const replaceDigits = language === 'nepali' ? convertDigitsToNepali : convertDigitsFromNepali;
+
+  const updateDocumentDigits = () => {
+    localizeDigitsInElement(document.body, language);
+  };
+
+  updateDocumentDigits();
+
+  if (language === 'nepali') {
+    digitLocalizationObserver = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'characterData' && mutation.target?.textContent !== undefined) {
+          const localized = replaceDigits(mutation.target.textContent);
+          if (localized !== mutation.target.textContent) {
+            mutation.target.textContent = localized;
+          }
+        }
+
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) {
+              const localized = replaceDigits(node.textContent);
+              if (localized !== node.textContent) {
+                node.textContent = localized;
+              }
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+              localizeDigitsInElement(node, language);
+            }
+          });
+        }
+      });
+    });
+
+    digitLocalizationObserver.observe(document.body, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+  }
+}
+
+function translateSectorName(sector, language = getCurrentLanguage()) {
+  if (sector === null || sector === undefined) return sector;
+  if (language !== 'nepali') return sector;
+  const normalized = normalizeSectorKey(sector);
+  return SECTOR_TRANSLATIONS[normalized] || sector;
+}
+
+
 // Default credits given to new users (1 lakh)
 const DEFAULT_CREDITS = 100000;
 // Daily bonus amount
@@ -79,10 +333,13 @@ function fetchTopGainers() {
         tbody.innerHTML = "";
       data.slice(0, 10).forEach(item => {
           const row = document.createElement("tr");
+          const ltpText = formatNumberForLanguage(parseFloat(item.ltp), 2);
+          const changeValue = parseFloat(item.percentageChange);
+          const changeText = formatNumberForLanguage(changeValue.toFixed(2));
           row.innerHTML = `
             <td>${item.symbol}</td>
-            <td>${parseFloat(item.ltp).toFixed(2)}</td>
-            <td class="gain">+${item.percentageChange}%</td>
+            <td>${ltpText}</td>
+            <td class="gain">+${changeText}%</td>
           `;
           tbody.appendChild(row);
         });
@@ -102,10 +359,13 @@ function fetchTopLosers() {
         tbody.innerHTML = "";
       data.slice(0, 10).forEach(item => {
           const row = document.createElement("tr");
+          const ltpText = formatNumberForLanguage(parseFloat(item.ltp), 2);
+          const changeValue = parseFloat(item.percentageChange);
+          const changeText = formatNumberForLanguage(changeValue.toFixed(2));
           row.innerHTML = `
             <td>${item.symbol}</td>
-            <td>${parseFloat(item.ltp).toFixed(2)}</td>
-            <td class="loss">${item.percentageChange}%</td>
+            <td>${ltpText}</td>
+            <td class="loss">${changeText}%</td>
           `;
           tbody.appendChild(row);
         });
@@ -139,7 +399,7 @@ function updateCreditDisplay() {
   const creditBalance = document.getElementById('creditBalance');
   if (creditBalance) {
     const credits = localStorage.getItem('credits') || DEFAULT_CREDITS.toString();
-    creditBalance.textContent = credits;
+    creditBalance.textContent = formatNumberForLanguage(credits);
   }
 }
 
@@ -147,7 +407,7 @@ function updateCreditDisplay() {
 function showToast(message) {
   const toast = document.createElement('div');
   toast.className = 'toast';
-  toast.textContent = message;
+  toast.textContent = localizeTextWithNumbers(message);
   document.body.appendChild(toast);
   requestAnimationFrame(() => toast.classList.add('visible'));
   setTimeout(() => {
@@ -174,7 +434,7 @@ function showSpinResult(message) {
     const result = document.getElementById('spinResult');
     const container = result?.closest('.spin-wheel');
     if (!result || !container) return;
-    result.textContent = message;
+    result.textContent = localizeTextWithNumbers(message);
     result.classList.remove('hidden');
     container.classList.add('blur');
     launchConfetti();
@@ -232,17 +492,17 @@ function openTradeModal(symbol) {
       
       // Check if elements exist before setting content
       if (modalStockSymbol) modalStockSymbol.textContent = symbol;
-      if (modalStockPrice) modalStockPrice.textContent = parseFloat(data.price).toFixed(2);
+      if (modalStockPrice) modalStockPrice.textContent = formatNumberForLanguage(parseFloat(data.price), 2);
       if (modalTradeShares) {
         modalTradeShares.value = "";
         modalTradeShares.removeEventListener("input", updateCostPreview);
         modalTradeShares.addEventListener("input", updateCostPreview);
       }
-      if (modalPricePreview) modalPricePreview.textContent = "0";
-      if (modalBrokerFeePreview) modalBrokerFeePreview.textContent = "0";
-      if (modalSebonFeePreview) modalSebonFeePreview.textContent = "0";
-      if (modalDpFeePreview) modalDpFeePreview.textContent = "0";
-      if (modalCostPreview) modalCostPreview.textContent = "0";
+      if (modalPricePreview) modalPricePreview.textContent = formatNumberForLanguage(0);
+      if (modalBrokerFeePreview) modalBrokerFeePreview.textContent = formatNumberForLanguage(0);
+      if (modalSebonFeePreview) modalSebonFeePreview.textContent = formatNumberForLanguage(0);
+      if (modalDpFeePreview) modalDpFeePreview.textContent = formatNumberForLanguage(0);
+      if (modalCostPreview) modalCostPreview.textContent = formatNumberForLanguage(0);
       updateCostPreview();
       if (tradeModal) {
         tradeModal.style.display = "block";
@@ -275,11 +535,11 @@ function updateCostPreview() {
   const dpFeePreview = document.getElementById("modalDpFeePreview");
   const costPreview = document.getElementById("modalCostPreview");
 
-  if (pricePreview) pricePreview.textContent = base.toFixed(2);
-  if (brokerFeePreview) brokerFeePreview.textContent = brokerFee.toFixed(2);
-  if (sebonFeePreview) sebonFeePreview.textContent = sebonFee.toFixed(2);
-  if (dpFeePreview) dpFeePreview.textContent = dpFee.toFixed(2);
-  if (costPreview) costPreview.textContent = total.toFixed(2);
+  if (pricePreview) pricePreview.textContent = formatNumberForLanguage(base, 2);
+  if (brokerFeePreview) brokerFeePreview.textContent = formatNumberForLanguage(brokerFee, 2);
+  if (sebonFeePreview) sebonFeePreview.textContent = formatNumberForLanguage(sebonFee, 2);
+  if (dpFeePreview) dpFeePreview.textContent = formatNumberForLanguage(dpFee, 2);
+  if (costPreview) costPreview.textContent = formatNumberForLanguage(total, 2);
 }
 
 function confirmTrade() {
@@ -331,7 +591,9 @@ function confirmTrade() {
   // Update UI
   updatePortfolio();
   closeTradeModal();
-  showToast(`✅ Purchased ${shares} shares of ${symbol} for ${total.toFixed(2)} credits!`);
+  const sharesText = formatNumberForLanguage(shares);
+  const totalText = formatNumberForLanguage(total, 2);
+  showToast(`✅ Purchased ${sharesText} shares of ${symbol} for ${totalText} credits!`);
 }
 
 // Update search result click handler
@@ -354,6 +616,8 @@ function loadAllStocks() {
       if (tbody) {
         const sectorCounts = new Map();
         tbody.innerHTML = "";
+        const languageTexts = translations[getCurrentLanguage()] || translations.english;
+        const tradeButtonLabel = languageTexts.trade || 'Trade';
         data.forEach(stock => {
           const row = document.createElement("tr");
           row.setAttribute('data-symbol', stock.symbol);
@@ -361,6 +625,10 @@ function loadAllStocks() {
           const changeSymbol = parseFloat(stock.changePercent) >= 0 ? "+" : "";
           const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: 'N/A' };
           const sectorName = companyInfo.sector || 'N/A';
+          const displaySectorName = translateSectorName(sectorName);
+          const priceText = formatNumberForLanguage(parseFloat(stock.price), 2);
+          const changePercentValue = parseFloat(stock.changePercent);
+          const changeText = formatNumberForLanguage(changePercentValue.toFixed(2));
 
           row.dataset.sector = sectorName;
           sectorCounts.set(sectorName, (sectorCounts.get(sectorName) || 0) + 1);
@@ -368,10 +636,10 @@ function loadAllStocks() {
           row.innerHTML = `
             <td>${stock.symbol}</td>
             <td>${companyInfo.name}</td>
-            <td>${sectorName}</td>
-            <td>${parseFloat(stock.price).toFixed(2)}</td>
-            <td class="${changeClass}">${changeSymbol}${stock.changePercent}%</td>
-            <td><button onclick="openTradeModal('${stock.symbol}')" class="trade-btn">Trade</button></td>
+            <td>${displaySectorName}</td>
+            <td>${priceText}</td>
+            <td class="${changeClass}">${changeSymbol}${changeText}%</td>
+            <td><button onclick="openTradeModal('${stock.symbol}')" class="trade-btn">${tradeButtonLabel}</button></td>
           `;
           tbody.appendChild(row);
         });
@@ -405,14 +673,16 @@ function renderSectorFilters(sectorCounts) {
   const totalCount = Array.from(countsMap.values()).reduce((sum, value) => sum + value, 0);
   container.innerHTML = '';
 
-  const createChip = (label, count, value) => {
+  const createChip = (label, count, value, isAll = false) => {
     const chip = document.createElement('button');
     chip.type = 'button';
     chip.className = 'sector-chip';
     chip.dataset.sector = value;
+    const displayLabel = isAll ? getTranslationValue('allSectors', 'All Sectors') : translateSectorName(label);
+    const displayCount = formatNumberForLanguage(count);
     chip.innerHTML = `
-      <span class="chip-label">${label}</span>
-      <span class="chip-count">${count}</span>
+      <span class="chip-label">${displayLabel}</span>
+      <span class="chip-count">${displayCount}</span>
     `;
 
     if (value === currentSectorFilter) {
@@ -429,7 +699,7 @@ function renderSectorFilters(sectorCounts) {
     container.appendChild(chip);
   };
 
-  createChip(getTranslationValue('allSectors', 'All Sectors'), totalCount, 'All');
+  createChip('All', totalCount, 'All', true);
 
   Array.from(countsMap.entries())
     .sort((a, b) => a[0].localeCompare(b[0]))
@@ -447,7 +717,7 @@ function updateSelectedSectorLabel() {
   if (currentSectorFilter === 'All') {
     label.textContent = getTranslationValue('allSectors', 'All Sectors');
   } else {
-    label.textContent = currentSectorFilter;
+    label.textContent = translateSectorName(currentSectorFilter);
   }
 }
 
@@ -500,16 +770,21 @@ document.getElementById("stockSearch").addEventListener("input", (e) => {
       if (matches.length > 0) {
         resultsDiv.innerHTML = matches.slice(0, 5).map(stock => {
           const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: 'N/A' };
+          const displaySector = translateSectorName(companyInfo.sector);
+          const priceText = formatNumberForLanguage(parseFloat(stock.price), 2);
+          const changeValue = parseFloat(stock.changePercent);
+          const changeText = formatNumberForLanguage(changeValue.toFixed(2));
+          const changeSign = changeValue >= 0 ? '+' : '';
           return `
             <div class="search-result" onclick="handleSearchResultClick('${stock.symbol}')">
               <div class="stock-info">
                 <strong>${stock.symbol}</strong>
                 <span>${companyInfo.name}</span>
-                <small>${companyInfo.sector}</small>
+                <small>${displaySector}</small>
               </div>
-              <div class="stock-price ${parseFloat(stock.changePercent) >= 0 ? 'gain' : 'loss'}">
-                ${parseFloat(stock.price).toFixed(2)}
-                (${parseFloat(stock.changePercent) >= 0 ? '+' : ''}${stock.changePercent}%)
+              <div class="stock-price ${changeValue >= 0 ? 'gain' : 'loss'}">
+                ${priceText}
+                (${changeSign}${changeText}%)
               </div>
             </div>
           `;
@@ -597,6 +872,8 @@ async function updatePortfolio() {
   const tableBody = document.getElementById("investmentHistory");
   const noInvestments = document.getElementById("noInvestments");
   const tableContainer = document.querySelector(".table-container");
+  const languageTexts = translations[getCurrentLanguage()] || translations.english;
+  const sellButtonLabel = languageTexts.sell || 'Sell';
   
   if (!tableBody) return;
   
@@ -632,7 +909,14 @@ async function updatePortfolio() {
       const creditsNow = quantity * currentPrice;
       const profitLossAmount = creditsNow - creditsInvested;
       const profitLossPercent = (profitLossAmount / creditsInvested) * 100;
-      
+      const buyPriceText = formatNumberForLanguage(buyPrice, 2);
+      const currentPriceText = formatNumberForLanguage(currentPrice, 2);
+      const creditsInvestedText = formatNumberForLanguage(creditsInvested, 2);
+      const creditsNowText = formatNumberForLanguage(creditsNow, 2);
+      const quantityText = formatNumberForLanguage(quantity, 4);
+      const profitLossAmountText = formatNumberForLanguage(profitLossAmount, 2);
+      const profitLossPercentText = formatNumberForLanguage(profitLossPercent, 2);
+
       totalInvested += creditsInvested;
       totalCurrentValue += creditsNow;
 
@@ -643,14 +927,14 @@ async function updatePortfolio() {
 
         row.innerHTML = `
         <td><strong>${investment.symbol}</strong></td>
-        <td>${buyPrice.toFixed(2)} 💰</td>
-        <td>${currentPrice.toFixed(2)} 📊</td>
-        <td>${creditsInvested.toFixed(2)} 💵</td>
-        <td>${creditsNow.toFixed(2)} 💸</td>
-        <td>${quantity.toFixed(4)} 📊</td>
-        <td class="${profitLossClass}">${profitLossSign}${profitLossAmount.toFixed(2)} ${profitLossSymbol}</td>
-        <td class="${profitLossClass}">${profitLossSign}${profitLossPercent.toFixed(2)}% ${profitLossSymbol}</td>
-        <td><button onclick="sellInvestment(${investments.indexOf(investment)})" class="sell-btn">Sell</button></td>
+        <td>${buyPriceText} 💰</td>
+        <td>${currentPriceText} 📊</td>
+        <td>${creditsInvestedText} 💵</td>
+        <td>${creditsNowText} 💸</td>
+        <td>${quantityText} 📊</td>
+        <td class="${profitLossClass}">${profitLossSign}${profitLossAmountText} ${profitLossSymbol}</td>
+        <td class="${profitLossClass}">${profitLossSign}${profitLossPercentText}% ${profitLossSymbol}</td>
+        <td><button onclick="sellInvestment(${investments.indexOf(investment)})" class="sell-btn">${sellButtonLabel}</button></td>
       `;
       tbody.appendChild(row);
     } catch (error) {
@@ -663,12 +947,21 @@ async function updatePortfolio() {
   const totalInvestedElement = document.getElementById("totalInvested");
   const totalProfit = document.getElementById("totalProfit");
 
-  if (netWorth) netWorth.textContent = (parseFloat(localStorage.getItem("credits")) + totalCurrentValue).toFixed(2);
-  if (totalInvestedElement) totalInvestedElement.textContent = totalInvested.toFixed(2);
+  if (netWorth) netWorth.textContent = formatNumberForLanguage(parseFloat(localStorage.getItem("credits")) + totalCurrentValue, 2);
+  if (totalInvestedElement) totalInvestedElement.textContent = formatNumberForLanguage(totalInvested, 2);
   if (totalProfit) {
     const profitValue = totalCurrentValue - totalInvested;
-    totalProfit.textContent = profitValue.toFixed(2);
-    totalProfit.className = profitValue >= 0 ? 'stat-value gain' : 'stat-value loss';
+    const formattedProfit = formatNumberForLanguage(Math.abs(profitValue), 2);
+    if (profitValue > 0) {
+      totalProfit.textContent = `+${formattedProfit}`;
+      totalProfit.className = 'stat-value gain';
+    } else if (profitValue < 0) {
+      totalProfit.textContent = `-${formattedProfit}`;
+      totalProfit.className = 'stat-value loss';
+    } else {
+      totalProfit.textContent = formatNumberForLanguage(0, 2);
+      totalProfit.className = 'stat-value';
+    }
   }
 }
 
@@ -707,7 +1000,8 @@ function sellInvestment(index) {
       localStorage.setItem("investments", JSON.stringify(investments));
 
       updatePortfolio();
-      showToast(`✅ Sold ${inv.symbol} for ${sellAmount.toFixed(2)} credits!`);
+      const sellAmountText = formatNumberForLanguage(sellAmount, 2);
+      showToast(`✅ Sold ${inv.symbol} for ${sellAmountText} credits!`);
     })
     .catch(() => {
       showToast("❌ Could not fetch the stock price. Please try again.");
@@ -786,8 +1080,9 @@ function updateLeaderboard() {
             const user = leaderboardData[i];
             const rankItem = document.createElement('div');
             rankItem.className = 'ranking-item';
+            const rankNumberText = formatNumberForLanguage(i + 1);
             rankItem.innerHTML = `
-                <div class="rank">#${i + 1}</div>
+                <div class="rank">#${rankNumberText}</div>
                 <div class="investor-info">
                     <div class="investor-avatar">👤</div>
                     <span class="investor-name">${user.name}</span>
@@ -813,12 +1108,18 @@ function updateLeaderboard() {
 
 // Helper function to format money values
 function formatMoney(amount) {
-    return new Intl.NumberFormat('en-US', {
+    const formatted = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'NPR',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
     }).format(amount);
+
+    if (getCurrentLanguage() === 'nepali') {
+        return convertDigitsToNepali(formatted);
+    }
+
+    return formatted;
 }
 
 // Update leaderboard after trades and portfolio updates
@@ -1233,7 +1534,8 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
 
 // Update text content based on selected language
 function updateLanguage(language) {
-    const texts = translations[language];
+    const effectiveLanguage = translations[language] ? language : 'english';
+    const texts = translations[effectiveLanguage] || translations.english || {};
     
     // Update all translatable elements
     document.querySelectorAll('[data-translate]').forEach(element => {
@@ -1242,7 +1544,7 @@ function updateLanguage(language) {
             if (key === 'welcome') {
                 const investorName = localStorage.getItem('investorName');
                 if (investorName) {
-                    if (language === 'english') {
+                    if (effectiveLanguage === 'english') {
                         element.textContent = `Welcome, ${investorName}!`;
                     } else {
                         element.textContent = `स्वागत छ, ${investorName}!`;
@@ -1267,7 +1569,9 @@ function updateLanguage(language) {
     });
 
     // Update dynamic content
-    updateDynamicContent(language);
+    updateDynamicContent(effectiveLanguage);
+
+    applyDigitLocalization(effectiveLanguage);
 }
 
 // Update dynamic content that's added through JavaScript
@@ -1294,6 +1598,15 @@ function updateDynamicContent(language) {
     // Update sector filters with translated labels
     renderSectorFilters(latestSectorCounts);
     applySectorFilter();
+
+    // Refresh dynamic data displays to ensure localized numbers and labels
+    fetchTopGainers();
+    fetchTopLosers();
+    loadAllStocks();
+    updatePortfolio();
+    updateCreditDisplay();
+    updateLeaderboard();
+    updateCostPreview();
 }
 
 // Update table headers with translations
@@ -1367,13 +1680,14 @@ document.querySelector('.add-credits-btn').addEventListener('click', () => {
 function showBonusModal() {
     const currentLanguage = localStorage.getItem('language') || 'english';
     const texts = translations[currentLanguage];
-    
+    const bonusAmountText = formatNumberForLanguage(DAILY_BONUS);
+
     const modalHTML = `
         <div id="bonusModal" class="bonus-modal">
             <div class="bonus-modal-content">
                 <div class="bonus-section daily-bonus">
                     <h2>${texts.dailyBonus}</h2>
-                    <p>${texts.bonusAmount} ${DAILY_BONUS} ${texts.credits}</p>
+                    <p>${texts.bonusAmount} ${bonusAmountText} ${texts.credits}</p>
                     <button id="claimDailyBonus" class="bonus-btn">${texts.claim}</button>
                     <p id="dailyTimer" class="timer"></p>
                 </div>
@@ -1452,7 +1766,9 @@ function updateDailyTimer(remainingTime) {
     
     const currentLanguage = localStorage.getItem('language') || 'english';
     const texts = translations[currentLanguage];
-    timer.textContent = `${texts.nextAvailable} ${hours}h ${minutes}m`;
+    const hoursText = formatNumberForLanguage(hours);
+    const minutesText = formatNumberForLanguage(minutes);
+    timer.textContent = `${texts.nextAvailable} ${hoursText}h ${minutesText}m`;
 }
 
 function updateWeeklyTimer(remainingTime) {
@@ -1469,19 +1785,22 @@ function updateWeeklyTimer(remainingTime) {
 
     const currentLanguage = localStorage.getItem('language') || 'english';
     const texts = translations[currentLanguage];
-    timer.textContent = `${texts.nextAvailable} ${days}d ${hours}h`;
+    const daysText = formatNumberForLanguage(days);
+    const hoursText = formatNumberForLanguage(hours);
+    timer.textContent = `${texts.nextAvailable} ${daysText}d ${hoursText}h`;
 }
 
 function claimDailyBonus() {
     const currentCredits = parseInt(localStorage.getItem('credits') || '0');
     localStorage.setItem('credits', (currentCredits + DAILY_BONUS).toString());
     localStorage.setItem('lastDailyBonus', new Date().getTime().toString());
-    
+
     updateCreditDisplay();
     checkBonusAvailability();
-    
+
     // Show success message
-    showToast(`Daily bonus of ${DAILY_BONUS} credits claimed!`);
+    const bonusText = formatNumberForLanguage(DAILY_BONUS);
+    showToast(`Daily bonus of ${bonusText} credits claimed!`);
 }
 
 function initWheel() {
@@ -1512,7 +1831,8 @@ function initWheel() {
         ctx.textAlign = 'right';
         ctx.fillStyle = '#000';
         ctx.font = 'bold 24px Arial';
-        ctx.fillText(values[i].toString(), 120, 0);
+        const segmentLabel = formatNumberForLanguage(values[i]);
+        ctx.fillText(segmentLabel, 120, 0);
         ctx.restore();
     }
 
@@ -1586,7 +1906,8 @@ function startSpinWheel() {
         // Show success message
         const currentLanguage = localStorage.getItem('language') || 'english';
         const texts = translations[currentLanguage];
-        showSpinResult(`${texts.spinResult} ${winAmount} ${texts.credits}!`);
+        const winAmountText = formatNumberForLanguage(winAmount);
+        showSpinResult(`${texts.spinResult} ${winAmountText} ${texts.credits}!`);
     }, 4000);
 }
 
