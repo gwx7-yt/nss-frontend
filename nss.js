@@ -10,6 +10,69 @@ const DEFAULT_CREDITS = 100000;
 const DAILY_BONUS = 1000;
 
 
+// Language helpers
+const NEPALI_DIGITS_MAP = {
+  '0': '०',
+  '1': '१',
+  '2': '२',
+  '3': '३',
+  '4': '४',
+  '5': '५',
+  '6': '६',
+  '7': '७',
+  '8': '८',
+  '9': '९'
+};
+
+function getCurrentLanguage() {
+  return localStorage.getItem('language') || 'english';
+}
+
+function convertDigitsForLanguage(value, language = getCurrentLanguage()) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  const stringValue = String(value);
+  if (language !== 'nepali') {
+    return stringValue;
+  }
+
+  return stringValue.replace(/[0-9]/g, digit => NEPALI_DIGITS_MAP[digit] || digit);
+}
+
+const sectorTranslations = {
+  nepali: {
+    'Commercial Banks': 'वाणिज्य बैंक',
+    'Development Banks': 'विकास बैंक',
+    'Finance': 'वित्त',
+    'Hotels And Tourism': 'होटल तथा पर्यटन',
+    'Hydro Power': 'जलविद्युत',
+    'Hydropower': 'जलविद्युत',
+    'Investment': 'लगानी',
+    'Life Insurance': 'जीवन बीमा',
+    'Manufacturing And Processing': 'उत्पादन र प्रशोधन',
+    'Microfinance': 'लघुवित्त',
+    'Mutual Fund': 'सामूहिक लगानी कोष',
+    'Non Life Insurance': 'गैर जीवन बीमा',
+    'Others': 'अन्य',
+    'Tradings': 'व्यापार',
+    'Corporate Debenture': 'कर्पोरेट डिबेन्चर',
+    'Corporate Debentures': 'कर्पोरेट डिबेन्चर',
+    'Preference Shares': 'प्राथमिकता सेयर',
+    'Promoter Share': 'प्रमोटर सेयर',
+    'N/A': 'उपलब्ध छैन'
+  }
+};
+
+function getLocalizedSectorName(sectorName, language = getCurrentLanguage()) {
+  if (language === 'nepali') {
+    return sectorTranslations.nepali[sectorName] || sectorName;
+  }
+  return sectorName;
+}
+
+
 // Loading and Tutorial Management
 let currentStep = 1;
 const totalSteps = 6;
@@ -79,10 +142,18 @@ function fetchTopGainers() {
         tbody.innerHTML = "";
       data.slice(0, 10).forEach(item => {
           const row = document.createElement("tr");
+          const ltpNumber = parseFloat(item.ltp);
+          const percentageNumber = parseFloat(item.percentageChange);
+          const ltpDisplay = !Number.isNaN(ltpNumber)
+            ? convertDigitsForLanguage(ltpNumber.toFixed(2))
+            : convertDigitsForLanguage(item.ltp);
+          const percentageDisplay = !Number.isNaN(percentageNumber)
+            ? convertDigitsForLanguage(`${percentageNumber >= 0 ? '+' : ''}${percentageNumber.toFixed(2)}%`)
+            : convertDigitsForLanguage(`${item.percentageChange}${String(item.percentageChange).includes('%') ? '' : '%'}`);
           row.innerHTML = `
             <td>${item.symbol}</td>
-            <td>${parseFloat(item.ltp).toFixed(2)}</td>
-            <td class="gain">+${item.percentageChange}%</td>
+            <td>${ltpDisplay}</td>
+            <td class="gain">${percentageDisplay}</td>
           `;
           tbody.appendChild(row);
         });
@@ -102,10 +173,19 @@ function fetchTopLosers() {
         tbody.innerHTML = "";
       data.slice(0, 10).forEach(item => {
           const row = document.createElement("tr");
+          const ltpNumber = parseFloat(item.ltp);
+          const percentageNumber = parseFloat(item.percentageChange);
+          const ltpDisplay = !Number.isNaN(ltpNumber)
+            ? convertDigitsForLanguage(ltpNumber.toFixed(2))
+            : convertDigitsForLanguage(item.ltp);
+          const changeClass = !Number.isNaN(percentageNumber) && percentageNumber >= 0 ? 'gain' : 'loss';
+          const percentageDisplay = !Number.isNaN(percentageNumber)
+            ? convertDigitsForLanguage(`${percentageNumber >= 0 ? '+' : ''}${percentageNumber.toFixed(2)}%`)
+            : convertDigitsForLanguage(`${item.percentageChange}${String(item.percentageChange).includes('%') ? '' : '%'}`);
           row.innerHTML = `
             <td>${item.symbol}</td>
-            <td>${parseFloat(item.ltp).toFixed(2)}</td>
-            <td class="loss">${item.percentageChange}%</td>
+            <td>${ltpDisplay}</td>
+            <td class="${changeClass}">${percentageDisplay}</td>
           `;
           tbody.appendChild(row);
         });
@@ -139,7 +219,7 @@ function updateCreditDisplay() {
   const creditBalance = document.getElementById('creditBalance');
   if (creditBalance) {
     const credits = localStorage.getItem('credits') || DEFAULT_CREDITS.toString();
-    creditBalance.textContent = credits;
+    creditBalance.textContent = convertDigitsForLanguage(credits);
   }
 }
 
@@ -218,7 +298,8 @@ function openTradeModal(symbol) {
         throw new Error(data.error);
       }
       currentStockData = data;
-      
+      const currentLanguage = getCurrentLanguage();
+
       // Get modal elements
       const modalStockSymbol = document.getElementById("modalStockSymbol");
       const modalStockPrice = document.getElementById("modalStockPrice");
@@ -229,20 +310,21 @@ function openTradeModal(symbol) {
       const modalDpFeePreview = document.getElementById("modalDpFeePreview");
       const modalCostPreview = document.getElementById("modalCostPreview");
       const tradeModal = document.getElementById("tradeModal");
-      
+
       // Check if elements exist before setting content
       if (modalStockSymbol) modalStockSymbol.textContent = symbol;
-      if (modalStockPrice) modalStockPrice.textContent = parseFloat(data.price).toFixed(2);
+      if (modalStockPrice) modalStockPrice.textContent = convertDigitsForLanguage(parseFloat(data.price).toFixed(2), currentLanguage);
       if (modalTradeShares) {
         modalTradeShares.value = "";
         modalTradeShares.removeEventListener("input", updateCostPreview);
         modalTradeShares.addEventListener("input", updateCostPreview);
       }
-      if (modalPricePreview) modalPricePreview.textContent = "0";
-      if (modalBrokerFeePreview) modalBrokerFeePreview.textContent = "0";
-      if (modalSebonFeePreview) modalSebonFeePreview.textContent = "0";
-      if (modalDpFeePreview) modalDpFeePreview.textContent = "0";
-      if (modalCostPreview) modalCostPreview.textContent = "0";
+      const zeroDisplay = convertDigitsForLanguage('0', currentLanguage);
+      if (modalPricePreview) modalPricePreview.textContent = zeroDisplay;
+      if (modalBrokerFeePreview) modalBrokerFeePreview.textContent = zeroDisplay;
+      if (modalSebonFeePreview) modalSebonFeePreview.textContent = zeroDisplay;
+      if (modalDpFeePreview) modalDpFeePreview.textContent = zeroDisplay;
+      if (modalCostPreview) modalCostPreview.textContent = zeroDisplay;
       updateCostPreview();
       if (tradeModal) {
         tradeModal.style.display = "block";
@@ -275,11 +357,12 @@ function updateCostPreview() {
   const dpFeePreview = document.getElementById("modalDpFeePreview");
   const costPreview = document.getElementById("modalCostPreview");
 
-  if (pricePreview) pricePreview.textContent = base.toFixed(2);
-  if (brokerFeePreview) brokerFeePreview.textContent = brokerFee.toFixed(2);
-  if (sebonFeePreview) sebonFeePreview.textContent = sebonFee.toFixed(2);
-  if (dpFeePreview) dpFeePreview.textContent = dpFee.toFixed(2);
-  if (costPreview) costPreview.textContent = total.toFixed(2);
+  const currentLanguage = getCurrentLanguage();
+  if (pricePreview) pricePreview.textContent = convertDigitsForLanguage(base.toFixed(2), currentLanguage);
+  if (brokerFeePreview) brokerFeePreview.textContent = convertDigitsForLanguage(brokerFee.toFixed(2), currentLanguage);
+  if (sebonFeePreview) sebonFeePreview.textContent = convertDigitsForLanguage(sebonFee.toFixed(2), currentLanguage);
+  if (dpFeePreview) dpFeePreview.textContent = convertDigitsForLanguage(dpFee.toFixed(2), currentLanguage);
+  if (costPreview) costPreview.textContent = convertDigitsForLanguage(total.toFixed(2), currentLanguage);
 }
 
 function confirmTrade() {
@@ -331,7 +414,10 @@ function confirmTrade() {
   // Update UI
   updatePortfolio();
   closeTradeModal();
-  showToast(`✅ Purchased ${shares} shares of ${symbol} for ${total.toFixed(2)} credits!`);
+  const currentLanguage = getCurrentLanguage();
+  const sharesDisplay = convertDigitsForLanguage(shares, currentLanguage);
+  const totalDisplay = convertDigitsForLanguage(total.toFixed(2), currentLanguage);
+  showToast(`✅ Purchased ${sharesDisplay} shares of ${symbol} for ${totalDisplay} credits!`);
 }
 
 // Update search result click handler
@@ -357,21 +443,43 @@ function loadAllStocks() {
         data.forEach(stock => {
           const row = document.createElement("tr");
           row.setAttribute('data-symbol', stock.symbol);
-          const changeClass = parseFloat(stock.changePercent) >= 0 ? "gain" : "loss";
-          const changeSymbol = parseFloat(stock.changePercent) >= 0 ? "+" : "";
+          const currentLanguage = getCurrentLanguage();
+          const priceNumber = parseFloat(stock.price);
+          const changeNumber = parseFloat(stock.changePercent);
+          let changeClass = !Number.isNaN(changeNumber) && changeNumber >= 0 ? "gain" : "loss";
+          let changeSymbol = !Number.isNaN(changeNumber) && changeNumber >= 0 ? "+" : "";
           const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: 'N/A' };
           const sectorName = companyInfo.sector || 'N/A';
+          const displaySectorName = getLocalizedSectorName(sectorName, currentLanguage);
 
           row.dataset.sector = sectorName;
           sectorCounts.set(sectorName, (sectorCounts.get(sectorName) || 0) + 1);
 
+          const priceDisplay = !Number.isNaN(priceNumber)
+            ? convertDigitsForLanguage(priceNumber.toFixed(2), currentLanguage)
+            : convertDigitsForLanguage(stock.price, currentLanguage);
+
+          let changeDisplay;
+          if (!Number.isNaN(changeNumber)) {
+            changeDisplay = convertDigitsForLanguage(`${changeSymbol}${changeNumber.toFixed(2)}%`, currentLanguage);
+          } else {
+            const rawChange = String(stock.changePercent || '0');
+            const trimmedChange = rawChange.trim();
+            changeClass = trimmedChange.startsWith('-') ? 'loss' : 'gain';
+            changeSymbol = trimmedChange.startsWith('+') || trimmedChange.startsWith('-') ? '' : '+';
+            const ensurePercent = trimmedChange.includes('%') ? trimmedChange : `${trimmedChange}%`;
+            changeDisplay = convertDigitsForLanguage(`${changeSymbol}${ensurePercent}`, currentLanguage);
+          }
+
+          const tradeLabel = getTranslationValue('trade', 'Trade');
+
           row.innerHTML = `
             <td>${stock.symbol}</td>
             <td>${companyInfo.name}</td>
-            <td>${sectorName}</td>
-            <td>${parseFloat(stock.price).toFixed(2)}</td>
-            <td class="${changeClass}">${changeSymbol}${stock.changePercent}%</td>
-            <td><button onclick="openTradeModal('${stock.symbol}')" class="trade-btn">Trade</button></td>
+            <td>${displaySectorName}</td>
+            <td>${priceDisplay}</td>
+            <td class="${changeClass}">${changeDisplay}</td>
+            <td><button onclick="openTradeModal('${stock.symbol}')" class="trade-btn">${tradeLabel}</button></td>
           `;
           tbody.appendChild(row);
         });
@@ -387,7 +495,7 @@ function loadAllStocks() {
 }
 
 function getTranslationValue(key, fallback = '') {
-  const currentLanguage = localStorage.getItem('language') || 'english';
+  const currentLanguage = getCurrentLanguage();
   const languageTexts = translations[currentLanguage] || {};
   return languageTexts[key] || fallback;
 }
@@ -405,6 +513,8 @@ function renderSectorFilters(sectorCounts) {
   const totalCount = Array.from(countsMap.values()).reduce((sum, value) => sum + value, 0);
   container.innerHTML = '';
 
+  const currentLanguage = getCurrentLanguage();
+
   const createChip = (label, count, value) => {
     const chip = document.createElement('button');
     chip.type = 'button';
@@ -412,7 +522,7 @@ function renderSectorFilters(sectorCounts) {
     chip.dataset.sector = value;
     chip.innerHTML = `
       <span class="chip-label">${label}</span>
-      <span class="chip-count">${count}</span>
+      <span class="chip-count">${convertDigitsForLanguage(count, currentLanguage)}</span>
     `;
 
     if (value === currentSectorFilter) {
@@ -434,7 +544,8 @@ function renderSectorFilters(sectorCounts) {
   Array.from(countsMap.entries())
     .sort((a, b) => a[0].localeCompare(b[0]))
     .forEach(([sector, count]) => {
-      createChip(sector, count, sector);
+      const label = getLocalizedSectorName(sector, currentLanguage);
+      createChip(label, count, sector);
     });
 
   updateSelectedSectorLabel();
@@ -444,10 +555,11 @@ function updateSelectedSectorLabel() {
   const label = document.getElementById('selectedSectorLabel');
   if (!label) return;
 
+  const currentLanguage = getCurrentLanguage();
   if (currentSectorFilter === 'All') {
     label.textContent = getTranslationValue('allSectors', 'All Sectors');
   } else {
-    label.textContent = currentSectorFilter;
+    label.textContent = getLocalizedSectorName(currentSectorFilter, currentLanguage);
   }
 }
 
@@ -491,6 +603,7 @@ document.getElementById("stockSearch").addEventListener("input", (e) => {
   fetch("https://nss-c26z.onrender.com/AllStocks")
     .then(res => res.json())
     .then(data => {
+      const currentLanguage = getCurrentLanguage();
       const matches = data.filter(stock => {
         const companyInfo = companyDetails.get(stock.symbol);
         return stock.symbol.toLowerCase().includes(searchTerm) ||
@@ -500,16 +613,35 @@ document.getElementById("stockSearch").addEventListener("input", (e) => {
       if (matches.length > 0) {
         resultsDiv.innerHTML = matches.slice(0, 5).map(stock => {
           const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: 'N/A' };
+          const priceNumber = parseFloat(stock.price);
+          const changeNumber = parseFloat(stock.changePercent);
+          let changeClass = !Number.isNaN(changeNumber) && changeNumber >= 0 ? 'gain' : 'loss';
+          const priceDisplay = !Number.isNaN(priceNumber)
+            ? convertDigitsForLanguage(priceNumber.toFixed(2), currentLanguage)
+            : convertDigitsForLanguage(stock.price, currentLanguage);
+
+          let percentageDisplay;
+          if (!Number.isNaN(changeNumber)) {
+            percentageDisplay = convertDigitsForLanguage(`${changeNumber >= 0 ? '+' : ''}${changeNumber.toFixed(2)}%`, currentLanguage);
+          } else {
+            const rawChange = String(stock.changePercent || '0').trim();
+            changeClass = rawChange.startsWith('-') ? 'loss' : 'gain';
+            const prefix = rawChange.startsWith('+') || rawChange.startsWith('-') ? '' : '+';
+            const ensurePercent = rawChange.includes('%') ? rawChange : `${rawChange}%`;
+            percentageDisplay = convertDigitsForLanguage(`${prefix}${ensurePercent}`, currentLanguage);
+          }
+
+          const displaySector = getLocalizedSectorName(companyInfo.sector || 'N/A', currentLanguage);
           return `
             <div class="search-result" onclick="handleSearchResultClick('${stock.symbol}')">
               <div class="stock-info">
                 <strong>${stock.symbol}</strong>
                 <span>${companyInfo.name}</span>
-                <small>${companyInfo.sector}</small>
+                <small>${displaySector}</small>
               </div>
-              <div class="stock-price ${parseFloat(stock.changePercent) >= 0 ? 'gain' : 'loss'}">
-                ${parseFloat(stock.price).toFixed(2)}
-                (${parseFloat(stock.changePercent) >= 0 ? '+' : ''}${stock.changePercent}%)
+              <div class="stock-price ${changeClass}">
+                ${priceDisplay}
+                (${percentageDisplay})
               </div>
             </div>
           `;
@@ -614,6 +746,7 @@ async function updatePortfolio() {
 
   let totalInvested = 0;
   let totalCurrentValue = 0;
+  const currentLanguage = getCurrentLanguage();
 
   for (const investment of investments) {
     try {
@@ -632,25 +765,40 @@ async function updatePortfolio() {
       const creditsNow = quantity * currentPrice;
       const profitLossAmount = creditsNow - creditsInvested;
       const profitLossPercent = (profitLossAmount / creditsInvested) * 100;
-      
+
       totalInvested += creditsInvested;
       totalCurrentValue += creditsNow;
 
         const row = document.createElement("tr");
       const profitLossClass = profitLossAmount >= 0 ? 'gain' : 'loss';
       const profitLossSymbol = profitLossAmount >= 0 ? '📈' : '📉';
-      const profitLossSign = profitLossAmount >= 0 ? '+' : '';
+      const buyPriceDisplay = convertDigitsForLanguage(buyPrice.toFixed(2), currentLanguage);
+      const currentPriceDisplay = convertDigitsForLanguage(currentPrice.toFixed(2), currentLanguage);
+      const creditsInvestedDisplay = convertDigitsForLanguage(creditsInvested.toFixed(2), currentLanguage);
+      const creditsNowDisplay = convertDigitsForLanguage(creditsNow.toFixed(2), currentLanguage);
+      const quantityDisplay = convertDigitsForLanguage(quantity.toFixed(4), currentLanguage);
+      const profitLossAmountValue = profitLossAmount.toFixed(2);
+      const profitLossPercentValue = profitLossPercent.toFixed(2);
+      const normalizedAmount = profitLossAmountValue.startsWith('-')
+        ? profitLossAmountValue
+        : `+${profitLossAmountValue}`;
+      const normalizedPercent = profitLossPercentValue.startsWith('-')
+        ? `${profitLossPercentValue}%`
+        : `+${profitLossPercentValue}%`;
+      const profitLossAmountDisplay = convertDigitsForLanguage(normalizedAmount, currentLanguage);
+      const profitLossPercentDisplay = convertDigitsForLanguage(normalizedPercent, currentLanguage);
+      const sellLabel = getTranslationValue('sell', 'Sell');
 
         row.innerHTML = `
         <td><strong>${investment.symbol}</strong></td>
-        <td>${buyPrice.toFixed(2)} 💰</td>
-        <td>${currentPrice.toFixed(2)} 📊</td>
-        <td>${creditsInvested.toFixed(2)} 💵</td>
-        <td>${creditsNow.toFixed(2)} 💸</td>
-        <td>${quantity.toFixed(4)} 📊</td>
-        <td class="${profitLossClass}">${profitLossSign}${profitLossAmount.toFixed(2)} ${profitLossSymbol}</td>
-        <td class="${profitLossClass}">${profitLossSign}${profitLossPercent.toFixed(2)}% ${profitLossSymbol}</td>
-        <td><button onclick="sellInvestment(${investments.indexOf(investment)})" class="sell-btn">Sell</button></td>
+        <td>${buyPriceDisplay} 💰</td>
+        <td>${currentPriceDisplay} 📊</td>
+        <td>${creditsInvestedDisplay} 💵</td>
+        <td>${creditsNowDisplay} 💸</td>
+        <td>${quantityDisplay} 📊</td>
+        <td class="${profitLossClass}">${profitLossAmountDisplay} ${profitLossSymbol}</td>
+        <td class="${profitLossClass}">${profitLossPercentDisplay} ${profitLossSymbol}</td>
+        <td><button onclick="sellInvestment(${investments.indexOf(investment)})" class="sell-btn">${sellLabel}</button></td>
       `;
       tbody.appendChild(row);
     } catch (error) {
@@ -663,11 +811,14 @@ async function updatePortfolio() {
   const totalInvestedElement = document.getElementById("totalInvested");
   const totalProfit = document.getElementById("totalProfit");
 
-  if (netWorth) netWorth.textContent = (parseFloat(localStorage.getItem("credits")) + totalCurrentValue).toFixed(2);
-  if (totalInvestedElement) totalInvestedElement.textContent = totalInvested.toFixed(2);
+  if (netWorth) {
+    const netWorthValue = (parseFloat(localStorage.getItem("credits")) || 0) + totalCurrentValue;
+    netWorth.textContent = convertDigitsForLanguage(netWorthValue.toFixed(2), currentLanguage);
+  }
+  if (totalInvestedElement) totalInvestedElement.textContent = convertDigitsForLanguage(totalInvested.toFixed(2), currentLanguage);
   if (totalProfit) {
     const profitValue = totalCurrentValue - totalInvested;
-    totalProfit.textContent = profitValue.toFixed(2);
+    totalProfit.textContent = convertDigitsForLanguage(profitValue.toFixed(2), currentLanguage);
     totalProfit.className = profitValue >= 0 ? 'stat-value gain' : 'stat-value loss';
   }
 }
@@ -707,7 +858,9 @@ function sellInvestment(index) {
       localStorage.setItem("investments", JSON.stringify(investments));
 
       updatePortfolio();
-      showToast(`✅ Sold ${inv.symbol} for ${sellAmount.toFixed(2)} credits!`);
+      const currentLanguage = getCurrentLanguage();
+      const sellAmountDisplay = convertDigitsForLanguage(sellAmount.toFixed(2), currentLanguage);
+      showToast(`✅ Sold ${inv.symbol} for ${sellAmountDisplay} credits!`);
     })
     .catch(() => {
       showToast("❌ Could not fetch the stock price. Please try again.");
@@ -813,12 +966,14 @@ function updateLeaderboard() {
 
 // Helper function to format money values
 function formatMoney(amount) {
-    return new Intl.NumberFormat('en-US', {
+    const formatted = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'NPR',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
     }).format(amount);
+
+    return convertDigitsForLanguage(formatted);
 }
 
 // Update leaderboard after trades and portfolio updates
@@ -1290,6 +1445,13 @@ function updateDynamicContent(language) {
 
     // Update table headers dynamically
     updateTableHeaders(language);
+
+    // Refresh data-driven sections to apply locale formatting
+    fetchTopGainers();
+    fetchTopLosers();
+    loadAllStocks();
+    updatePortfolio();
+    updateCreditDisplay();
 
     // Update sector filters with translated labels
     renderSectorFilters(latestSectorCounts);
