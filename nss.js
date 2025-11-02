@@ -2,6 +2,7 @@
 let companyDetails = new Map();
 let currentSectorFilter = 'All';
 let latestSectorCounts = new Map();
+const activeSellRequests = new Set();
 
 
 // Default credits given to new users (1 lakh)
@@ -798,7 +799,7 @@ async function updatePortfolio() {
         <td>${quantityDisplay} 📊</td>
         <td class="${profitLossClass}">${profitLossAmountDisplay} ${profitLossSymbol}</td>
         <td class="${profitLossClass}">${profitLossPercentDisplay} ${profitLossSymbol}</td>
-        <td><button onclick="sellInvestment(${investments.indexOf(investment)})" class="sell-btn">${sellLabel}</button></td>
+        <td><button onclick="sellInvestment(${investments.indexOf(investment)}, this)" class="sell-btn">${sellLabel}</button></td>
       `;
       tbody.appendChild(row);
     } catch (error) {
@@ -823,7 +824,7 @@ async function updatePortfolio() {
   }
 }
 
-function sellInvestment(index) {
+function sellInvestment(index, buttonElement) {
   // Get investments from localStorage
   const investments = JSON.parse(localStorage.getItem("investments") || "[]");
   const inv = investments[index];
@@ -834,13 +835,22 @@ function sellInvestment(index) {
     return;
   }
 
+  const saleKey = `${inv.symbol}-${inv.quantity}-${inv.price}-${index}`;
+  if (activeSellRequests.has(saleKey)) {
+    return;
+  }
+  activeSellRequests.add(saleKey);
+
+  if (buttonElement) {
+    buttonElement.disabled = true;
+  }
+
   // Fetch current stock price
   fetch(`https://nss-c26z.onrender.com/StockPrice?symbol=${inv.symbol}`)
     .then(res => res.json())
     .then(data => {
       if (data.error) {
-        showToast("❌ Error fetching current price. Please try again.");
-        return;
+        throw new Error("PRICE_FETCH_ERROR");
       }
 
       const currentPrice = parseFloat(data.price);
@@ -862,8 +872,19 @@ function sellInvestment(index) {
       const sellAmountDisplay = convertDigitsForLanguage(sellAmount.toFixed(2), currentLanguage);
       showToast(`✅ Sold ${inv.symbol} for ${sellAmountDisplay} credits!`);
     })
-    .catch(() => {
-      showToast("❌ Could not fetch the stock price. Please try again.");
+    .catch((error) => {
+      if (error && error.message === "PRICE_FETCH_ERROR") {
+        showToast("❌ Error fetching current price. Please try again.");
+      } else {
+        console.error("❌ Error completing sale:", error);
+        showToast("❌ Could not fetch the stock price. Please try again.");
+      }
+    })
+    .finally(() => {
+      activeSellRequests.delete(saleKey);
+      if (buttonElement) {
+        buttonElement.disabled = false;
+      }
     });
 }
 
@@ -991,8 +1012,8 @@ confirmTrade = function() {
 
 // Modify existing sellInvestment to update leaderboard
 const originalSellInvestment = sellInvestment;
-sellInvestment = function(index) {
-    originalSellInvestment(index);
+sellInvestment = function(...args) {
+    originalSellInvestment(...args);
     updateLeaderboard();
 };
 
