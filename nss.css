@@ -2,7 +2,7 @@
 
   --font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
 
-  --nav-bg: linear-gradient(90deg, #2c3e50, #3498db);
+  --nav-bg: #ffffff;
   --net-worth-bg: #1e88e5;
   --total-profit-bg: #2ecc71;
   --invested-bg: #8b4513;
@@ -19,6 +19,7 @@
   --error-color: #e74c3c;
   --motivation-color: #00b894;
   --border-radius: 12px;
+  --nav-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
   --background-gradient: linear-gradient(180deg, #f0f4f8 0%, #ffffff 100%);
@@ -48,6 +49,8 @@ h1, h2, h3, h4, h5, h6 {
   left: 0;
   right: 0;
   z-index: 1000;
+  box-shadow: var(--nav-shadow);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .nav-content {
@@ -65,25 +68,24 @@ h1, h2, h3, h4, h5, h6 {
 
 .nav-icon {
   text-decoration: none;
-  color: var(--text-color);
+  color: #1f2937;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
   padding: 0.5rem;
   border-radius: 12px;
 }
 
 .nav-icon:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
 }
 
 .nav-icon.active {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
 }
 
 .nav-icon.active span {
@@ -91,8 +93,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .nav-img {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
 }
 
 .nav-icon span {
@@ -104,18 +106,19 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: var(--white);
+  background-color: #f8fafc;
   padding: 0.5rem 1rem;
-  border-radius: 50px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
 }
 
 .credits-icon {
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
 }
 
 .add-credits-btn {
-  background-color: var(--white);
+  background-color: #ffffff;
   color: var(--text-color);
   border: none;
   border-radius: 50%;
@@ -126,6 +129,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
 }
 
 /* Main Content */
@@ -147,8 +151,16 @@ section {
 .welcome-section h1 {
   font-size: 4rem;
   font-weight: 600;
-  margin-bottom: 2rem;
+  margin-bottom: 0.75rem;
   color: var(--text-color);
+}
+
+.welcome-subtitle {
+  font-size: 1.2rem;
+  margin: 0 0 2.5rem;
+  color: #64748b;
+  max-width: 620px;
+  line-height: 1.6;
 }
 
 /* Stats Cards */
@@ -161,37 +173,44 @@ section {
 
 .stat-card {
   padding: 2rem;
-  border-radius: 25px;
-  color: var(--white);
+  border-radius: 20px;
+  color: var(--text-color);
+  background: var(--card-background);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  border-left: 6px solid transparent;
 }
 
 .stat-card.net-worth {
-  background-color: var(--net-worth-bg);
+  border-left-color: var(--net-worth-bg);
 }
 
 .stat-card.total-profit {
-  background-color: var(--total-profit-bg);
+  border-left-color: var(--total-profit-bg);
 }
 
 .stat-card.invested {
-  background-color: var(--invested-bg);
+  border-left-color: var(--invested-bg);
 }
 
 .stat-card h2 {
   font-size: 2rem;
   margin: 0 0 1rem 0;
+  color: #0f172a;
 }
 
 .stat-value {
   font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
+  color: #111827;
 }
 
 .stat-description {
   font-size: 1.1rem;
   line-height: 1.5;
   margin: 0;
+  color: #64748b;
 }
 
 /* Motivation Message */
@@ -872,6 +891,11 @@ section {
     font-size: 2.5rem;
   }
 
+  .welcome-subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
   .stat-card h2 {
     font-size: 1.5rem;
   }
@@ -892,6 +916,11 @@ section {
 
   .welcome-section h1 {
     font-size: 2rem;
+  }
+
+  .welcome-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 1.75rem;
   }
 
   .stat-card {
