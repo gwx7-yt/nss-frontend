@@ -15,3 +15,20 @@ Team and roles. CEO Subigya Raj Kharel. COO Agraj Rijal. Managing Director Nayan
 Keywords for discoverability. Nepal stock simulator. NEPSE trading simulator. Learn investing in Nepal. Stock trading Nepal. NEPSE simulator website. Finance education Nepal. Virtual trading Nepal. Investing for students in Nepal. NEPSE portfolio simulator. Nepal stock exchange practice.
 
 If you have feedback, bug reports, or collaboration ideas, open an issue or email the address above. If you found this useful, share it with a friend who wants to learn NEPSE the right way.
+
+## Disclaimer
+
+Nepal Stock Simulator is an **educational simulation project** created to help students and beginners understand how the Nepal Stock Exchange (NEPSE) works.
+
+This platform **does not support real trading** and **does not involve real money** in any form. All transactions, credits, balances, and portfolio data shown on the site are **purely virtual and simulated**.
+
+Nepal Stock Simulator:
+- Does **not** provide financial or investment advice  
+- Does **not** connect to real broker accounts  
+- Does **not** process payments or wallets  
+- Does **not** collect bank, card, or broker credentials  
+
+This project is intended **only for learning and demonstration purposes**. Any resemblance to real trading platforms is purely for educational simulation.
+## Educational Purpose
+
+This project is developed as a **student-led educational initiative**. It is not a commercial product and is not affiliated with NEPSE, any brokerage firm, or any financial institution.
