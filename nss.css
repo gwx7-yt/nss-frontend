@@ -3,34 +3,28 @@
   --font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
 
   --nav-bg: linear-gradient(90deg, #2c3e50, #3498db);
-  --net-worth-bg: #1e88e5;
-  --total-profit-bg: #2ecc71;
-  --invested-bg: #8b4513;
-  --background-color: #f5f5f5;
+  --background-color: #f4f6fb;
   --card-background: #ffffff;
   --white: #ffffff;
   --text-color: #333;
   --border-color: #ddd;
-  --primary-color: #3498db;
-  --secondary-color: #2ecc71;
+  --primary-color: #2f6fe4;
+  --secondary-color: #4c6fd6;
   --accent-color: #e74c3c;
-  --success-color: #2ecc71;
+  --success-color: #1f9d55;
   --warning-color: #f39c12;
   --error-color: #e74c3c;
-  --motivation-color: #00b894;
+  --motivation-color: #2f6fe4;
   --border-radius: 12px;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
-  --background-gradient: linear-gradient(180deg, #f0f4f8 0%, #ffffff 100%);
 }
 
 body {
   margin: 0;
   padding: 0;
   font-family: var(--font-family);
-
-  background: var(--background-gradient);
-
+  background-color: var(--background-color);
   color: var(--text-color);
 }
 
@@ -162,19 +156,22 @@ section {
 .stat-card {
   padding: 2rem;
   border-radius: 25px;
-  color: var(--white);
+  color: var(--text-color);
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
 }
 
-.stat-card.net-worth {
-  background-color: var(--net-worth-bg);
-}
-
-.stat-card.total-profit {
-  background-color: var(--total-profit-bg);
-}
-
-.stat-card.invested {
-  background-color: var(--invested-bg);
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--primary-color);
 }
 
 .stat-card h2 {
@@ -1206,12 +1203,12 @@ section {
 }
 
 #investmentHistory .gain {
-  color: #00ff00;
+  color: var(--success-color);
   font-weight: 600;
 }
 
 #investmentHistory .loss {
-  color: #ff0000;
+  color: var(--error-color);
   font-weight: 600;
 }
 
@@ -1520,9 +1517,9 @@ section {
 
 .investor-worth {
   font-weight: bold;
-  color: #2E7D32;
+  color: var(--primary-color);
   padding: 0.5rem 1rem;
-  background: rgba(46, 125, 50, 0.1);
+  background: rgba(47, 111, 228, 0.12);
   border-radius: 50px;
 }
 
@@ -1682,15 +1679,14 @@ section {
   --text-color: #f5f5f5;
   --card-background: #1e1e1e;
   --background-color: #121212;
-  --background-gradient: linear-gradient(180deg, #1a1a1a 0%, #000000 100%);
   --primary-color: #64b5f6;
-  --secondary-color: #43a047;
+  --secondary-color: #8ab4f8;
   --border-color: #444;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
 }
 
 [data-theme="dark"] body {
-  background: var(--background-gradient);
+  background-color: var(--background-color);
 }
 
 [data-theme="dark"] .top-nav {
