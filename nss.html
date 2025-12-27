@@ -252,7 +252,15 @@
     <!-- Portfolio Section -->
     <section id="portfolio" style="display: none;">
       <div class="portfolio-content">
-        <h2 class="section-title" data-translate="portfolio">My Investment Portfolio 📊</h2>
+        <div class="portfolio-header">
+          <div>
+            <h2 class="section-title" data-translate="portfolio">My Investment Portfolio 📊</h2>
+            <p class="portfolio-note" title="Broker fees apply when purchasing stocks, so your portfolio might show a small loss at first.">🔍 Note: Portfolio shows slight initial loss due to broker fees</p>
+          </div>
+          <button onclick="showSection('market')" class="portfolio-action-btn" data-translate="buyMore">
+            Go to Market
+          </button>
+        </div>
         <div class="table-container">
           <table id="investmentHistory">
             <thead>
@@ -260,31 +268,22 @@
                 <th data-translate="symbol">Symbol 🏢</th>
                 <th data-translate="buyPrice">Buy Price 💰</th>
                 <th data-translate="currentPrice">Current Price 📈</th>
-                <th data-translate="creditsInvested">Credits Invested 💵</th>
-                <th data-translate="creditsNow">Credits Now 💸</th>
                 <th data-translate="quantity">Quantity 📊</th>
-                <th data-translate="plAmount">P/L Amount 📊</th>
-                <th data-translate="plPercent">P/L % 📈</th>
+                <th data-translate="creditsNow">Value 💸</th>
+                <th data-translate="plAmount">P/L 📊</th>
                 <th data-translate="action">Action ⚡</th>
               </tr>
             </thead>
           <tbody></tbody>
         </table>
       </div>
-      <p class="portfolio-note" title="Broker fees apply when purchasing stocks, so your portfolio might show a small loss at first.">🔍 Note: Portfolio shows slight initial loss due to broker fees</p>
-
-      <div class="portfolio-actions">
-          <button onclick="showSection('market')" class="buy-more-btn" data-translate="buyMore">
-            Buy More Stocks 🚀
-          </button>
-        </div>
 
         <!-- No investments message -->
         <div id="noInvestments" class="no-investments">
           <div class="message">
             <h3 data-translate="noInvestments">No investments yet! 🎯</h3>
             <p data-translate="startInvestingDesc">Head over to the Market section to start your investment journey!</p>
-            <button onclick="showSection('market')" class="start-investing-btn" data-translate="startInvesting">Start Investing Now 🚀</button>
+            <button onclick="showSection('market')" class="portfolio-action-btn" data-translate="startInvesting">Start Investing Now 🚀</button>
           </div>
         </div>
       </div>

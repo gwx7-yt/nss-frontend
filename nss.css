@@ -20,12 +20,14 @@
   --transition: all 0.3s ease;
 }
 
+html,
 body {
   margin: 0;
   padding: 0;
   font-family: var(--font-family);
   background-color: var(--background-color);
   color: var(--text-color);
+  min-height: 100%;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -126,6 +128,8 @@ h1, h2, h3, h4, h5, h6 {
 main {
   margin-top: 100px;
   padding: 2rem;
+  background-color: var(--background-color);
+  min-height: calc(100vh - 100px);
 }
 
 section {
@@ -1143,11 +1147,19 @@ section {
   overflow-x: auto;
 }
 
+.portfolio-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
 .portfolio-note {
-  margin-top: 0.5rem;
+  margin: 0.5rem 0 0;
   font-size: 0.9rem;
   color: #555;
-  text-align: center;
   font-style: italic;
 }
 
@@ -1259,23 +1271,6 @@ section {
   margin-bottom: 2rem;
 }
 
-.start-investing-btn {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 50px;
-  font-size: 1.2rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.start-investing-btn:hover {
-  background: var(--secondary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
 
 /* Responsive adjustments for portfolio */
 @media (max-width: 1200px) {
@@ -1304,41 +1299,35 @@ section {
   }
 }
 
-.portfolio-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-}
-
-.buy-more-btn {
-  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+.portfolio-action-btn {
+  background: var(--primary-color);
   color: white;
   border: none;
-  padding: 1rem 2.5rem;
-  border-radius: 50px;
-  font-size: 1.2rem;
-  font-weight: 500;
+  padding: 0.85rem 1.8rem;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(0, 180, 216, 0.2);
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(47, 111, 228, 0.2);
 }
 
-.buy-more-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 180, 216, 0.3);
-  background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
-}
-
-.buy-more-btn:active {
-  transform: translateY(-1px);
+.portfolio-action-btn:hover {
+  background: var(--secondary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(47, 111, 228, 0.25);
 }
 
 @media (max-width: 768px) {
-  .buy-more-btn {
-    padding: 0.75rem 2rem;
-    font-size: 1rem;
+  .portfolio-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .portfolio-action-btn {
+    width: 100%;
+    text-align: center;
   }
 }
 
@@ -1450,7 +1439,7 @@ section {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: white;
+  background: var(--card-background);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1460,7 +1449,7 @@ section {
 }
 
 .rankings-list {
-  background: white;
+  background: var(--card-background);
   border-radius: 1rem;
   padding: 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
