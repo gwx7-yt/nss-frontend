@@ -637,6 +637,52 @@
         <p>Total: <span class="quantity" id="modalCostPreview">0</span> credits</p>
       </div>
 
+      <div class="ta-wrap" id="tradeTaSection">
+        <button class="ta-toggle" id="taToggle" type="button" aria-expanded="false">
+          <span class="ta-toggle-left">
+            <span class="ta-toggle-icon" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none">
+                <path d="M3 15.5H17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                <path d="M5 12.5L8 9.5L11 12.5L15 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                <circle cx="5" cy="12.5" r="1" fill="currentColor" />
+                <circle cx="8" cy="9.5" r="1" fill="currentColor" />
+                <circle cx="11" cy="12.5" r="1" fill="currentColor" />
+                <circle cx="15" cy="7.5" r="1" fill="currentColor" />
+              </svg>
+            </span>
+            View Technical Analysis
+          </span>
+          <span class="ta-toggle-chevron" aria-hidden="true">⌄</span>
+        </button>
+
+        <div class="ta-panel" id="taPanel" aria-hidden="true">
+          <div class="ta-header">
+            <div class="ta-header-row">
+              <div class="ta-title" id="taTitle">- • Daily Candles</div>
+              <div class="ta-status" id="taStatus">Updated</div>
+            </div>
+            <div class="ta-pills" role="tablist" aria-label="Chart timeframe">
+              <button class="ta-pill active" type="button" data-limit="7">7D</button>
+              <button class="ta-pill" type="button" data-limit="30">1M</button>
+              <button class="ta-pill" type="button" data-limit="90">3M</button>
+              <button class="ta-pill" type="button" data-limit="180">6M</button>
+              <button class="ta-pill" type="button" data-limit="365">1Y</button>
+            </div>
+          </div>
+          <div class="ta-chart-wrap">
+            <div class="ta-chart" id="taChart"></div>
+            <div class="ta-overlay ta-loading" id="taLoading" hidden>Loading chart…</div>
+            <div class="ta-overlay ta-error" id="taError" hidden>
+              <div>Unable to load chart data.</div>
+              <button type="button" class="ta-retry" id="taRetry">Retry</button>
+            </div>
+            <div class="ta-overlay ta-empty" id="taEmpty" hidden>
+              Chart will populate after more trading days.
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="modal-buttons">
         <button class="modal-btn back" onclick="closeTradeModal()">Back</button>
         <button class="modal-btn confirm" onclick="confirmTrade()">Confirm Trade</button>
@@ -671,6 +717,7 @@
     </div>
   </div>
 
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <script src="nss.js"></script>
 </body>
 </html>
