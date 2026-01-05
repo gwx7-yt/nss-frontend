@@ -1040,6 +1040,22 @@ section {
 
 .trade-analysis {
   margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.analysis-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.analysis-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-color);
 }
 
 .analysis-toggle {

@@ -387,7 +387,7 @@ function resetTradeAnalysisPanel() {
   }
   if (toggleBtn) {
     toggleBtn.setAttribute("aria-expanded", "false");
-    toggleBtn.textContent = "View Technical Analysis";
+    toggleBtn.textContent = "View Technical Analysis Chart";
   }
   if (status) {
     status.textContent = "Select a timeframe to load data.";
@@ -460,7 +460,7 @@ function initTradeAnalysisControls() {
     panel.classList.toggle("is-open", tradeAnalysisState.isOpen);
     panel.setAttribute("aria-hidden", String(!tradeAnalysisState.isOpen));
     toggleBtn.setAttribute("aria-expanded", String(tradeAnalysisState.isOpen));
-    toggleBtn.textContent = tradeAnalysisState.isOpen ? "Hide Technical Analysis" : "View Technical Analysis";
+    toggleBtn.textContent = tradeAnalysisState.isOpen ? "Hide Technical Analysis" : "View Technical Analysis Chart";
     if (tradeAnalysisState.isOpen) {
       loadTradeAnalysisData();
     }
@@ -482,6 +482,7 @@ function initTradeAnalysisControls() {
 }
 
 function openTradeModal(symbol) {
+  resetTradeAnalysisPanel();
   fetch(`${BACKEND_BASE_URL}/StockPrice?symbol=${symbol}`)
     .then(res => {
       if (!res.ok) {
