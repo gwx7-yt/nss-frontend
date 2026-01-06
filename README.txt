@@ -1,6 +1,6 @@
 # Nepal Stock Simulator | Learn NEPSE Trading in Nepal
 
-Live site: https://nepalstocksim.pages.dev  
+Live site: https://nepalstocksim.netlify.app
 Instagram: https://instagram.com/nepalstocksimulator  
 Contact: nepalstocksimulator@gmail.com
 
