@@ -1347,11 +1347,11 @@ section {
 
 /* Playground Quiz */
 .playground-section {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 3rem;
 }
 
 .playground-header {
@@ -1370,14 +1370,34 @@ section {
 }
 
 .playground-card {
+  position: relative;
   background: var(--card-background);
-  border-radius: 24px;
-  padding: 2rem;
+  border-radius: 28px;
+  padding: 2.5rem;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.8rem;
+  overflow: hidden;
+}
+
+.playground-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--primary-color) 12%, transparent),
+    color-mix(in srgb, var(--secondary-color) 8%, transparent)
+  );
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.playground-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .playground-card-header h3 {
@@ -1393,7 +1413,7 @@ section {
 .quiz-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
 .quiz-start {
@@ -1405,9 +1425,9 @@ section {
 }
 
 .quiz-progress {
-  background: var(--border-color);
+  background: color-mix(in srgb, var(--border-color) 70%, transparent);
   border-radius: 999px;
-  height: 8px;
+  height: 10px;
   overflow: hidden;
 }
 
@@ -1415,7 +1435,7 @@ section {
   height: 100%;
   width: 0;
   background: var(--primary-color);
-  transition: width 0.4s ease;
+  transition: width 0.45s ease;
 }
 
 .quiz-progress-meta {
@@ -1427,8 +1447,8 @@ section {
 
 .quiz-panel {
   opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  transform: translateY(18px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .quiz-panel.is-visible {
@@ -1452,15 +1472,29 @@ section {
   background: var(--background-color);
   color: var(--text-color);
   border-radius: 16px;
-  padding: 0.95rem 1.2rem;
+  padding: 1.05rem 1.3rem;
   font-size: 1rem;
   text-align: left;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
 .quiz-option:active {
   transform: scale(0.98);
+}
+
+.quiz-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--primary-color) 15%, transparent);
+}
+
+.quiz-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.95;
 }
 
 .quiz-option:focus-visible {
@@ -1468,13 +1502,23 @@ section {
   outline-offset: 2px;
 }
 
+.quiz-option-text {
+  flex: 1;
+}
+
+.quiz-option-icon {
+  font-size: 1.1rem;
+}
+
 .quiz-option.is-correct {
   border-color: var(--success-color);
+  background: color-mix(in srgb, var(--success-color) 12%, var(--background-color));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--success-color) 35%, transparent);
 }
 
 .quiz-option.is-wrong {
   border-color: var(--error-color);
+  background: color-mix(in srgb, var(--error-color) 10%, var(--background-color));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--error-color) 30%, transparent);
 }
 
@@ -1486,14 +1530,24 @@ section {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.quiz-feedback.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .quiz-feedback.is-correct {
   border-left: 4px solid var(--success-color);
+  background: color-mix(in srgb, var(--success-color) 10%, var(--background-color));
 }
 
 .quiz-feedback.is-wrong {
   border-left: 4px solid var(--error-color);
+  background: color-mix(in srgb, var(--error-color) 10%, var(--background-color));
 }
 
 .quiz-actions {
@@ -1521,6 +1575,7 @@ section {
 
 .quiz-primary-btn:hover {
   transform: translateY(-2px);
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--primary-color) 40%, transparent);
 }
 
 .quiz-secondary-btn {
@@ -1541,7 +1596,7 @@ section {
 
 @media (max-width: 768px) {
   .playground-card {
-    padding: 1.5rem;
+    padding: 1.75rem;
   }
 
   .playground-header h2 {

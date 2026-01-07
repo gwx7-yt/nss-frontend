@@ -1363,8 +1363,8 @@ const quizTranslations = {
         nextQuestion: "Next",
         restartQuiz: "Restart Quiz",
         tryTrading: "Try Trading",
-        correctLabel: "Correct!",
-        wrongLabel: "Wrong!",
+        correctLabel: "Correct ✓",
+        wrongLabel: "Wrong ✗",
         questionProgress: "Question {current} / {total}",
         scoreLine: "Your score: {score} / {total}",
         scoreMessageLow: "Keep learning—your basics will sharpen with practice.",
@@ -1378,8 +1378,8 @@ const quizTranslations = {
         nextQuestion: "अर्को",
         restartQuiz: "क्विज पुनः सुरु गर्नुहोस्",
         tryTrading: "ट्रेडिङ प्रयास गर्नुहोस्",
-        correctLabel: "सही!",
-        wrongLabel: "गलत!",
+        correctLabel: "सही ✓",
+        wrongLabel: "गलत ✗",
         questionProgress: "प्रश्न {current} / {total}",
         scoreLine: "तपाईंको स्कोर: {score} / {total}",
         scoreMessageLow: "अझै अभ्यास गर्नुपर्छ—आधारभूत कुरा बलियो बनाऔँ।",
@@ -1410,10 +1410,10 @@ const quizQuestions = [
             nepali: "नेपालमा धितोपत्र बजारको नियामक निकाय कुन हो"
         },
         options: {
-            english: ["SEBON", "NRB", "MoF"],
-            nepali: ["सेबोन", "नेपाल राष्ट्र बैंक", "अर्थ मन्त्रालय"]
+            english: ["NRB", "SEBON", "MoF"],
+            nepali: ["नेपाल राष्ट्र बैंक", "सेबोन", "अर्थ मन्त्रालय"]
         },
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: {
             english: "SEBON regulates Nepal's securities market.",
             nepali: "नेपालको धितोपत्र बजारको नियामक निकाय सेबोन हो।"
@@ -1425,10 +1425,10 @@ const quizQuestions = [
             nepali: "NEPSE मा कारोबार हुने शेयर मुख्यतया कुन बजारमा पर्छ"
         },
         options: {
-            english: ["Secondary market", "Primary market", "Black market"],
-            nepali: ["द्वितीयक बजार", "प्राथमिक बजार", "कालो बजार"]
+            english: ["Primary market", "Black market", "Secondary market"],
+            nepali: ["प्राथमिक बजार", "कालो बजार", "द्वितीयक बजार"]
         },
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: {
             english: "NEPSE is a secondary market for trading listed shares.",
             nepali: "NEPSE मा सूचीबद्ध शेयरहरूको द्वितीयक बजारमा कारोबार हुन्छ।"
@@ -1440,10 +1440,10 @@ const quizQuestions = [
             nepali: "IPO को पूरा रूप के हो"
         },
         options: {
-            english: ["Initial Public Offering", "International Price Option", "Investor Profit Output"],
-            nepali: ["प्रारम्भिक सार्वजनिक निष्कासन", "अन्तर्राष्ट्रिय मूल्य विकल्प", "लगानीकर्ता नाफा नतिजा"]
+            english: ["International Price Option", "Initial Public Offering", "Investor Profit Output"],
+            nepali: ["अन्तर्राष्ट्रिय मूल्य विकल्प", "प्रारम्भिक सार्वजनिक निष्कासन", "लगानीकर्ता नाफा नतिजा"]
         },
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: {
             english: "IPO means Initial Public Offering.",
             nepali: "IPO भनेको प्रारम्भिक सार्वजनिक निष्कासन हो।"
@@ -1455,10 +1455,10 @@ const quizQuestions = [
             nepali: "नेपालमा अधिकांश IPO आवेदन कुन माध्यमबाट गरिन्छ"
         },
         options: {
-            english: ["MeroShare", "ePassport", "Nagarik App only"],
-            nepali: ["मेरोशेयर", "इ पासपोर्ट", "केवल नागरिक एप"]
+            english: ["ePassport", "Nagarik App only", "MeroShare"],
+            nepali: ["इ पासपोर्ट", "केवल नागरिक एप", "मेरोशेयर"]
         },
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: {
             english: "Most IPO applications are submitted through MeroShare.",
             nepali: "अधिकांश IPO आवेदन मेरोशेयरबाट गरिन्छ।"
@@ -1470,10 +1470,10 @@ const quizQuestions = [
             nepali: "डिम्याट खाता मुख्यतया के का लागि प्रयोग हुन्छ"
         },
         options: {
-            english: ["Holds shares in electronic form", "Gives loans to investors", "Sets the share price"],
-            nepali: ["शेयरलाई डिजिटल रूपमा राख्न", "लगानीकर्तालाई ऋण दिन", "शेयरको मूल्य तोक्न"]
+            english: ["Gives loans to investors", "Sets the share price", "Holds shares in electronic form"],
+            nepali: ["लगानीकर्तालाई ऋण दिन", "शेयरको मूल्य तोक्न", "शेयरलाई डिजिटल रूपमा राख्न"]
         },
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: {
             english: "A Demat account holds shares in electronic form.",
             nepali: "डिम्याट खाताले शेयरलाई डिजिटल रूपमा राख्छ।"
@@ -1485,10 +1485,10 @@ const quizQuestions = [
             nepali: "NEPSE सूचकांक के जनाउँछ"
         },
         options: {
-            english: ["A measure of overall market movement", "A list of only bank shares", "A company’s profit report"],
-            nepali: ["बजारको समग्र चालको मापन", "केवल बैंक शेयरको सूची", "कम्पनीको नाफा प्रतिवेदन"]
+            english: ["A list of only bank shares", "A measure of overall market movement", "A company’s profit report"],
+            nepali: ["केवल बैंक शेयरको सूची", "बजारको समग्र चालको मापन", "कम्पनीको नाफा प्रतिवेदन"]
         },
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: {
             english: "The NEPSE Index reflects overall market movement.",
             nepali: "NEPSE सूचकांकले बजारको समग्र चाल देखाउँछ।"
@@ -1515,10 +1515,10 @@ const quizQuestions = [
             nepali: "शेयर किन्नका लागि राखिने पैसा सामान्यतया कहाँ हुन्छ"
         },
         options: {
-            english: ["Bank account", "Demat account", "Share certificate file"],
-            nepali: ["बैंक खातामा", "डिम्याट खातामा", "शेयर प्रमाणपत्र फाइलमा"]
+            english: ["Demat account", "Share certificate file", "Bank account"],
+            nepali: ["डिम्याट खातामा", "शेयर प्रमाणपत्र फाइलमा", "बैंक खातामा"]
         },
-        correctIndex: 0,
+        correctIndex: 2,
         explanation: {
             english: "Funds for buying shares are kept in the linked bank account.",
             nepali: "शेयर किन्नका लागि राखिने पैसा बैंक खातामा हुन्छ।"
@@ -1530,10 +1530,10 @@ const quizQuestions = [
             nepali: "विविधीकरण भन्नाले के बुझिन्छ"
         },
         options: {
-            english: ["Investing in different companies or sectors", "Putting all money in one stock", "Buying and selling daily without plan"],
-            nepali: ["विभिन्न कम्पनी वा क्षेत्रहरुमा लगानी गर्नु", "सबै पैसा एउटै शेयरमा राख्नु", "योजना बिना दैनिक किनबेच गर्नु"]
+            english: ["Putting all money in one stock", "Investing in different companies or sectors", "Buying and selling daily without plan"],
+            nepali: ["सबै पैसा एउटै शेयरमा राख्नु", "विभिन्न कम्पनी वा क्षेत्रहरुमा लगानी गर्नु", "योजना बिना दैनिक किनबेच गर्नु"]
         },
-        correctIndex: 0,
+        correctIndex: 1,
         explanation: {
             english: "Diversification is investing across multiple companies or sectors.",
             nepali: "विविधीकरण भनेको विभिन्न कम्पनी वा क्षेत्रमा लगानी गर्नु हो।"
@@ -1754,15 +1754,28 @@ function renderQuiz() {
         const optionButton = document.createElement('button');
         optionButton.type = 'button';
         optionButton.className = 'quiz-option';
-        optionButton.textContent = option;
+        const optionText = document.createElement('span');
+        optionText.className = 'quiz-option-text';
+        optionText.textContent = option;
+        optionButton.appendChild(optionText);
         optionButton.setAttribute('aria-pressed', selectedIndex === index ? 'true' : 'false');
         if (quizState.hasAnswered) {
             optionButton.disabled = true;
             if (index === currentQuestion.correctIndex) {
                 optionButton.classList.add('is-correct');
+                const correctIcon = document.createElement('span');
+                correctIcon.className = 'quiz-option-icon';
+                correctIcon.textContent = '✔';
+                correctIcon.setAttribute('aria-hidden', 'true');
+                optionButton.appendChild(correctIcon);
             }
             if (index === selectedIndex && selectedIndex !== currentQuestion.correctIndex) {
                 optionButton.classList.add('is-wrong');
+                const wrongIcon = document.createElement('span');
+                wrongIcon.className = 'quiz-option-icon';
+                wrongIcon.textContent = '✖';
+                wrongIcon.setAttribute('aria-hidden', 'true');
+                optionButton.appendChild(wrongIcon);
             }
         } else {
             optionButton.addEventListener('click', () => handleOptionSelection(index));
@@ -1810,6 +1823,11 @@ function renderQuiz() {
         requestAnimationFrame(() => questionPanel.classList.add('is-visible'));
     } else {
         questionPanel.classList.add('is-visible');
+    }
+
+    const feedbackPanel = questionPanel.querySelector('.quiz-feedback');
+    if (feedbackPanel) {
+        requestAnimationFrame(() => feedbackPanel.classList.add('is-visible'));
     }
 
     lastQuizView = view;
