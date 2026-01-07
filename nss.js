@@ -1583,6 +1583,7 @@ function resetQuizState() {
 
 function revealQuiz() {
     quizState.isOpen = true;
+    quizState.isStarted = true;
     renderQuiz();
 }
 
@@ -1651,13 +1652,20 @@ function renderQuiz() {
         return;
     }
 
+    const introPanel = document.querySelector('.playground-quiz-intro');
     if (!quizState.isOpen) {
         container.innerHTML = '';
         container.classList.add('is-hidden');
+        if (introPanel) {
+            introPanel.classList.remove('is-hidden');
+        }
         return;
     }
 
     container.classList.remove('is-hidden');
+    if (introPanel) {
+        introPanel.classList.add('is-hidden');
+    }
 
     const language = getCurrentLanguage();
     const texts = getQuizTranslations(language);
