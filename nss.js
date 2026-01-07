@@ -1074,7 +1074,7 @@ const translations = {
         leaderboard: 'Leaderboard',
         settings: 'Settings',
         about: 'About',
-        teamNav: 'Our Team',
+        playgroundNav: 'Playground',
         credits: 'Credits',
         add: 'Add',
         home: 'Home',
@@ -1166,6 +1166,35 @@ const translations = {
         connectTitle: "Connect With Us",
         instagram: "Instagram",
         youtube: "YouTube",
+        playgroundTitle: "Playground",
+        playgroundDescription: "Practice faster with mini games built for NSE trading intuition.",
+        quizTitle: "NEPSE Quick Quiz",
+        quizDescription: "Test your NEPSE basics in quick bites.",
+        quizBody: "Quiz experience goes here.",
+        chartGameTitle: "Chart Trading Game",
+        chartGameSubtitle: "Press and hold to buy, release to sell",
+        chartGameDescription: "Master the press-and-hold trading rhythm with simulated NEPSE charts.",
+        chartGameHowtoLine1: "Press and hold on the chart to buy at the current price.",
+        chartGameHowtoLine2: "Keep holding while the price moves.",
+        chartGameHowtoLine3: "Release to sell. Beat the Buy & Hold score.",
+        chartGamePlayButton: "Play me!",
+        chartGameModalTitle: "Chart Trading Game",
+        chartGameProgressLabel: "Progress",
+        chartGameCurrentReturnLabel: "Current Return",
+        chartGameTotalReturnLabel: "Total Return",
+        chartGameHint: "Press & hold to buy",
+        chartGameResultsTitle: "Round Results",
+        chartGameYourReturnLabel: "Your return",
+        chartGameBuyHoldLabel: "Buy & Hold",
+        chartGameRestart: "Restart round",
+        chartGameNewRound: "New round",
+        chartGameExit: "Exit to Playground",
+        chartGameMessageGreat: "Outstanding timing! You beat the market rhythm.",
+        chartGameMessageGood: "Nice trade control. You kept pace with the chart.",
+        chartGameMessageTry: "Keep practicing. The next round is yours.",
+        chartGameSectorBank: "Simulated Bank",
+        chartGameSectorHydro: "Simulated Hydro",
+        chartGameSectorFinance: "Simulated Finance",
         teamTitle: "Our Team",
         teamDescription: "Meet the passionate people guiding the Nepal Stock Simulator and supporting our community of investors.",
         managementLabel: "Management & Operations",
@@ -1217,7 +1246,7 @@ const translations = {
         leaderboard: 'लिडरबोर्ड',
         settings: 'सेटिङ',
         about: 'बारेमा',
-        teamNav: 'हाम्रो टीम',
+        playgroundNav: 'प्लेग्राउन्ड',
         credits: 'क्रेडिट',
         add: 'थप्नुहोस्',
         home: 'गृह',
@@ -1309,6 +1338,35 @@ const translations = {
         connectTitle: "हामीसँग जोडिनुहोस्",
         instagram: "इन्स्टाग्राम",
         youtube: "युट्युब",
+        playgroundTitle: "प्लेग्राउन्ड",
+        playgroundDescription: "एनएसई ट्रेडिङ बुझाइका लागि साना खेलमार्फत छिटो अभ्यास गर्नुहोस्।",
+        quizTitle: "NEPSE क्विक क्विज",
+        quizDescription: "NEPSE का आधारभूत कुरा छोटो प्रश्नमा जाँच्नुहोस्।",
+        quizBody: "क्विज अनुभूति यहाँ देखाइनेछ।",
+        chartGameTitle: "चार्ट ट्रेडिङ खेल",
+        chartGameSubtitle: "किन्न थिचेर राख्नुहोस्, बेच्न छोड्नुहोस्",
+        chartGameDescription: "सिमुलेटेड NEPSE चार्टसँग प्रेस-एन्ड-होल्ड ट्रेडिङको लय सिक्नुहोस्।",
+        chartGameHowtoLine1: "चार्टमा थिचेर राख्दा सोही क्षणको मूल्यमा किन्नु हुन्छ।",
+        chartGameHowtoLine2: "मूल्य चलिरहँदा थिचिराख्नुहोस्।",
+        chartGameHowtoLine3: "छोड्दा बेचिन्छ। Buy & Hold भन्दा राम्रो स्कोर बनाउनुहोस्।",
+        chartGamePlayButton: "खेल्नुस्!",
+        chartGameModalTitle: "चार्ट ट्रेडिङ खेल",
+        chartGameProgressLabel: "प्रगति",
+        chartGameCurrentReturnLabel: "हालको रिटर्न",
+        chartGameTotalReturnLabel: "कुल रिटर्न",
+        chartGameHint: "किन्न थिचेर राख्नुहोस्",
+        chartGameResultsTitle: "राउण्ड नतिजा",
+        chartGameYourReturnLabel: "तपाईंको रिटर्न",
+        chartGameBuyHoldLabel: "Buy & Hold",
+        chartGameRestart: "राउण्ड पुनः सुरु",
+        chartGameNewRound: "नयाँ राउण्ड",
+        chartGameExit: "प्लेग्राउन्डमा फर्कनुहोस्",
+        chartGameMessageGreat: "उत्कृष्ट टाइमिङ! बजारको लय जित्नुभयो।",
+        chartGameMessageGood: "राम्रो नियन्त्रण। चार्टसँगै रहनुभयो।",
+        chartGameMessageTry: "अझै अभ्यास गर्नुहोस्। अर्को राउण्ड तपाईंको हो।",
+        chartGameSectorBank: "सिमुलेटेड बैंक",
+        chartGameSectorHydro: "सिमुलेटेड हाइड्रो",
+        chartGameSectorFinance: "सिमुलेटेड फाइनान्स",
         teamTitle: "हाम्रो टीम",
         teamDescription: "नेपाल स्टक सिमुलेटरलाई मार्गदर्शन गर्ने र हाम्रो लगानीकर्ता समुदायलाई समर्थन गर्ने समर्पित टोलीलाई भेट्नुहोस्।",
         managementLabel: "व्यवस्थापन र सञ्चालन",
@@ -1444,6 +1502,7 @@ function updateLanguage(language) {
 
     // Update dynamic content
     updateDynamicContent(language);
+    updateChartGameText(language);
 }
 
 // Update dynamic content that's added through JavaScript
@@ -1843,3 +1902,389 @@ function initializeApp() {
     }
   }
 }
+
+const chartGameState = {
+  data: null,
+  candles: [],
+  currentIndex: 0,
+  inPosition: false,
+  entryPrice: 0,
+  currentReturnPercent: 0,
+  totalReturnPercent: 0,
+  buyHoldPercent: 0,
+  initialEquity: 10000,
+  equity: 10000,
+  playing: false,
+  isComplete: false,
+  animationFrame: null,
+  lastStepTime: 0,
+  tickInterval: 220,
+  elements: {}
+};
+
+const chartGameFiles = {
+  bank: Array.from({ length: 20 }, (_, i) => `mockdata/bank_round_${String(i + 1).padStart(2, '0')}.json`),
+  hydro: Array.from({ length: 20 }, (_, i) => `mockdata/hydro_round_${String(i + 1).padStart(2, '0')}.json`),
+  finance: Array.from({ length: 20 }, (_, i) => `mockdata/finance_round_${String(i + 1).padStart(2, '0')}.json`)
+};
+
+function setupChartTradingGame() {
+  const modal = document.getElementById('chartGameModal');
+  const openBtn = document.getElementById('openChartGame');
+  if (!modal || !openBtn) return;
+
+  chartGameState.elements = {
+    modal,
+    openBtn,
+    closeBtn: document.getElementById('chartGameClose'),
+    exitBtn: document.getElementById('chartGameExit'),
+    restartBtn: document.getElementById('chartGameRestart'),
+    newRoundBtn: document.getElementById('chartGameNewRound'),
+    progress: document.getElementById('chartGameProgress'),
+    currentReturn: document.getElementById('chartGameCurrentReturn'),
+    totalReturn: document.getElementById('chartGameTotalReturn'),
+    yourReturn: document.getElementById('chartGameYourReturn'),
+    buyHold: document.getElementById('chartGameBuyHold'),
+    statusMessage: document.getElementById('chartGameStatusMessage'),
+    meta: document.getElementById('chartGameMeta'),
+    chartArea: document.getElementById('chartGameChartArea'),
+    canvas: document.getElementById('chartGameCanvas'),
+    results: document.getElementById('chartGameResults')
+  };
+
+  openBtn.addEventListener('click', () => {
+    openChartGame();
+  });
+
+  chartGameState.elements.closeBtn?.addEventListener('click', closeChartGame);
+  chartGameState.elements.exitBtn?.addEventListener('click', closeChartGame);
+  chartGameState.elements.restartBtn?.addEventListener('click', restartChartGameRound);
+  chartGameState.elements.newRoundBtn?.addEventListener('click', startNewChartGameRound);
+
+  chartGameState.elements.chartArea?.addEventListener('pointerdown', handleChartPressStart);
+  chartGameState.elements.chartArea?.addEventListener('pointerup', handleChartPressEnd);
+  chartGameState.elements.chartArea?.addEventListener('pointerleave', handleChartPressEnd);
+  chartGameState.elements.chartArea?.addEventListener('pointercancel', handleChartPressEnd);
+
+  window.addEventListener('resize', () => {
+    drawChartGame();
+  });
+
+  const howtoBoxes = document.querySelectorAll('[data-animate="howto"]');
+  if (howtoBoxes.length) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        }
+      });
+    }, { threshold: 0.2 });
+    howtoBoxes.forEach((box) => observer.observe(box));
+  }
+}
+
+function openChartGame() {
+  const { modal } = chartGameState.elements;
+  if (!modal) return;
+  modal.classList.add('active');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  if (!chartGameState.data) {
+    startNewChartGameRound();
+  } else {
+    resumeChartGame();
+  }
+  updateChartGameText(getCurrentLanguage());
+}
+
+function closeChartGame() {
+  const { modal } = chartGameState.elements;
+  if (!modal) return;
+  modal.classList.remove('active');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  stopChartGame();
+}
+
+function stopChartGame() {
+  chartGameState.playing = false;
+  if (chartGameState.animationFrame) {
+    cancelAnimationFrame(chartGameState.animationFrame);
+    chartGameState.animationFrame = null;
+  }
+}
+
+function resumeChartGame() {
+  if (chartGameState.isComplete) {
+    drawChartGame();
+    return;
+  }
+  if (!chartGameState.playing) {
+    chartGameState.playing = true;
+    chartGameState.lastStepTime = 0;
+    chartGameState.animationFrame = requestAnimationFrame(runChartGameLoop);
+  }
+}
+
+function restartChartGameRound() {
+  if (!chartGameState.data) {
+    startNewChartGameRound();
+    return;
+  }
+  initializeChartGameRound(chartGameState.data);
+}
+
+async function startNewChartGameRound() {
+  const sectorKeys = Object.keys(chartGameFiles);
+  const randomSector = sectorKeys[Math.floor(Math.random() * sectorKeys.length)];
+  const files = chartGameFiles[randomSector];
+  const file = files[Math.floor(Math.random() * files.length)];
+  await loadChartGameData(file);
+}
+
+async function loadChartGameData(path) {
+  try {
+    const response = await fetch(path);
+    const data = await response.json();
+    initializeChartGameRound(data);
+  } catch (error) {
+    console.error('Failed to load chart game data', error);
+  }
+}
+
+function initializeChartGameRound(data) {
+  chartGameState.data = data;
+  chartGameState.candles = data.candles || [];
+  chartGameState.currentIndex = 0;
+  chartGameState.inPosition = false;
+  chartGameState.entryPrice = 0;
+  chartGameState.currentReturnPercent = 0;
+  chartGameState.totalReturnPercent = 0;
+  chartGameState.buyHoldPercent = 0;
+  chartGameState.equity = chartGameState.initialEquity;
+  chartGameState.isComplete = false;
+  chartGameState.lastStepTime = 0;
+  chartGameState.elements.results?.classList.remove('active');
+  chartGameState.elements.results?.setAttribute('aria-hidden', 'true');
+  resumeChartGame();
+  updateChartGameText(getCurrentLanguage());
+  drawChartGame();
+}
+
+function runChartGameLoop(timestamp) {
+  if (!chartGameState.playing) return;
+  if (!chartGameState.lastStepTime) {
+    chartGameState.lastStepTime = timestamp;
+  }
+  const elapsed = timestamp - chartGameState.lastStepTime;
+  if (elapsed >= chartGameState.tickInterval) {
+    chartGameState.lastStepTime = timestamp;
+    advanceChartGame();
+  }
+  drawChartGame();
+  chartGameState.animationFrame = requestAnimationFrame(runChartGameLoop);
+}
+
+function advanceChartGame() {
+  if (chartGameState.currentIndex < chartGameState.candles.length - 1) {
+    chartGameState.currentIndex += 1;
+    updateChartGameReturns();
+  } else {
+    completeChartGameRound();
+  }
+}
+
+function handleChartPressStart(event) {
+  if (chartGameState.isComplete || chartGameState.inPosition || !chartGameState.playing) return;
+  event.preventDefault();
+  const currentPrice = getCurrentChartPrice();
+  if (!currentPrice) return;
+  chartGameState.inPosition = true;
+  chartGameState.entryPrice = currentPrice;
+  chartGameState.elements.chartArea?.classList.add('is-pressing');
+  updateChartGameReturns();
+}
+
+function handleChartPressEnd() {
+  if (!chartGameState.inPosition) return;
+  const currentPrice = getCurrentChartPrice();
+  if (!currentPrice) return;
+  const tradeReturn = (currentPrice - chartGameState.entryPrice) / chartGameState.entryPrice;
+  chartGameState.equity *= (1 + tradeReturn);
+  chartGameState.totalReturnPercent = ((chartGameState.equity / chartGameState.initialEquity) - 1) * 100;
+  chartGameState.inPosition = false;
+  chartGameState.entryPrice = 0;
+  chartGameState.currentReturnPercent = 0;
+  chartGameState.elements.chartArea?.classList.remove('is-pressing');
+  updateChartGameNumbers();
+}
+
+function updateChartGameReturns() {
+  if (chartGameState.inPosition) {
+    const currentPrice = getCurrentChartPrice();
+    if (currentPrice && chartGameState.entryPrice) {
+      chartGameState.currentReturnPercent = ((currentPrice - chartGameState.entryPrice) / chartGameState.entryPrice) * 100;
+    }
+  } else {
+    chartGameState.currentReturnPercent = 0;
+  }
+  updateChartGameNumbers();
+}
+
+function getCurrentChartPrice() {
+  const candle = chartGameState.candles[chartGameState.currentIndex];
+  return candle ? candle.c : 0;
+}
+
+function completeChartGameRound() {
+  if (chartGameState.isComplete) return;
+  chartGameState.isComplete = true;
+  chartGameState.playing = false;
+  if (chartGameState.inPosition) {
+    handleChartPressEnd();
+  }
+  const first = chartGameState.candles[0];
+  const last = chartGameState.candles[chartGameState.candles.length - 1];
+  if (first && last) {
+    chartGameState.buyHoldPercent = ((last.c - first.o) / first.o) * 100;
+  }
+  updateChartGameNumbers();
+  updateChartGameStatusMessage();
+  chartGameState.elements.results?.classList.add('active');
+  chartGameState.elements.results?.setAttribute('aria-hidden', 'false');
+}
+
+function updateChartGameNumbers() {
+  const language = getCurrentLanguage();
+  const { progress, currentReturn, totalReturn, yourReturn, buyHold } = chartGameState.elements;
+  if (progress) {
+    progress.textContent = formatChartGameProgress(language);
+  }
+  if (currentReturn) {
+    currentReturn.textContent = formatChartGamePercent(chartGameState.currentReturnPercent, language);
+  }
+  if (totalReturn) {
+    totalReturn.textContent = formatChartGamePercent(chartGameState.totalReturnPercent, language);
+  }
+  if (yourReturn) {
+    yourReturn.textContent = formatChartGamePercent(chartGameState.totalReturnPercent, language);
+  }
+  if (buyHold) {
+    buyHold.textContent = formatChartGamePercent(chartGameState.buyHoldPercent, language);
+  }
+}
+
+function updateChartGameStatusMessage() {
+  const language = getCurrentLanguage();
+  const texts = translations[language] || translations.english;
+  const messageEl = chartGameState.elements.statusMessage;
+  if (!messageEl) return;
+  if (!chartGameState.isComplete) {
+    messageEl.textContent = '';
+    return;
+  }
+  if (chartGameState.totalReturnPercent >= chartGameState.buyHoldPercent + 2) {
+    messageEl.textContent = texts.chartGameMessageGreat;
+  } else if (chartGameState.totalReturnPercent >= chartGameState.buyHoldPercent - 2) {
+    messageEl.textContent = texts.chartGameMessageGood;
+  } else {
+    messageEl.textContent = texts.chartGameMessageTry;
+  }
+}
+
+function updateChartGameText(language) {
+  if (!chartGameState.elements.modal) return;
+  const texts = translations[language] || translations.english;
+  if (chartGameState.data && chartGameState.elements.meta) {
+    const symbol = language === 'nepali' ? chartGameState.data.symbol_np : chartGameState.data.symbol_en;
+    const sectorLabel = getChartGameSectorLabel(chartGameState.data.sector, texts);
+    chartGameState.elements.meta.textContent = `${symbol} • ${sectorLabel}`;
+  } else if (chartGameState.elements.meta) {
+    chartGameState.elements.meta.textContent = '';
+  }
+  updateChartGameNumbers();
+  updateChartGameStatusMessage();
+}
+
+function getChartGameSectorLabel(sector, texts) {
+  if (!sector) return '';
+  if (sector.includes('Bank')) return texts.chartGameSectorBank;
+  if (sector.includes('Hydro')) return texts.chartGameSectorHydro;
+  if (sector.includes('Finance')) return texts.chartGameSectorFinance;
+  return sector;
+}
+
+function formatChartGameProgress(language) {
+  const current = chartGameState.candles.length ? chartGameState.currentIndex + 1 : 0;
+  const total = chartGameState.candles.length || 0;
+  return `${convertDigitsForLanguage(current.toString(), language)}/${convertDigitsForLanguage(total.toString(), language)}`;
+}
+
+function formatChartGamePercent(value, language) {
+  const sign = value > 0 ? '+' : '';
+  const formatted = value.toFixed(2);
+  return `${sign}${convertDigitsForLanguage(formatted, language)}%`;
+}
+
+function drawChartGame() {
+  const canvas = chartGameState.elements.canvas;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  if (!width || !height) return;
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+  }
+
+  ctx.clearRect(0, 0, width, height);
+  if (!chartGameState.candles.length) return;
+
+  const visible = chartGameState.candles.slice(0, chartGameState.currentIndex + 1);
+  const prices = visible.map((candle) => candle.c);
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+  const range = maxPrice - minPrice || 1;
+  const padding = { top: 24, right: 24, bottom: 32, left: 32 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const xStep = visible.length > 1 ? chartWidth / (visible.length - 1) : 0;
+
+  const styles = getComputedStyle(document.documentElement);
+  const lineColor = styles.getPropertyValue('--primary-color').trim() || '#3498db';
+  const glowColor = styles.getPropertyValue('--secondary-color').trim() || '#2ecc71';
+
+  ctx.lineWidth = 2.4;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  visible.forEach((candle, index) => {
+    const x = padding.left + index * xStep;
+    const y = padding.top + (maxPrice - candle.c) / range * chartHeight;
+    if (index === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  });
+  ctx.strokeStyle = lineColor;
+  ctx.stroke();
+
+  const lastIndex = visible.length - 1;
+  const lastCandle = visible[lastIndex];
+  const lastX = padding.left + lastIndex * xStep;
+  const lastY = padding.top + (maxPrice - lastCandle.c) / range * chartHeight;
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 6, 0, Math.PI * 2);
+  ctx.fillStyle = glowColor;
+  ctx.shadowColor = glowColor;
+  ctx.shadowBlur = 12;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setupChartTradingGame();
+});
