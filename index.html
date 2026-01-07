@@ -459,7 +459,12 @@
             <h3 data-quiz-translate="quizTitle"></h3>
             <p data-quiz-translate="quizSubtitle"></p>
           </div>
-          <div id="quizContent" class="quiz-content" aria-live="polite"></div>
+          <div class="playground-quiz-intro">
+            <h4 data-quiz-translate="quizIntroTitle"></h4>
+            <p data-quiz-translate="quizIntroDesc"></p>
+            <button id="quizLaunch" class="quiz-secondary-btn" type="button" data-quiz-translate="quizLaunch"></button>
+          </div>
+          <div id="quizContent" class="quiz-content is-hidden" aria-live="polite"></div>
         </div>
       </div>
     </section>
@@ -508,6 +513,5 @@
   <script src="nss.js"></script>
 </body>
 </html>
-
 
 

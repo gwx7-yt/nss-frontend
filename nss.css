@@ -1351,7 +1351,7 @@ section {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 3.5rem;
 }
 
 .playground-header {
@@ -1373,12 +1373,12 @@ section {
   position: relative;
   background: var(--card-background);
   border-radius: 28px;
-  padding: 2.5rem;
+  padding: 3rem;
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow);
+  box-shadow: 0 20px 40px color-mix(in srgb, var(--primary-color) 12%, transparent);
   display: flex;
   flex-direction: column;
-  gap: 1.8rem;
+  gap: 2rem;
   overflow: hidden;
 }
 
@@ -1402,7 +1402,7 @@ section {
 
 .playground-card-header h3 {
   margin: 0;
-  font-size: 1.8rem;
+  font-size: 2rem;
 }
 
 .playground-card-header p {
@@ -1410,10 +1410,35 @@ section {
   opacity: 0.7;
 }
 
+.playground-quiz-intro {
+  background: color-mix(in srgb, var(--primary-color) 6%, var(--card-background));
+  border: 1px solid color-mix(in srgb, var(--primary-color) 20%, var(--border-color));
+  border-radius: 20px;
+  padding: 1.75rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: left;
+}
+
+.playground-quiz-intro h4 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.playground-quiz-intro p {
+  margin: 0;
+  opacity: 0.78;
+}
+
 .quiz-content {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 2rem;
+}
+
+.quiz-content.is-hidden {
+  display: none;
 }
 
 .quiz-start {
@@ -1457,7 +1482,7 @@ section {
 }
 
 .quiz-question-text {
-  font-size: 1.5rem;
+  font-size: 1.65rem;
   font-weight: 600;
 }
 
@@ -1596,11 +1621,15 @@ section {
 
 @media (max-width: 768px) {
   .playground-card {
-    padding: 1.75rem;
+    padding: 2rem;
   }
 
   .playground-header h2 {
     font-size: 2.1rem;
+  }
+
+  .playground-quiz-intro {
+    padding: 1.5rem;
   }
 
   .quiz-question-text {

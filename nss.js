@@ -1359,6 +1359,9 @@ const quizTranslations = {
     english: {
         quizTitle: "NEPSE Quick Quiz",
         quizSubtitle: "Answer 10 quick questions to test your market basics.",
+        quizIntroTitle: "NEPSE Quick Quiz",
+        quizIntroDesc: "A short, interactive quiz to warm up your stock market fundamentals before trading.",
+        quizLaunch: "Test your knowledge!",
         startQuiz: "Start Quiz",
         nextQuestion: "Next",
         restartQuiz: "Restart Quiz",
@@ -1374,6 +1377,9 @@ const quizTranslations = {
     nepali: {
         quizTitle: "NEPSE छिटो क्विज",
         quizSubtitle: "बजारका आधारभूत कुरा जाँच्न १० छोटा प्रश्नहरू।",
+        quizIntroTitle: "NEPSE छिटो क्विज",
+        quizIntroDesc: "ट्रेडिङ अघि बजारका आधारभूत कुरा तातो बनाउन छोटो र अन्तरक्रियात्मक क्विज।",
+        quizLaunch: "आफ्नो ज्ञान परीक्षण गर्नुहोस्!",
         startQuiz: "क्विज सुरु गर्नुहोस्",
         nextQuestion: "अर्को",
         restartQuiz: "क्विज पुनः सुरु गर्नुहोस्",
@@ -1542,6 +1548,7 @@ const quizQuestions = [
 ];
 
 const quizState = {
+    isOpen: false,
     isStarted: false,
     isFinished: false,
     currentQuestionIndex: 0,
@@ -1574,8 +1581,14 @@ function resetQuizState() {
     lastQuizQuestionIndex = null;
 }
 
+function revealQuiz() {
+    quizState.isOpen = true;
+    renderQuiz();
+}
+
 function startQuiz() {
     resetQuizState();
+    quizState.isOpen = true;
     quizState.isStarted = true;
     renderQuiz();
 }
@@ -1637,6 +1650,14 @@ function renderQuiz() {
     if (!container) {
         return;
     }
+
+    if (!quizState.isOpen) {
+        container.innerHTML = '';
+        container.classList.add('is-hidden');
+        return;
+    }
+
+    container.classList.remove('is-hidden');
 
     const language = getCurrentLanguage();
     const texts = getQuizTranslations(language);
@@ -1833,6 +1854,19 @@ function renderQuiz() {
     lastQuizView = view;
     lastQuizQuestionIndex = quizState.currentQuestionIndex;
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const launchButton = document.getElementById('quizLaunch');
+    if (launchButton) {
+        launchButton.addEventListener('click', () => {
+            revealQuiz();
+            const quizContent = document.getElementById('quizContent');
+            if (quizContent) {
+                quizContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+});
 
 // Initialize settings from localStorage or set defaults
 function initializeSettings() {
