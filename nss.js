@@ -1,5 +1,5 @@
 // Store company information globally
-let companyDetail = new Map();
+let companyDetails = new Map();
 let currentSectorFilter = 'All';
 let latestSectorCounts = new Map();
 const activeSellRequests = new Set();
