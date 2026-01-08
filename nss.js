@@ -1075,6 +1075,7 @@ const translations = {
         settings: 'Settings',
         about: 'About',
         teamNav: 'Our Team',
+        playgroundNav: 'Playground',
         credits: 'Credits',
         add: 'Add',
         home: 'Home',
@@ -1168,6 +1169,8 @@ const translations = {
         youtube: "YouTube",
         teamTitle: "Our Team",
         teamDescription: "Meet the passionate people guiding the Nepal Stock Simulator and supporting our community of investors.",
+        playgroundTitle: "Playground",
+        playgroundSubtitle: "Explore interactive learning experiences crafted for NEPSE beginners.",
         managementLabel: "Management & Operations",
         researchLabel: "Research & Development",
         financeLabel: "Finances",
@@ -1218,6 +1221,7 @@ const translations = {
         settings: 'सेटिङ',
         about: 'बारेमा',
         teamNav: 'हाम्रो टीम',
+        playgroundNav: 'प्लेग्राउन्ड',
         credits: 'क्रेडिट',
         add: 'थप्नुहोस्',
         home: 'गृह',
@@ -1311,6 +1315,8 @@ const translations = {
         youtube: "युट्युब",
         teamTitle: "हाम्रो टीम",
         teamDescription: "नेपाल स्टक सिमुलेटरलाई मार्गदर्शन गर्ने र हाम्रो लगानीकर्ता समुदायलाई समर्थन गर्ने समर्पित टोलीलाई भेट्नुहोस्।",
+        playgroundTitle: "प्लेग्राउन्ड",
+        playgroundSubtitle: "NEPSE का सुरुवाती सिकाइका लागि बनाइएका अन्तरक्रियात्मक अनुभवहरू।",
         managementLabel: "व्यवस्थापन र सञ्चालन",
         researchLabel: "अनुसन्धान र विकास",
         financeLabel: "वित्त",
@@ -1348,6 +1354,513 @@ const translations = {
         closeButton: "बन्द गर्नुहोस्"
     }
 };
+
+const quizTranslations = {
+    english: {
+        quizTitle: "NEPSE Quick Quiz",
+        quizSubtitle: "Answer 10 quick questions to test your market basics.",
+        quizIntroTitle: "NEPSE Quick Quiz",
+        quizIntroDesc: "A short, interactive quiz to warm up your stock market fundamentals before trading.",
+        quizLaunch: "Test your knowledge!",
+        startQuiz: "Start Quiz",
+        nextQuestion: "Next",
+        restartQuiz: "Restart Quiz",
+        tryTrading: "Try Trading",
+        correctLabel: "Correct ✓",
+        wrongLabel: "Wrong ✗",
+        questionProgress: "Question {current} / {total}",
+        scoreLine: "Your score: {score} / {total}",
+        scoreMessageLow: "Keep learning—your basics will sharpen with practice.",
+        scoreMessageMid: "Nice progress! A little more practice will help.",
+        scoreMessageHigh: "Excellent! Your NEPSE fundamentals look strong."
+    },
+    nepali: {
+        quizTitle: "NEPSE छिटो क्विज",
+        quizSubtitle: "बजारका आधारभूत कुरा जाँच्न १० छोटा प्रश्नहरू।",
+        quizIntroTitle: "NEPSE छिटो क्विज",
+        quizIntroDesc: "ट्रेडिङ अघि बजारका आधारभूत कुरा तातो बनाउन छोटो र अन्तरक्रियात्मक क्विज।",
+        quizLaunch: "आफ्नो ज्ञान परीक्षण गर्नुहोस्!",
+        startQuiz: "क्विज सुरु गर्नुहोस्",
+        nextQuestion: "अर्को",
+        restartQuiz: "क्विज पुनः सुरु गर्नुहोस्",
+        tryTrading: "ट्रेडिङ प्रयास गर्नुहोस्",
+        correctLabel: "सही ✓",
+        wrongLabel: "गलत ✗",
+        questionProgress: "प्रश्न {current} / {total}",
+        scoreLine: "तपाईंको स्कोर: {score} / {total}",
+        scoreMessageLow: "अझै अभ्यास गर्नुपर्छ—आधारभूत कुरा बलियो बनाऔँ।",
+        scoreMessageMid: "राम्रो प्रगति! अलि बढी अभ्यास उपयोगी हुन्छ।",
+        scoreMessageHigh: "उत्कृष्ट! तपाईंको NEPSE आधार बलियो छ।"
+    }
+};
+
+const quizQuestions = [
+    {
+        prompt: {
+            english: "NEPSE stands for",
+            nepali: "NEPSE को पूरा रूप के हो"
+        },
+        options: {
+            english: ["Nepal Stock Exchange", "Nepal Securities Exchange Program", "National Equity and Price System"],
+            nepali: ["नेपाल स्टक एक्सचेन्ज", "नेपाल सेक्युरिटीज एक्सचेन्ज प्रोग्राम", "नेशनल इक्विटी एन्ड प्राइस सिस्टम"]
+        },
+        correctIndex: 0,
+        explanation: {
+            english: "NEPSE is Nepal Stock Exchange, the national stock exchange.",
+            nepali: "NEPSE भनेको नेपालको स्टक एक्सचेन्ज हो।"
+        }
+    },
+    {
+        prompt: {
+            english: "What is the official regulator of the securities market in Nepal",
+            nepali: "नेपालमा धितोपत्र बजारको नियामक निकाय कुन हो"
+        },
+        options: {
+            english: ["NRB", "SEBON", "MoF"],
+            nepali: ["नेपाल राष्ट्र बैंक", "सेबोन", "अर्थ मन्त्रालय"]
+        },
+        correctIndex: 1,
+        explanation: {
+            english: "SEBON regulates Nepal's securities market.",
+            nepali: "नेपालको धितोपत्र बजारको नियामक निकाय सेबोन हो।"
+        }
+    },
+    {
+        prompt: {
+            english: "A share traded on NEPSE is primarily traded in which market",
+            nepali: "NEPSE मा कारोबार हुने शेयर मुख्यतया कुन बजारमा पर्छ"
+        },
+        options: {
+            english: ["Primary market", "Black market", "Secondary market"],
+            nepali: ["प्राथमिक बजार", "कालो बजार", "द्वितीयक बजार"]
+        },
+        correctIndex: 2,
+        explanation: {
+            english: "NEPSE is a secondary market for trading listed shares.",
+            nepali: "NEPSE मा सूचीबद्ध शेयरहरूको द्वितीयक बजारमा कारोबार हुन्छ।"
+        }
+    },
+    {
+        prompt: {
+            english: "IPO stands for",
+            nepali: "IPO को पूरा रूप के हो"
+        },
+        options: {
+            english: ["International Price Option", "Initial Public Offering", "Investor Profit Output"],
+            nepali: ["अन्तर्राष्ट्रिय मूल्य विकल्प", "प्रारम्भिक सार्वजनिक निष्कासन", "लगानीकर्ता नाफा नतिजा"]
+        },
+        correctIndex: 1,
+        explanation: {
+            english: "IPO means Initial Public Offering.",
+            nepali: "IPO भनेको प्रारम्भिक सार्वजनिक निष्कासन हो।"
+        }
+    },
+    {
+        prompt: {
+            english: "In Nepal, most IPO applications are submitted through",
+            nepali: "नेपालमा अधिकांश IPO आवेदन कुन माध्यमबाट गरिन्छ"
+        },
+        options: {
+            english: ["ePassport", "Nagarik App only", "MeroShare"],
+            nepali: ["इ पासपोर्ट", "केवल नागरिक एप", "मेरोशेयर"]
+        },
+        correctIndex: 2,
+        explanation: {
+            english: "Most IPO applications are submitted through MeroShare.",
+            nepali: "अधिकांश IPO आवेदन मेरोशेयरबाट गरिन्छ।"
+        }
+    },
+    {
+        prompt: {
+            english: "What does a Demat account mainly do",
+            nepali: "डिम्याट खाता मुख्यतया के का लागि प्रयोग हुन्छ"
+        },
+        options: {
+            english: ["Gives loans to investors", "Sets the share price", "Holds shares in electronic form"],
+            nepali: ["लगानीकर्तालाई ऋण दिन", "शेयरको मूल्य तोक्न", "शेयरलाई डिजिटल रूपमा राख्न"]
+        },
+        correctIndex: 2,
+        explanation: {
+            english: "A Demat account holds shares in electronic form.",
+            nepali: "डिम्याट खाताले शेयरलाई डिजिटल रूपमा राख्छ।"
+        }
+    },
+    {
+        prompt: {
+            english: "Which term best describes the NEPSE Index",
+            nepali: "NEPSE सूचकांक के जनाउँछ"
+        },
+        options: {
+            english: ["A list of only bank shares", "A measure of overall market movement", "A company’s profit report"],
+            nepali: ["केवल बैंक शेयरको सूची", "बजारको समग्र चालको मापन", "कम्पनीको नाफा प्रतिवेदन"]
+        },
+        correctIndex: 1,
+        explanation: {
+            english: "The NEPSE Index reflects overall market movement.",
+            nepali: "NEPSE सूचकांकले बजारको समग्र चाल देखाउँछ।"
+        }
+    },
+    {
+        prompt: {
+            english: "If more people want to buy a stock than sell it, the price usually",
+            nepali: "यदि किन्ने चाहना बेच्नेभन्दा बढी भयो भने मूल्य सामान्यतया"
+        },
+        options: {
+            english: ["Goes up", "Goes down", "Stays fixed"],
+            nepali: ["बढ्छ", "घट्छ", "उस्तै रहन्छ"]
+        },
+        correctIndex: 0,
+        explanation: {
+            english: "Higher demand than supply generally pushes the price up.",
+            nepali: "किन्ने चाहना बढी भए मूल्य सामान्यतया बढ्छ।"
+        }
+    },
+    {
+        prompt: {
+            english: "The money you deposit to buy shares is generally kept in",
+            nepali: "शेयर किन्नका लागि राखिने पैसा सामान्यतया कहाँ हुन्छ"
+        },
+        options: {
+            english: ["Demat account", "Share certificate file", "Bank account"],
+            nepali: ["डिम्याट खातामा", "शेयर प्रमाणपत्र फाइलमा", "बैंक खातामा"]
+        },
+        correctIndex: 2,
+        explanation: {
+            english: "Funds for buying shares are kept in the linked bank account.",
+            nepali: "शेयर किन्नका लागि राखिने पैसा बैंक खातामा हुन्छ।"
+        }
+    },
+    {
+        prompt: {
+            english: "Diversification means",
+            nepali: "विविधीकरण भन्नाले के बुझिन्छ"
+        },
+        options: {
+            english: ["Putting all money in one stock", "Investing in different companies or sectors", "Buying and selling daily without plan"],
+            nepali: ["सबै पैसा एउटै शेयरमा राख्नु", "विभिन्न कम्पनी वा क्षेत्रहरुमा लगानी गर्नु", "योजना बिना दैनिक किनबेच गर्नु"]
+        },
+        correctIndex: 1,
+        explanation: {
+            english: "Diversification is investing across multiple companies or sectors.",
+            nepali: "विविधीकरण भनेको विभिन्न कम्पनी वा क्षेत्रमा लगानी गर्नु हो।"
+        }
+    }
+];
+
+const quizState = {
+    isOpen: false,
+    isStarted: false,
+    isFinished: false,
+    currentQuestionIndex: 0,
+    selectedOptionIndex: null,
+    score: 0,
+    hasAnswered: false,
+    answers: Array.from({ length: quizQuestions.length }, () => null)
+};
+
+let lastQuizView = null;
+let lastQuizQuestionIndex = null;
+
+function formatQuizNumber(value, language = getCurrentLanguage()) {
+    return convertDigitsForLanguage(value, language);
+}
+
+function getQuizTranslations(language = getCurrentLanguage()) {
+    return quizTranslations[language] || quizTranslations.english;
+}
+
+function resetQuizState() {
+    quizState.isStarted = false;
+    quizState.isFinished = false;
+    quizState.currentQuestionIndex = 0;
+    quizState.selectedOptionIndex = null;
+    quizState.score = 0;
+    quizState.hasAnswered = false;
+    quizState.answers = Array.from({ length: quizQuestions.length }, () => null);
+    lastQuizView = null;
+    lastQuizQuestionIndex = null;
+}
+
+function revealQuiz() {
+    resetQuizState();
+    quizState.isOpen = true;
+    quizState.isStarted = true;
+    renderQuiz();
+}
+
+function startQuiz() {
+    resetQuizState();
+    quizState.isOpen = true;
+    quizState.isStarted = true;
+    renderQuiz();
+}
+
+function restartQuiz() {
+    startQuiz();
+}
+
+function updateQuizTranslations(language = getCurrentLanguage()) {
+    const texts = getQuizTranslations(language);
+    document.querySelectorAll('[data-quiz-translate]').forEach(element => {
+        const key = element.getAttribute('data-quiz-translate');
+        if (texts[key]) {
+            element.textContent = texts[key];
+        }
+    });
+    renderQuiz();
+}
+
+function handleOptionSelection(selectedIndex) {
+    if (quizState.hasAnswered) {
+        return;
+    }
+    const currentQuestion = quizQuestions[quizState.currentQuestionIndex];
+    quizState.selectedOptionIndex = selectedIndex;
+    quizState.hasAnswered = true;
+    quizState.answers[quizState.currentQuestionIndex] = selectedIndex;
+    if (selectedIndex === currentQuestion.correctIndex) {
+        quizState.score += 1;
+    }
+    renderQuiz();
+}
+
+function handleNextQuestion() {
+    const nextIndex = quizState.currentQuestionIndex + 1;
+    if (nextIndex >= quizQuestions.length) {
+        quizState.isFinished = true;
+    } else {
+        quizState.currentQuestionIndex = nextIndex;
+    }
+    const selectedIndex = quizState.answers[quizState.currentQuestionIndex];
+    quizState.selectedOptionIndex = selectedIndex;
+    quizState.hasAnswered = selectedIndex !== null && selectedIndex !== undefined;
+    renderQuiz();
+}
+
+function getScoreMessage(score, texts) {
+    if (score <= 3) {
+        return texts.scoreMessageLow;
+    }
+    if (score <= 7) {
+        return texts.scoreMessageMid;
+    }
+    return texts.scoreMessageHigh;
+}
+
+function renderQuiz() {
+    const container = document.getElementById('quizContent');
+    if (!container) {
+        return;
+    }
+
+    const introPanel = document.querySelector('.playground-quiz-intro');
+    if (!quizState.isOpen) {
+        container.innerHTML = '';
+        container.classList.add('is-hidden');
+        if (introPanel) {
+            introPanel.classList.remove('is-hidden');
+        }
+        return;
+    }
+
+    container.classList.remove('is-hidden');
+    if (introPanel) {
+        introPanel.classList.add('is-hidden');
+    }
+
+    const language = getCurrentLanguage();
+    const texts = getQuizTranslations(language);
+    const totalQuestions = quizQuestions.length;
+    container.innerHTML = '';
+
+    const view = quizState.isFinished ? 'result' : (quizState.isStarted ? 'question' : 'start');
+    if (!quizState.isStarted) {
+        quizState.isStarted = true;
+    }
+    const shouldAnimate = view !== lastQuizView || (view === 'question' && quizState.currentQuestionIndex !== lastQuizQuestionIndex);
+
+    if (quizState.isFinished) {
+        const resultPanel = document.createElement('div');
+        resultPanel.className = 'quiz-panel quiz-result';
+
+        const scoreLine = document.createElement('div');
+        scoreLine.className = 'quiz-result-score';
+        scoreLine.textContent = texts.scoreLine
+            .replace('{score}', formatQuizNumber(quizState.score, language))
+            .replace('{total}', formatQuizNumber(totalQuestions, language));
+
+        const scoreMessage = document.createElement('div');
+        scoreMessage.className = 'quiz-result-message';
+        scoreMessage.textContent = getScoreMessage(quizState.score, texts);
+
+        const actions = document.createElement('div');
+        actions.className = 'quiz-actions';
+
+        const tradeButton = document.createElement('button');
+        tradeButton.type = 'button';
+        tradeButton.className = 'quiz-primary-btn';
+        tradeButton.textContent = texts.tryTrading;
+        tradeButton.addEventListener('click', () => {
+            showSection('market');
+            updateActiveSection('market');
+        });
+
+        const restartButton = document.createElement('button');
+        restartButton.type = 'button';
+        restartButton.className = 'quiz-secondary-btn';
+        restartButton.textContent = texts.restartQuiz;
+        restartButton.addEventListener('click', restartQuiz);
+
+        actions.appendChild(tradeButton);
+        actions.appendChild(restartButton);
+
+        resultPanel.appendChild(scoreLine);
+        resultPanel.appendChild(scoreMessage);
+        resultPanel.appendChild(actions);
+        container.appendChild(resultPanel);
+
+        if (shouldAnimate) {
+            requestAnimationFrame(() => resultPanel.classList.add('is-visible'));
+        } else {
+            resultPanel.classList.add('is-visible');
+        }
+        lastQuizView = view;
+        return;
+    }
+
+    const currentQuestion = quizQuestions[quizState.currentQuestionIndex];
+    const selectedIndex = quizState.answers[quizState.currentQuestionIndex];
+    quizState.selectedOptionIndex = selectedIndex;
+    quizState.hasAnswered = selectedIndex !== null && selectedIndex !== undefined;
+
+    const questionPanel = document.createElement('div');
+    questionPanel.className = 'quiz-panel quiz-question';
+
+    const progressMeta = document.createElement('div');
+    progressMeta.className = 'quiz-progress-meta';
+
+    const progressLabel = document.createElement('span');
+    progressLabel.textContent = texts.questionProgress
+        .replace('{current}', formatQuizNumber(quizState.currentQuestionIndex + 1, language))
+        .replace('{total}', formatQuizNumber(totalQuestions, language));
+
+    progressMeta.appendChild(progressLabel);
+
+    const progressBar = document.createElement('div');
+    progressBar.className = 'quiz-progress';
+
+    const progressIndicator = document.createElement('div');
+    progressIndicator.className = 'quiz-progress-bar';
+    progressIndicator.style.width = `${((quizState.currentQuestionIndex + 1) / totalQuestions) * 100}%`;
+    progressBar.appendChild(progressIndicator);
+
+    const questionCard = document.createElement('div');
+    questionCard.className = 'quiz-question-card';
+
+    const questionText = document.createElement('div');
+    questionText.className = 'quiz-question-text';
+    questionText.textContent = currentQuestion.prompt[language];
+    questionCard.appendChild(questionText);
+
+    const optionsWrapper = document.createElement('div');
+    optionsWrapper.className = 'quiz-options';
+
+    currentQuestion.options[language].forEach((option, index) => {
+        const optionButton = document.createElement('button');
+        optionButton.type = 'button';
+        optionButton.className = 'quiz-option';
+        const optionText = document.createElement('span');
+        optionText.className = 'quiz-option-text';
+        optionText.textContent = option;
+        optionButton.appendChild(optionText);
+        optionButton.setAttribute('aria-pressed', selectedIndex === index ? 'true' : 'false');
+        if (quizState.hasAnswered) {
+            optionButton.disabled = true;
+            if (index === currentQuestion.correctIndex) {
+                optionButton.classList.add('is-correct');
+                const correctIcon = document.createElement('span');
+                correctIcon.className = 'quiz-option-icon';
+                correctIcon.textContent = '✔';
+                correctIcon.setAttribute('aria-hidden', 'true');
+                optionButton.appendChild(correctIcon);
+            }
+            if (index === selectedIndex && selectedIndex !== currentQuestion.correctIndex) {
+                optionButton.classList.add('is-wrong');
+                const wrongIcon = document.createElement('span');
+                wrongIcon.className = 'quiz-option-icon';
+                wrongIcon.textContent = '✖';
+                wrongIcon.setAttribute('aria-hidden', 'true');
+                optionButton.appendChild(wrongIcon);
+            }
+        } else {
+            optionButton.addEventListener('click', () => handleOptionSelection(index));
+        }
+        optionsWrapper.appendChild(optionButton);
+    });
+
+    questionPanel.appendChild(progressMeta);
+    questionPanel.appendChild(progressBar);
+    questionPanel.appendChild(questionCard);
+    questionPanel.appendChild(optionsWrapper);
+
+    if (quizState.hasAnswered) {
+        const feedback = document.createElement('div');
+        const isCorrect = selectedIndex === currentQuestion.correctIndex;
+        feedback.className = `quiz-feedback ${isCorrect ? 'is-correct' : 'is-wrong'}`;
+
+        const feedbackTitle = document.createElement('strong');
+        feedbackTitle.textContent = isCorrect ? texts.correctLabel : texts.wrongLabel;
+
+        const feedbackText = document.createElement('span');
+        feedbackText.textContent = currentQuestion.explanation[language];
+
+        feedback.appendChild(feedbackTitle);
+        feedback.appendChild(feedbackText);
+
+        const actions = document.createElement('div');
+        actions.className = 'quiz-actions';
+
+        const nextButton = document.createElement('button');
+        nextButton.type = 'button';
+        nextButton.className = 'quiz-primary-btn';
+        nextButton.textContent = texts.nextQuestion;
+        nextButton.addEventListener('click', handleNextQuestion);
+
+        actions.appendChild(nextButton);
+
+        questionPanel.appendChild(feedback);
+        questionPanel.appendChild(actions);
+    }
+
+    container.appendChild(questionPanel);
+
+    if (shouldAnimate) {
+        requestAnimationFrame(() => questionPanel.classList.add('is-visible'));
+    } else {
+        questionPanel.classList.add('is-visible');
+    }
+
+    const feedbackPanel = questionPanel.querySelector('.quiz-feedback');
+    if (feedbackPanel) {
+        requestAnimationFrame(() => feedbackPanel.classList.add('is-visible'));
+    }
+
+    lastQuizView = view;
+    lastQuizQuestionIndex = quizState.currentQuestionIndex;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const launchButton = document.getElementById('quizLaunch');
+    if (launchButton) {
+        launchButton.addEventListener('click', () => {
+            revealQuiz();
+            const quizContent = document.getElementById('quizContent');
+            if (quizContent) {
+                quizContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
+});
 
 // Initialize settings from localStorage or set defaults
 function initializeSettings() {
@@ -1444,6 +1957,9 @@ function updateLanguage(language) {
 
     // Update dynamic content
     updateDynamicContent(language);
+
+    // Update quiz content
+    updateQuizTranslations(language);
 }
 
 // Update dynamic content that's added through JavaScript
