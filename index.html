@@ -181,8 +181,17 @@
             <h3 data-translate="browseBySector">Browse by Sector</h3>
             <span id="selectedSectorLabel" class="selected-sector" data-translate="allSectors">All Sectors</span>
           </div>
+        </div>
+
+        <div class="sector-categories">
+          <div class="sector-header">
+            <h3 data-translate="browseBySector">Browse by Sector</h3>
+            <span id="selectedSectorLabel" class="selected-sector" data-translate="allSectors">All Sectors</span>
+          </div>
           <div id="sectorFilters" class="sector-chip-group"></div>
-          <p id="sectorEmptyState" class="sector-empty" style="display: none;" data-translate="noSectorResults">No stocks found for this sector.</p>
+          <p id="sectorEmptyState" class="sector-empty" style="display: none;" data-translate="noSectorResults">
+            No stocks found for this sector.
+          </p>
         </div>
 
         <div class="market-movers">
@@ -200,6 +209,7 @@
                 <tbody></tbody>
               </table>
             </div>
+
             <div class="losers-table">
               <h3 data-translate="topLosers">📉 Top Losers</h3>
               <table id="losersTable">
@@ -249,6 +259,7 @@
     <section id="portfolio" style="display: none;">
       <div class="portfolio-content">
         <h2 class="section-title" data-translate="portfolio">My Investment Portfolio 📊</h2>
+
         <div class="table-container">
           <table id="investmentHistory">
             <thead>
@@ -264,12 +275,15 @@
                 <th data-translate="action">Action ⚡</th>
               </tr>
             </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <p class="portfolio-note" title="Broker fees apply when purchasing stocks, so your portfolio might show a small loss at first.">🔍 Note: Portfolio shows slight initial loss due to broker fees</p>
+            <tbody></tbody>
+          </table>
+        </div>
 
-      <div class="portfolio-actions">
+        <p class="portfolio-note" title="Broker fees apply when purchasing stocks, so your portfolio might show a small loss at first.">
+          🔍 Note: Portfolio shows slight initial loss due to broker fees
+        </p>
+
+        <div class="portfolio-actions">
           <button onclick="showSection('market')" class="buy-more-btn" data-translate="buyMore">
             Buy More Stocks 🚀
           </button>
@@ -280,7 +294,9 @@
           <div class="message">
             <h3 data-translate="noInvestments">No investments yet! 🎯</h3>
             <p data-translate="startInvestingDesc">Head over to the Market section to start your investment journey!</p>
-            <button onclick="showSection('market')" class="start-investing-btn" data-translate="startInvesting">Start Investing Now 🚀</button>
+            <button onclick="showSection('market')" class="start-investing-btn" data-translate="startInvesting">
+              Start Investing Now 🚀
+            </button>
           </div>
         </div>
       </div>
@@ -324,7 +340,7 @@
     <section id="settings" style="display: none;">
       <div class="settings-content">
         <h2 class="section-title" data-translate="settings">Settings ⚙️</h2>
-        
+
         <div class="settings-grid">
           <!-- Theme Settings -->
           <div class="settings-card">
@@ -390,7 +406,10 @@
             <span class="icon">📈</span>
           </div>
           <h2 data-translate="nssTitle">Nepal Stock Simulator (NSS)</h2>
-          <p data-translate="nssDesc">A virtual stock trading platform designed to help beginners learn about the Nepal Stock Exchange (NEPSE) in a risk-free environment. Practice trading with virtual credits, track your portfolio, and compete with other investors on the leaderboard.</p>
+          <p data-translate="nssDesc">
+            A virtual stock trading platform designed to help beginners learn about the Nepal Stock Exchange (NEPSE) in a risk-free environment.
+            Practice trading with virtual credits, track your portfolio, and compete with other investors on the leaderboard.
+          </p>
           <div class="features-grid">
             <div class="feature">
               <span class="feature-icon">💼</span>
@@ -423,7 +442,9 @@
             <div class="founder-details">
               <h3 data-translate="founderName">Subigya Raj Kharel</h3>
               <p class="founder-role" data-translate="founderRole">Student Developer</p>
-              <p class="founder-bio" data-translate="founderBio">Subigya Raj Kharel is a student developer from Kathmandu, Nepal. Currently studying in grade 9, Subigya loves to code and make different kinds of websites and apps.</p>
+              <p class="founder-bio" data-translate="founderBio">
+                Subigya Raj Kharel is a student developer from Kathmandu, Nepal. Currently studying in grade 9, Subigya loves to code and make different kinds of websites and apps.
+              </p>
             </div>
           </div>
         </div>
@@ -435,11 +456,11 @@
           </div>
           <h2 data-translate="connectTitle">Connect With Us</h2>
           <div class="social-grid">
-            <a href="https://www.instagram.com/nepalstocksimulator/" class="social-link instagram" target="_blank">
+            <a href="https://www.instagram.com/nepalstocksimulator/" class="social-link instagram" target="_blank" rel="noopener">
               <span class="social-icon">📸</span>
               <span class="social-text" data-translate="instagram">Instagram</span>
             </a>
-            <a href="https://www.youtube.com/@nepalstocksimulator" class="social-link youtube" target="_blank">
+            <a href="https://www.youtube.com/@nepalstocksimulator" class="social-link youtube" target="_blank" rel="noopener">
               <span class="social-icon">📺</span>
               <span class="social-text" data-translate="youtube">YouTube</span>
             </a>
@@ -448,6 +469,7 @@
       </div>
     </section>
 
+    <!-- Playground: QUIZ + CHART GAME -->
     <section id="playground" style="display: none;">
       <div class="playground-section">
         <div class="playground-header">
@@ -455,18 +477,21 @@
           <p data-translate="playgroundDescription">Practice faster with mini games built for NSE trading intuition.</p>
         </div>
 
-        <div class="playground-block quiz-block">
-          <div class="playground-card">
-            <div class="playground-card-header">
-              <h3 data-translate="quizTitle">NEPSE Quick Quiz</h3>
-              <p data-translate="quizDescription">Test your NEPSE basics in quick bites.</p>
-            </div>
-            <div class="quiz-body">
-              <p data-translate="quizBody">Quiz experience goes here.</p>
-            </div>
+        <!-- QUIZ (codex) -->
+        <div class="playground-card">
+          <div class="playground-card-header">
+            <h3 data-quiz-translate="quizTitle"></h3>
+            <p data-quiz-translate="quizSubtitle"></p>
           </div>
+          <div class="playground-quiz-intro">
+            <h4 data-quiz-translate="quizIntroTitle"></h4>
+            <p data-quiz-translate="quizIntroDesc"></p>
+            <button id="quizLaunch" class="quiz-secondary-btn" type="button" data-quiz-translate="quizLaunch"></button>
+          </div>
+          <div id="quizContent" class="quiz-content is-hidden" aria-live="polite"></div>
         </div>
 
+        <!-- CHART GAME (main) -->
         <div class="playground-block chart-game-block">
           <div class="playground-card chart-game-card">
             <div class="playground-card-header">
@@ -474,7 +499,7 @@
               <p data-translate="chartGameSubtitle">Press and hold to buy, release to sell</p>
             </div>
             <p class="playground-card-description" data-translate="chartGameDescription">
-              Master the press-and-hold trading rhythm with simulated NEPSE charts.
+              Master the press and hold trading rhythm with simulated NEPSE charts.
             </p>
             <div class="playground-howto" data-animate="howto">
               <p data-translate="chartGameHowtoLine1">Press and hold on the chart to buy at the current price.</p>
@@ -488,6 +513,7 @@
     </section>
   </main>
 
+  <!-- Chart Game Modal (main) -->
   <div id="chartGameModal" class="chart-game-modal" aria-hidden="true">
     <div class="chart-game-shell">
       <div class="chart-game-header">
@@ -497,6 +523,7 @@
         </div>
         <button class="chart-game-close" id="chartGameClose" data-translate="chartGameExit">Exit to Playground</button>
       </div>
+
       <div class="chart-game-scoreboard">
         <div class="score-item">
           <span data-translate="chartGameProgressLabel">Progress</span>
@@ -511,22 +538,28 @@
           <strong id="chartGameTotalReturn">0%</strong>
         </div>
       </div>
+
       <div class="chart-game-chart-wrapper" id="chartGameChartArea">
         <canvas id="chartGameCanvas"></canvas>
         <div class="chart-game-hint" data-translate="chartGameHint">Press &amp; hold to buy</div>
       </div>
+
       <div class="chart-game-results" id="chartGameResults" aria-hidden="true">
         <div class="chart-game-results-card">
           <h3 data-translate="chartGameResultsTitle">Round Results</h3>
+
           <div class="chart-game-results-row">
             <span data-translate="chartGameYourReturnLabel">Your return</span>
             <strong id="chartGameYourReturn">0%</strong>
           </div>
+
           <div class="chart-game-results-row">
             <span data-translate="chartGameBuyHoldLabel">Buy &amp; Hold</span>
             <strong id="chartGameBuyHold">0%</strong>
           </div>
+
           <p id="chartGameStatusMessage"></p>
+
           <div class="chart-game-results-actions">
             <button id="chartGameRestart" class="chart-game-btn secondary" data-translate="chartGameRestart">Restart round</button>
             <button id="chartGameNewRound" class="chart-game-btn secondary" data-translate="chartGameNewRound">New round</button>
@@ -538,6 +571,7 @@
   </div>
 
   <!-- Trade Modal -->
+
   <div id="tradeModal" class="trade-modal">
     <div class="trade-modal-content">
       <div class="trade-modal-header">

@@ -1640,6 +1640,7 @@ function resetQuizState() {
 }
 
 function revealQuiz() {
+    resetQuizState();
     quizState.isOpen = true;
     quizState.isStarted = true;
     renderQuiz();
@@ -1731,29 +1732,37 @@ function renderQuiz() {
     container.innerHTML = '';
 
     const view = quizState.isFinished ? 'result' : (quizState.isStarted ? 'question' : 'start');
-    const shouldAnimate = view !== lastQuizView || (view === 'question' && quizState.currentQuestionIndex !== lastQuizQuestionIndex);
+const shouldAnimate =
+  view !== lastQuizView ||
+  (view === 'question' && quizState.currentQuestionIndex !== lastQuizQuestionIndex);
 
-    if (!quizState.isStarted) {
-        const startPanel = document.createElement('div');
-        startPanel.className = 'quiz-panel quiz-start';
+if (!quizState.isStarted) {
+  const startPanel = document.createElement('div');
+  startPanel.className = 'quiz-panel quiz-start';
 
-        const startButton = document.createElement('button');
-        startButton.type = 'button';
-        startButton.className = 'quiz-primary-btn';
-        startButton.textContent = texts.startQuiz;
-        startButton.addEventListener('click', startQuiz);
+  const startButton = document.createElement('button');
+  startButton.type = 'button';
+  startButton.className = 'quiz-primary-btn';
+  startButton.textContent = texts.startQuiz;
 
-        startPanel.appendChild(startButton);
-        container.appendChild(startPanel);
+  // IMPORTANT: mark started only when the user actually clicks start
+  startButton.addEventListener('click', () => {
+    quizState.isStarted = true;
+    startQuiz();
+  });
 
-        if (shouldAnimate) {
-            requestAnimationFrame(() => startPanel.classList.add('is-visible'));
-        } else {
-            startPanel.classList.add('is-visible');
-        }
-        lastQuizView = view;
-        return;
-    }
+  startPanel.appendChild(startButton);
+  container.appendChild(startPanel);
+
+  if (shouldAnimate) {
+    requestAnimationFrame(() => startPanel.classList.add('is-visible'));
+  } else {
+    startPanel.classList.add('is-visible');
+  }
+
+  lastQuizView = view;
+  return;
+}
 
     if (quizState.isFinished) {
         const resultPanel = document.createElement('div');
@@ -1830,9 +1839,15 @@ function renderQuiz() {
     progressIndicator.style.width = `${((quizState.currentQuestionIndex + 1) / totalQuestions) * 100}%`;
     progressBar.appendChild(progressIndicator);
 
-    const questionText = document.createElement('div');
-    questionText.className = 'quiz-question-text';
-    questionText.textContent = currentQuestion.prompt[language];
+const questionCard = document.createElement('div');
+questionCard.className = 'quiz-question-card';
+
+const questionText = document.createElement('div');
+questionText.className = 'quiz-question-text';
+questionText.textContent = currentQuestion.prompt[language];
+
+questionCard.appendChild(questionText);
+
 
     const optionsWrapper = document.createElement('div');
     optionsWrapper.className = 'quiz-options';
@@ -1872,7 +1887,7 @@ function renderQuiz() {
 
     questionPanel.appendChild(progressMeta);
     questionPanel.appendChild(progressBar);
-    questionPanel.appendChild(questionText);
+    questionPanel.appendChild(questionCard);
     questionPanel.appendChild(optionsWrapper);
 
     if (quizState.hasAnswered) {
