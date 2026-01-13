@@ -3,6 +3,7 @@ let companyDetails = new Map();
 let currentSectorFilter = 'All';
 let latestSectorCounts = new Map();
 const activeSellRequests = new Set();
+const BACKEND_BASE_URL = "https://nss-c26z.onrender.com";
 
 
 // Default credits given to new users (1 lakh)
@@ -128,6 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
   upgradeOldUsers();
   updatePortfolio();
   initNavigation();
+  initTradeAnalysisControls();
 
   if (!localStorage.getItem('allUsers')) {
     addSampleUsers();
@@ -285,9 +287,203 @@ function upgradeOldUsers() {
 
 // Trade Modal Functions
 let currentStockData = null;
+const tradeAnalysisState = {
+  chart: null,
+  candleSeries: null,
+  volumeSeries: null,
+  symbol: null,
+  range: 7,
+  isOpen: false,
+  resizeHandlerAttached: false
+};
+
+function getTradeAnalysisElements() {
+  return {
+    toggleBtn: document.getElementById("toggleTradeAnalysis"),
+    panel: document.getElementById("tradeAnalysisPanel"),
+    status: document.getElementById("tradeAnalysisStatus"),
+    container: document.getElementById("tradeChartContainer"),
+    rangeButtons: document.querySelectorAll(".range-btn")
+  };
+}
+
+function setTradeAnalysisStatus(message, isError = false) {
+  const { status } = getTradeAnalysisElements();
+  if (!status) {
+    return;
+  }
+  status.textContent = message;
+  status.classList.toggle("error", isError);
+}
+
+function ensureTradeChart() {
+  const { container } = getTradeAnalysisElements();
+  if (!container) {
+    return false;
+  }
+  if (tradeAnalysisState.chart) {
+    return true;
+  }
+  if (typeof LightweightCharts === "undefined") {
+    setTradeAnalysisStatus("Chart library failed to load.", true);
+    return false;
+  }
+  tradeAnalysisState.chart = LightweightCharts.createChart(container, {
+    width: container.clientWidth,
+    height: container.clientHeight,
+    layout: {
+      background: { type: "solid", color: "#ffffff" },
+      textColor: "#1f2a44",
+      fontFamily: "Poppins, sans-serif"
+    },
+    grid: {
+      vertLines: { color: "rgba(0, 0, 0, 0.05)" },
+      horzLines: { color: "rgba(0, 0, 0, 0.05)" }
+    },
+    rightPriceScale: {
+      borderColor: "rgba(0, 180, 216, 0.2)"
+    },
+    timeScale: {
+      borderColor: "rgba(0, 180, 216, 0.2)",
+      timeVisible: true,
+      secondsVisible: false
+    }
+  });
+
+  tradeAnalysisState.candleSeries = tradeAnalysisState.chart.addCandlestickSeries({
+    upColor: "#2ecc71",
+    downColor: "#e74c3c",
+    borderUpColor: "#2ecc71",
+    borderDownColor: "#e74c3c",
+    wickUpColor: "#2ecc71",
+    wickDownColor: "#e74c3c"
+  });
+
+  tradeAnalysisState.volumeSeries = tradeAnalysisState.chart.addHistogramSeries({
+    color: "rgba(0, 180, 216, 0.4)",
+    priceFormat: { type: "volume" },
+    priceScaleId: "",
+    scaleMargins: { top: 0.8, bottom: 0 }
+  });
+
+  if (!tradeAnalysisState.resizeHandlerAttached) {
+    window.addEventListener("resize", () => {
+      if (!tradeAnalysisState.chart || !container) {
+        return;
+      }
+      tradeAnalysisState.chart.applyOptions({ width: container.clientWidth });
+    });
+    tradeAnalysisState.resizeHandlerAttached = true;
+  }
+
+  return true;
+}
+
+function resetTradeAnalysisPanel() {
+  const { panel, toggleBtn, status, rangeButtons } = getTradeAnalysisElements();
+  if (panel) {
+    panel.classList.remove("is-open");
+    panel.setAttribute("aria-hidden", "true");
+  }
+  if (toggleBtn) {
+    toggleBtn.setAttribute("aria-expanded", "false");
+    toggleBtn.textContent = "View Technical Analysis Chart";
+  }
+  if (status) {
+    status.textContent = "Select a timeframe to load data.";
+    status.classList.remove("error");
+  }
+  rangeButtons.forEach(button => button.classList.remove("active"));
+  const defaultButton = document.querySelector('.range-btn[data-range="7"]');
+  if (defaultButton) {
+    defaultButton.classList.add("active");
+  }
+  tradeAnalysisState.isOpen = false;
+  tradeAnalysisState.range = 7;
+}
+
+async function loadTradeAnalysisData() {
+  if (!tradeAnalysisState.symbol) {
+    setTradeAnalysisStatus("Select a stock to load technical analysis.", true);
+    return;
+  }
+  if (!ensureTradeChart()) {
+    return;
+  }
+  setTradeAnalysisStatus("Loading chart data...");
+  const range = tradeAnalysisState.range;
+  const url = `${BACKEND_BASE_URL}/api/ohlc/${tradeAnalysisState.symbol}?limit=${range}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to load chart data (${response.status}).`);
+    }
+    const data = await response.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      setTradeAnalysisStatus("No technical analysis data available for this range.", true);
+      tradeAnalysisState.candleSeries.setData([]);
+      tradeAnalysisState.volumeSeries.setData([]);
+      return;
+    }
+    const candles = data.map(item => ({
+      time: item.date,
+      open: parseFloat(item.open),
+      high: parseFloat(item.high),
+      low: parseFloat(item.low),
+      close: parseFloat(item.close)
+    }));
+    const volumes = data.map(item => {
+      const open = parseFloat(item.open);
+      const close = parseFloat(item.close);
+      return {
+        time: item.date,
+        value: parseFloat(item.volume),
+        color: close >= open ? "rgba(46, 204, 113, 0.5)" : "rgba(231, 76, 60, 0.5)"
+      };
+    });
+    tradeAnalysisState.candleSeries.setData(candles);
+    tradeAnalysisState.volumeSeries.setData(volumes);
+    tradeAnalysisState.chart.timeScale().fitContent();
+    setTradeAnalysisStatus(`Showing last ${range} days of data.`);
+  } catch (error) {
+    setTradeAnalysisStatus(error.message || "Failed to load chart data.", true);
+  }
+}
+
+function initTradeAnalysisControls() {
+  const { toggleBtn, panel, rangeButtons } = getTradeAnalysisElements();
+  if (!toggleBtn || !panel) {
+    return;
+  }
+  toggleBtn.addEventListener("click", () => {
+    tradeAnalysisState.isOpen = !tradeAnalysisState.isOpen;
+    panel.classList.toggle("is-open", tradeAnalysisState.isOpen);
+    panel.setAttribute("aria-hidden", String(!tradeAnalysisState.isOpen));
+    toggleBtn.setAttribute("aria-expanded", String(tradeAnalysisState.isOpen));
+    toggleBtn.textContent = tradeAnalysisState.isOpen ? "Hide Technical Analysis" : "View Technical Analysis Chart";
+    if (tradeAnalysisState.isOpen) {
+      loadTradeAnalysisData();
+    }
+  });
+
+  rangeButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      rangeButtons.forEach(item => item.classList.remove("active"));
+      button.classList.add("active");
+      const rangeValue = parseInt(button.dataset.range, 10);
+      tradeAnalysisState.range = Number.isNaN(rangeValue) ? 7 : rangeValue;
+      if (tradeAnalysisState.isOpen) {
+        loadTradeAnalysisData();
+      } else {
+        setTradeAnalysisStatus("Select a timeframe to load data.");
+      }
+    });
+  });
+}
 
 function openTradeModal(symbol) {
-  fetch(`https://nss-c26z.onrender.com/StockPrice?symbol=${symbol}`)
+  resetTradeAnalysisPanel();
+  fetch(`${BACKEND_BASE_URL}/StockPrice?symbol=${symbol}`)
     .then(res => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -331,6 +527,10 @@ function openTradeModal(symbol) {
         tradeModal.style.display = "block";
         if (modalTradeShares) modalTradeShares.focus();
       }
+      tradeAnalysisState.symbol = symbol;
+      if (tradeAnalysisState.isOpen) {
+        loadTradeAnalysisData();
+      }
     })
     .catch(error => {
       console.error("Error fetching stock price:", error);
@@ -341,6 +541,8 @@ function openTradeModal(symbol) {
 function closeTradeModal() {
   document.getElementById("tradeModal").style.display = "none";
   currentStockData = null;
+  tradeAnalysisState.symbol = null;
+  resetTradeAnalysisPanel();
 }
 
 function updateCostPreview() {
