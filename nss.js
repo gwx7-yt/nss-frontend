@@ -509,7 +509,8 @@ const homeDashboardState = {
   latestPriceVolume: null,
   latestSectorOverview: null,
   lastBreadth: null,
-  lastSectorMetrics: null
+  lastSectorMetrics: null,
+  indexSeeded: false
 };
 
 function initializeHomeDashboard() {
@@ -519,8 +520,22 @@ function initializeHomeDashboard() {
     return;
   }
 
-  tickHomeDashboard();
-  setInterval(tickHomeDashboard, 20000);
+  seedHomeIndexChart().then(() => {
+    tickHomeDashboard();
+    setInterval(tickHomeDashboard, 20000);
+  });
+}
+
+async function seedHomeIndexChart() {
+  const timeLabel = formatKathmanduTime(new Date());
+  const indexValue = await fetchNepseIndexValue();
+  if (!homeDashboardState.indexSeeded && indexValue !== null) {
+    appendIndexPoint(indexValue, timeLabel);
+    updateUpdatedStamp('homeIndexUpdated', timeLabel);
+    homeDashboardState.indexSeeded = true;
+    updateIndexChart();
+    console.debug('Home index seeded points:', homeDashboardState.indexPoints.length);
+  }
 }
 
 async function tickHomeDashboard() {
@@ -558,12 +573,17 @@ async function tickHomeDashboard() {
   }
 
   const indexValue = await fetchNepseIndexValue();
-  if (marketOpen && indexValue !== null) {
-    appendIndexPoint(indexValue, timeLabel);
+  if (indexValue !== null) {
+    if (marketOpen) {
+      appendIndexPoint(indexValue, timeLabel);
+    }
     updateUpdatedStamp('homeIndexUpdated', timeLabel);
   }
 
   updateIndexChart();
+  if (homeDashboardState.indexPoints.length > 0) {
+    console.debug('Home index points after update:', homeDashboardState.indexPoints.length);
+  }
 
   updateTodayCard({
     marketOpen,
@@ -590,8 +610,15 @@ async function fetchNepseIndexValue() {
       throw new Error(`Index request failed: ${response.status}`);
     }
     const data = await response.json();
+    console.debug('Home index raw response:', data);
+    // Extract the index value from the existing StockPrice response shape.
     const value = parseFloat(data?.price ?? data?.index ?? data?.value);
-    return Number.isFinite(value) ? value : null;
+    if (!Number.isFinite(value) || value === 0) {
+      console.warn('Home index value invalid, skipping point:', value);
+      return null;
+    }
+    console.debug('Home index parsed value:', value);
+    return value;
   } catch (error) {
     return null;
   }
@@ -715,6 +742,7 @@ function calculateSectorPerformance(sectorOverview, priceVolume) {
     return [];
   }
   const quantityMap = new Map();
+  const pctSamples = [];
   if (Array.isArray(priceVolume)) {
     priceVolume.forEach(row => {
       const symbol = row?.symbol || row?.companySymbol;
@@ -729,7 +757,21 @@ function calculateSectorPerformance(sectorOverview, priceVolume) {
     });
   }
 
-  return sectorOverview.map(sector => {
+  sectorOverview.forEach(sector => {
+    const companies = sector?.companies || sector?.companyList || sector?.items || [];
+    companies.forEach(company => {
+      const pct = parseFloat(company?.percentageChange ?? company?.changePercent ?? company?.percentage_change ?? company?.change);
+      if (Number.isFinite(pct) && pct !== 0) {
+        pctSamples.push(pct);
+      }
+    });
+  });
+
+  const sampleCount = pctSamples.length;
+  const fractionalCount = pctSamples.filter(value => Math.abs(value) > 0 && Math.abs(value) < 0.5).length;
+  const conversionFactor = sampleCount > 0 && fractionalCount / sampleCount > 0.6 ? 100 : 1;
+
+  const sectorValues = sectorOverview.map(sector => {
     const companies = sector?.companies || sector?.companyList || sector?.items || [];
     let weightedSum = 0;
     let totalQty = 0;
@@ -738,7 +780,8 @@ function calculateSectorPerformance(sectorOverview, priceVolume) {
 
     companies.forEach(company => {
       const symbol = company?.symbol || company?.companySymbol;
-      const pct = parseFloat(company?.percentageChange ?? company?.changePercent ?? company?.percentage_change ?? company?.change);
+      const rawPct = parseFloat(company?.percentageChange ?? company?.changePercent ?? company?.percentage_change ?? company?.change);
+      const pct = Number.isFinite(rawPct) ? rawPct * conversionFactor : NaN;
       if (!Number.isFinite(pct)) {
         return;
       }
@@ -751,12 +794,24 @@ function calculateSectorPerformance(sectorOverview, priceVolume) {
       count += 1;
     });
 
-    const value = totalQty > 0 ? weightedSum / totalQty : (count > 0 ? simpleSum / count : 0);
+    if (count === 0) {
+      return null;
+    }
+
+    const value = totalQty > 0 ? weightedSum / totalQty : simpleSum / count;
     return {
       sector: sector?.sectorName || sector?.name || sector?.sector || 'N/A',
       value
     };
-  });
+  }).filter(Boolean);
+
+  console.debug('Sector sample conversion factor:', conversionFactor);
+  console.debug(
+    'Sector values preview:',
+    sectorValues.slice(0, 3).map(item => ({ sector: item.sector, value: item.value }))
+  );
+
+  return sectorValues;
 }
 
 function getChartColors() {
