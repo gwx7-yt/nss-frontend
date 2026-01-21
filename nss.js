@@ -1181,7 +1181,6 @@ async function updatePortfolio() {
       const profitLossSymbol = profitLossAmount >= 0 ? '📈' : '📉';
       const buyPriceDisplay = convertDigitsForLanguage(buyPrice.toFixed(2), currentLanguage);
       const currentPriceDisplay = convertDigitsForLanguage(currentPrice.toFixed(2), currentLanguage);
-      const creditsInvestedDisplay = convertDigitsForLanguage(creditsInvested.toFixed(2), currentLanguage);
       const creditsNowDisplay = convertDigitsForLanguage(creditsNow.toFixed(2), currentLanguage);
       const quantityDisplay = convertDigitsForLanguage(quantity.toFixed(4), currentLanguage);
       const profitLossAmountValue = profitLossAmount.toFixed(2);
@@ -1200,11 +1199,9 @@ async function updatePortfolio() {
         <td><strong>${investment.symbol}</strong></td>
         <td>${buyPriceDisplay} 💰</td>
         <td>${currentPriceDisplay} 📊</td>
-        <td>${creditsInvestedDisplay} 💵</td>
-        <td>${creditsNowDisplay} 💸</td>
         <td>${quantityDisplay} 📊</td>
-        <td class="${profitLossClass}">${profitLossAmountDisplay} ${profitLossSymbol}</td>
-        <td class="${profitLossClass}">${profitLossPercentDisplay} ${profitLossSymbol}</td>
+        <td>${creditsNowDisplay} 💸</td>
+        <td class="${profitLossClass}">${profitLossAmountDisplay} (${profitLossPercentDisplay}) ${profitLossSymbol}</td>
         <td><button onclick="sellInvestment(${investments.indexOf(investment)}, this)" class="sell-btn">${sellLabel}</button></td>
       `;
       tbody.appendChild(row);
