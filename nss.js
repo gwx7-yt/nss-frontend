@@ -3,6 +3,7 @@ let companyDetails = new Map();
 let currentSectorFilter = 'All';
 let latestSectorCounts = new Map();
 const activeSellRequests = new Set();
+const API_BASE = "https://nss-c26z.onrender.com";
 
 
 // Default credits given to new users (1 lakh)
@@ -501,6 +502,472 @@ function getTranslationValue(key, fallback = '') {
   return languageTexts[key] || fallback;
 }
 
+const homeDashboardState = {
+  indexPoints: [],
+  indexChart: null,
+  sectorChart: null,
+  latestPriceVolume: null,
+  latestSectorOverview: null,
+  lastBreadth: null,
+  lastSectorMetrics: null
+};
+
+function initializeHomeDashboard() {
+  const indexCanvas = document.getElementById('homeIndexChart');
+  const sectorCanvas = document.getElementById('homeSectorChart');
+  if (!indexCanvas || !sectorCanvas) {
+    return;
+  }
+
+  tickHomeDashboard();
+  setInterval(tickHomeDashboard, 20000);
+}
+
+async function tickHomeDashboard() {
+  const now = new Date();
+  const timeLabel = formatKathmanduTime(now);
+  const marketOpen = isMarketOpenKathmandu(now);
+
+  updateMarketStatus(marketOpen, timeLabel);
+
+  let priceVolume = null;
+  let sectorOverview = null;
+  let dataUpdated = false;
+
+  try {
+    [priceVolume, sectorOverview] = await Promise.all([
+      fetchHomeData(`${API_BASE}/PriceVolume`),
+      fetchHomeData(`${API_BASE}/SectorOverview`)
+    ]);
+    homeDashboardState.latestPriceVolume = priceVolume;
+    homeDashboardState.latestSectorOverview = sectorOverview;
+    dataUpdated = true;
+  } catch (error) {
+    priceVolume = homeDashboardState.latestPriceVolume;
+    sectorOverview = homeDashboardState.latestSectorOverview;
+  }
+
+  if (priceVolume && sectorOverview && dataUpdated) {
+    const breadth = calculateBreadth(priceVolume);
+    const sectorMetrics = calculateSectorPerformance(sectorOverview, priceVolume);
+    homeDashboardState.lastBreadth = breadth;
+    homeDashboardState.lastSectorMetrics = sectorMetrics;
+    renderBreadth(breadth);
+    updateSectorChart(sectorMetrics);
+    updateUpdatedStamp('homeSectorUpdated', timeLabel);
+  }
+
+  const indexValue = await fetchNepseIndexValue();
+  if (marketOpen && indexValue !== null) {
+    appendIndexPoint(indexValue, timeLabel);
+    updateUpdatedStamp('homeIndexUpdated', timeLabel);
+  }
+
+  updateIndexChart();
+
+  updateTodayCard({
+    marketOpen,
+    breadth: homeDashboardState.lastBreadth,
+    sectorMetrics: homeDashboardState.lastSectorMetrics,
+    indexChange: getIndexChange()
+  });
+}
+
+function fetchHomeData(url) {
+  return fetch(url, { cache: 'no-store' })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}`);
+      }
+      return response.json();
+    });
+}
+
+async function fetchNepseIndexValue() {
+  try {
+    const response = await fetch(`${API_BASE}/StockPrice?symbol=NEPSE`, { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error(`Index request failed: ${response.status}`);
+    }
+    const data = await response.json();
+    const value = parseFloat(data?.price ?? data?.index ?? data?.value);
+    return Number.isFinite(value) ? value : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function formatKathmanduTime(date) {
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kathmandu',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date);
+}
+
+function getKathmanduTimeParts(date) {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kathmandu',
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+  const parts = formatter.formatToParts(date).reduce((acc, part) => {
+    acc[part.type] = part.value;
+    return acc;
+  }, {});
+  const dayMap = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6
+  };
+
+  return {
+    day: dayMap[parts.weekday],
+    hour: parseInt(parts.hour, 10),
+    minute: parseInt(parts.minute, 10)
+  };
+}
+
+function isMarketOpenKathmandu(date) {
+  const { day, hour, minute } = getKathmanduTimeParts(date);
+  if (day === 6) {
+    return false;
+  }
+  if (hour < 11 || hour > 15) {
+    return false;
+  }
+  if (hour === 15 && minute > 0) {
+    return false;
+  }
+  return true;
+}
+
+function updateMarketStatus(isOpen, timeLabel) {
+  const marketState = document.getElementById('homeMarketState');
+  const lastUpdated = document.getElementById('homeLastUpdated');
+  if (marketState) {
+    marketState.textContent = getTranslationValue(isOpen ? 'open' : 'closed', isOpen ? 'OPEN' : 'CLOSED');
+  }
+  if (lastUpdated) {
+    lastUpdated.textContent = timeLabel;
+  }
+}
+
+function updateUpdatedStamp(id, timeLabel) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.textContent = timeLabel;
+  }
+}
+
+function calculateBreadth(priceVolume) {
+  if (!Array.isArray(priceVolume)) {
+    return { adv: 0, dec: 0, unch: 0, total: 0 };
+  }
+  let adv = 0;
+  let dec = 0;
+  let unch = 0;
+
+  priceVolume.forEach(row => {
+    const change = parseFloat(row?.percentageChange ?? row?.changePercent ?? row?.percentage_change ?? row?.change);
+    if (!Number.isFinite(change)) {
+      return;
+    }
+    if (change > 0) {
+      adv += 1;
+    } else if (change < 0) {
+      dec += 1;
+    } else {
+      unch += 1;
+    }
+  });
+
+  return {
+    adv,
+    dec,
+    unch,
+    total: adv + dec + unch
+  };
+}
+
+function renderBreadth(breadth) {
+  const setValue = (id, value) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = convertDigitsForLanguage(value, getCurrentLanguage());
+    }
+  };
+
+  setValue('homeAdv', breadth.adv);
+  setValue('homeDec', breadth.dec);
+  setValue('homeUnch', breadth.unch);
+  setValue('homeTotal', breadth.total);
+}
+
+function calculateSectorPerformance(sectorOverview, priceVolume) {
+  if (!Array.isArray(sectorOverview)) {
+    return [];
+  }
+  const quantityMap = new Map();
+  if (Array.isArray(priceVolume)) {
+    priceVolume.forEach(row => {
+      const symbol = row?.symbol || row?.companySymbol;
+      if (!symbol) {
+        return;
+      }
+      const qtyRaw = row?.totalTradeQuantity ?? row?.totalTradedQuantity ?? row?.totalQuantity;
+      const qty = parseFloat(qtyRaw);
+      if (Number.isFinite(qty)) {
+        quantityMap.set(symbol, qty);
+      }
+    });
+  }
+
+  return sectorOverview.map(sector => {
+    const companies = sector?.companies || sector?.companyList || sector?.items || [];
+    let weightedSum = 0;
+    let totalQty = 0;
+    let simpleSum = 0;
+    let count = 0;
+
+    companies.forEach(company => {
+      const symbol = company?.symbol || company?.companySymbol;
+      const pct = parseFloat(company?.percentageChange ?? company?.changePercent ?? company?.percentage_change ?? company?.change);
+      if (!Number.isFinite(pct)) {
+        return;
+      }
+      const qty = symbol ? quantityMap.get(symbol) : null;
+      if (qty && qty > 0) {
+        weightedSum += qty * pct;
+        totalQty += qty;
+      }
+      simpleSum += pct;
+      count += 1;
+    });
+
+    const value = totalQty > 0 ? weightedSum / totalQty : (count > 0 ? simpleSum / count : 0);
+    return {
+      sector: sector?.sectorName || sector?.name || sector?.sector || 'N/A',
+      value
+    };
+  });
+}
+
+function getChartColors() {
+  const styles = getComputedStyle(document.documentElement);
+  return {
+    primary: styles.getPropertyValue('--primary-color').trim() || '#00b4d8',
+    text: styles.getPropertyValue('--text-color').trim() || '#111111',
+    muted: styles.getPropertyValue('--text-muted').trim() || '#666666',
+    success: styles.getPropertyValue('--success-color').trim() || '#2ecc71',
+    error: styles.getPropertyValue('--error-color').trim() || '#e74c3c'
+  };
+}
+
+function updateSectorChart(sectorMetrics) {
+  const canvas = document.getElementById('homeSectorChart');
+  if (!canvas) {
+    return;
+  }
+
+  const labels = sectorMetrics.map(item => getLocalizedSectorName(item.sector, getCurrentLanguage()));
+  const values = sectorMetrics.map(item => Number(item.value.toFixed(2)));
+  const colors = getChartColors();
+  const barColors = values.map(value => (value >= 0 ? colors.success : colors.error));
+
+  if (!homeDashboardState.sectorChart) {
+    homeDashboardState.sectorChart = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            backgroundColor: barColors,
+            borderRadius: 8
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: context => `${convertDigitsForLanguage(context.parsed.y.toFixed(2), getCurrentLanguage())}%`
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: colors.text },
+            grid: { display: false }
+          },
+          y: {
+            ticks: {
+              color: colors.text,
+              callback: value => `${convertDigitsForLanguage(value, getCurrentLanguage())}%`
+            },
+            grid: { color: colors.muted }
+          }
+        }
+      }
+    });
+  } else {
+    homeDashboardState.sectorChart.data.labels = labels;
+    homeDashboardState.sectorChart.data.datasets[0].data = values;
+    homeDashboardState.sectorChart.data.datasets[0].backgroundColor = barColors;
+    homeDashboardState.sectorChart.update();
+  }
+}
+
+function appendIndexPoint(value, timeLabel) {
+  homeDashboardState.indexPoints.push({ t: new Date(), v: value, label: timeLabel });
+  if (homeDashboardState.indexPoints.length > 240) {
+    homeDashboardState.indexPoints.shift();
+  }
+}
+
+function updateIndexChart() {
+  const canvas = document.getElementById('homeIndexChart');
+  if (!canvas) {
+    return;
+  }
+  const colors = getChartColors();
+  const labels = homeDashboardState.indexPoints.map(point => point.label);
+  const values = homeDashboardState.indexPoints.map(point => point.v);
+
+  if (!homeDashboardState.indexChart) {
+    homeDashboardState.indexChart = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            borderColor: colors.primary,
+            backgroundColor: 'rgba(0, 180, 216, 0.12)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: context => convertDigitsForLanguage(context.parsed.y.toFixed(2), getCurrentLanguage())
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: colors.text, maxTicksLimit: 6 },
+            grid: { display: false }
+          },
+          y: {
+            ticks: {
+              color: colors.text,
+              callback: value => convertDigitsForLanguage(value, getCurrentLanguage())
+            },
+            grid: { color: colors.muted }
+          }
+        }
+      }
+    });
+  } else {
+    homeDashboardState.indexChart.data.labels = labels;
+    homeDashboardState.indexChart.data.datasets[0].data = values;
+    homeDashboardState.indexChart.update();
+  }
+}
+
+function getIndexChange() {
+  const points = homeDashboardState.indexPoints;
+  if (points.length < 2) {
+    return null;
+  }
+  const last = points[points.length - 1].v;
+  const prev = points[points.length - 2].v;
+  const change = last - prev;
+  return Number.isFinite(change) ? change : null;
+}
+
+function updateTodayCard({ marketOpen, breadth, sectorMetrics, indexChange }) {
+  const textEl = document.getElementById('homeTodayCardText');
+  const badgeEl = document.getElementById('homeTodayBadge');
+  if (!textEl || !badgeEl) {
+    return;
+  }
+
+  const adv = breadth?.adv ?? 0;
+  const dec = breadth?.dec ?? 0;
+  const topSector = getTopSectorLabel(sectorMetrics);
+  const hasIndexChange = Number.isFinite(indexChange);
+
+  let sentiment = 'mixed';
+  if (adv > dec && (!hasIndexChange || indexChange >= 0)) {
+    sentiment = 'bullish';
+  } else if (dec > adv && (!hasIndexChange || indexChange <= 0)) {
+    sentiment = 'bearish';
+  }
+
+  let sentence = '';
+  if (marketOpen) {
+    if (sentiment === 'bullish') {
+      sentence = topSector
+        ? `Markets are up so far today with broad buying and strength in ${topSector}.`
+        : 'Markets are up so far today with broad buying.';
+    } else if (sentiment === 'bearish') {
+      sentence = 'Markets are under pressure today as selling outweighs buying.';
+    } else {
+      sentence = 'Markets are mixed today with no clear direction yet.';
+    }
+  } else {
+    if (sentiment === 'bullish') {
+      sentence = topSector
+        ? `The market closed higher today, led by strength in ${topSector}.`
+        : 'The market closed higher today.';
+    } else if (sentiment === 'bearish') {
+      sentence = 'The market closed lower today amid broad selling pressure.';
+    } else {
+      sentence = 'The market ended mixed today with no clear directional conviction.';
+    }
+  }
+
+  textEl.textContent = sentence || 'Markets are mixed today with no clear direction yet.';
+  badgeEl.textContent = getTranslationValue(sentiment, sentiment);
+  badgeEl.classList.remove('bullish', 'bearish', 'mixed');
+  badgeEl.classList.add(sentiment);
+}
+
+function getTopSectorLabel(sectorMetrics) {
+  if (!Array.isArray(sectorMetrics) || sectorMetrics.length === 0) {
+    return '';
+  }
+  const bestSector = sectorMetrics.reduce((best, current) => {
+    if (!best) {
+      return current;
+    }
+    return current.value > best.value ? current : best;
+  }, null);
+  if (!bestSector) {
+    return '';
+  }
+  return getLocalizedSectorName(bestSector.sector, getCurrentLanguage());
+}
+
 function renderSectorFilters(sectorCounts) {
   const container = document.getElementById('sectorFilters');
   if (!container) return;
@@ -677,6 +1144,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Initialize navigation
   initNavigation();
+  initializeHomeDashboard();
 });
 
 function initNavigation() {
@@ -1069,6 +1537,22 @@ const translations = {
         totalProfitDesc: 'How much money you\'ve gained or lost by trading stocks.',
         invested: 'Invested',
         investedDesc: 'The total amount of credits you\'ve spent buying stocks.',
+        marketOverviewIntraday: 'Market Overview (Intraday)',
+        intradayResetsOnRefresh: 'Intraday session chart resets when you refresh.',
+        marketStatus: 'Market',
+        open: 'OPEN',
+        closed: 'CLOSED',
+        lastUpdated: 'Last updated',
+        advancers: 'Advancers',
+        decliners: 'Decliners',
+        unchanged: 'Unchanged',
+        total: 'Total',
+        todayInMarket: 'Today in the Market',
+        bullish: 'Bullish',
+        bearish: 'Bearish',
+        mixed: 'Mixed',
+        sectorPerformance: 'Sector Performance',
+        updated: 'Updated',
         market: 'Market',
         portfolio: 'Portfolio',
         leaderboard: 'Leaderboard',
@@ -1244,6 +1728,22 @@ const translations = {
         totalProfitDesc: 'स्टक ट्रेडिङबाट कति नाफा वा नोक्सान भयो।',
         invested: 'लगानी गरिएको',
         investedDesc: 'स्टक किन्न खर्च गरिएको कुल क्रेडिट रकम।',
+        marketOverviewIntraday: 'बजार अवलोकन (इन्ट्राडे)',
+        intradayResetsOnRefresh: 'रिफ्रेश गर्दा इन्ट्राडे चार्ट रिसेट हुन्छ।',
+        marketStatus: 'बजार',
+        open: 'खुला',
+        closed: 'बन्द',
+        lastUpdated: 'अन्तिम अपडेट',
+        advancers: 'बढ्ने',
+        decliners: 'घट्ने',
+        unchanged: 'अपरिवर्तित',
+        total: 'जम्मा',
+        todayInMarket: 'आजको बजार',
+        bullish: 'बुलिश',
+        bearish: 'बेयरिश',
+        mixed: 'मिश्रित',
+        sectorPerformance: 'क्षेत्रगत प्रदर्शन',
+        updated: 'अपडेट',
         market: 'बजार',
         portfolio: 'पोर्टफोलियो',
         leaderboard: 'लिडरबोर्ड',
