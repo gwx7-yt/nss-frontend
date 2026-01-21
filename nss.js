@@ -10,6 +10,7 @@ const API_BASE = "https://nss-c26z.onrender.com";
 const DEFAULT_CREDITS = 100000;
 // Daily bonus amount
 const DAILY_BONUS = 1000;
+const BACKEND_BASE_URL = "https://nss-c26z.onrender.com";
 
 
 // Language helpers
@@ -129,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
   upgradeOldUsers();
   updatePortfolio();
   initNavigation();
+  initTradeTa();
 
   if (!localStorage.getItem('allUsers')) {
     addSampleUsers();
@@ -288,7 +290,7 @@ function upgradeOldUsers() {
 let currentStockData = null;
 
 function openTradeModal(symbol) {
-  fetch(`https://nss-c26z.onrender.com/StockPrice?symbol=${symbol}`)
+  fetch(`${BACKEND_BASE_URL}/StockPrice?symbol=${symbol}`)
     .then(res => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -328,6 +330,7 @@ function openTradeModal(symbol) {
       if (modalDpFeePreview) modalDpFeePreview.textContent = zeroDisplay;
       if (modalCostPreview) modalCostPreview.textContent = zeroDisplay;
       updateCostPreview();
+      updateTechnicalAnalysisSymbol(symbol);
       if (tradeModal) {
         tradeModal.style.display = "block";
         if (modalTradeShares) modalTradeShares.focus();
@@ -342,6 +345,257 @@ function openTradeModal(symbol) {
 function closeTradeModal() {
   document.getElementById("tradeModal").style.display = "none";
   currentStockData = null;
+}
+
+const tradeTaState = {
+  chart: null,
+  candleSeries: null,
+  volumeSeries: null,
+  lineSeries: null,
+  currentSymbol: null,
+  currentLimit: 7,
+  isOpen: false,
+  elements: {}
+};
+
+function initTradeTa() {
+  const wrap = document.getElementById("tradeTaSection");
+  if (!wrap) {
+    return;
+  }
+  tradeTaState.elements = {
+    wrap,
+    toggle: document.getElementById("taToggle"),
+    panel: document.getElementById("taPanel"),
+    title: document.getElementById("taTitle"),
+    status: document.getElementById("taStatus"),
+    chart: document.getElementById("taChart"),
+    loading: document.getElementById("taLoading"),
+    error: document.getElementById("taError"),
+    empty: document.getElementById("taEmpty"),
+    pills: Array.from(document.querySelectorAll(".ta-pill")),
+    retry: document.getElementById("taRetry")
+  };
+
+  tradeTaState.elements.toggle.addEventListener("click", () => {
+    tradeTaState.isOpen = !tradeTaState.isOpen;
+    wrap.classList.toggle("is-open", tradeTaState.isOpen);
+    tradeTaState.elements.panel.setAttribute("aria-hidden", String(!tradeTaState.isOpen));
+    tradeTaState.elements.toggle.setAttribute("aria-expanded", String(tradeTaState.isOpen));
+    if (tradeTaState.isOpen) {
+      ensureTradeTaChart();
+      if (tradeTaState.currentSymbol) {
+        loadTradeTaData(tradeTaState.currentSymbol, tradeTaState.currentLimit);
+      }
+    }
+  });
+
+  tradeTaState.elements.pills.forEach((pill) => {
+    pill.addEventListener("click", () => {
+      if (pill.classList.contains("active")) {
+        return;
+      }
+      tradeTaState.elements.pills.forEach(btn => btn.classList.remove("active"));
+      pill.classList.add("active");
+      tradeTaState.currentLimit = Number(pill.dataset.limit) || 30;
+      if (tradeTaState.isOpen && tradeTaState.currentSymbol) {
+        loadTradeTaData(tradeTaState.currentSymbol, tradeTaState.currentLimit);
+      }
+    });
+  });
+
+  if (tradeTaState.elements.retry) {
+    tradeTaState.elements.retry.addEventListener("click", () => {
+      if (tradeTaState.currentSymbol) {
+        loadTradeTaData(tradeTaState.currentSymbol, tradeTaState.currentLimit);
+      }
+    });
+  }
+}
+
+function updateTechnicalAnalysisSymbol(symbol) {
+  tradeTaState.currentSymbol = symbol;
+  if (tradeTaState.elements.title) {
+    tradeTaState.elements.title.textContent = `${symbol} • Daily Candles`;
+  }
+  if (tradeTaState.isOpen) {
+    ensureTradeTaChart();
+    loadTradeTaData(symbol, tradeTaState.currentLimit);
+  }
+}
+
+function ensureTradeTaChart() {
+  if (tradeTaState.chart || !tradeTaState.elements.chart || !window.LightweightCharts) {
+    return;
+  }
+  const chartContainer = tradeTaState.elements.chart;
+  const chart = LightweightCharts.createChart(chartContainer, {
+    width: chartContainer.clientWidth || 420,
+    height: 320,
+    layout: {
+      background: { color: "#ffffff" },
+      textColor: "#0b1220"
+    },
+    grid: {
+      vertLines: { color: "rgba(0,0,0,0.06)" },
+      horzLines: { color: "rgba(0,0,0,0.06)" }
+    },
+    rightPriceScale: {
+      borderColor: "rgba(0,0,0,0.08)"
+    },
+    timeScale: {
+      borderColor: "rgba(0,0,0,0.08)",
+      timeVisible: true
+    }
+  });
+
+  const candleSeries = chart.addCandlestickSeries({
+    upColor: "#00C853",
+    downColor: "#FF3B30",
+    borderVisible: false,
+    wickUpColor: "#00C853",
+    wickDownColor: "#FF3B30"
+  });
+
+  const volumeSeries = chart.addHistogramSeries({
+    priceFormat: { type: "volume" },
+    priceScaleId: ""
+  });
+
+  volumeSeries.priceScale().applyOptions({
+    scaleMargins: { top: 0.82, bottom: 0 }
+  });
+
+  tradeTaState.chart = chart;
+  tradeTaState.candleSeries = candleSeries;
+  tradeTaState.volumeSeries = volumeSeries;
+
+  const resizeObserver = new ResizeObserver(entries => {
+    entries.forEach(entry => {
+      const width = entry.contentRect.width;
+      if (width && tradeTaState.chart) {
+        tradeTaState.chart.applyOptions({ width });
+        tradeTaState.chart.timeScale().fitContent();
+      }
+    });
+  });
+
+  resizeObserver.observe(chartContainer);
+  tradeTaState.resizeObserver = resizeObserver;
+}
+
+function setTradeTaOverlay({ loading = false, error = false, empty = false }) {
+  const { loading: loadingEl, error: errorEl, empty: emptyEl } = tradeTaState.elements;
+  if (loadingEl) loadingEl.hidden = !loading;
+  if (errorEl) errorEl.hidden = !error;
+  if (emptyEl) emptyEl.hidden = !empty;
+}
+
+function isNumberValue(value) {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+async function loadTradeTaData(symbol, limit) {
+  if (!tradeTaState.chart) {
+    return;
+  }
+  setTradeTaOverlay({ loading: true, error: false, empty: false });
+  try {
+    const response = await fetch(`${BACKEND_BASE_URL}/api/ohlc/${symbol}?limit=${limit}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const rawData = await response.json();
+    if (!Array.isArray(rawData)) {
+      throw new Error("Unexpected chart response.");
+    }
+
+    const sorted = [...rawData].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+    const latest = sorted[sorted.length - 1];
+    const latestIncomplete = latest && (!isNumberValue(latest.open) || !isNumberValue(latest.high) || !isNumberValue(latest.low));
+
+    const candleData = sorted
+      .filter(row =>
+        isNumberValue(row.open) &&
+        isNumberValue(row.high) &&
+        isNumberValue(row.low) &&
+        isNumberValue(row.close)
+      )
+      .map(row => ({
+        time: row.date,
+        open: row.open,
+        high: row.high,
+        low: row.low,
+        close: row.close
+      }));
+
+    if (candleData.length > 0) {
+      tradeTaState.candleSeries.setData(candleData);
+      if (tradeTaState.lineSeries) {
+        tradeTaState.lineSeries.setData([]);
+      }
+      const volumeMap = new Map(sorted.map(row => [row.date, row]));
+      const volumeData = candleData.map(candle => {
+        const row = volumeMap.get(candle.time) || {};
+        const volume = isNumberValue(row.volume) ? row.volume : 0;
+        const color = candle.close >= candle.open ? "rgba(0, 200, 83, 0.6)" : "rgba(255, 59, 48, 0.6)";
+        return { time: candle.time, value: volume, color };
+      });
+      tradeTaState.volumeSeries.setData(volumeData);
+      tradeTaState.chart.timeScale().fitContent();
+      updateTradeTaStatus(latestIncomplete);
+      setTradeTaOverlay({ loading: false, error: false, empty: false });
+      return;
+    }
+
+    const lineData = sorted
+      .filter(row => isNumberValue(row.close))
+      .map(row => ({
+        time: row.date,
+        value: row.close
+      }));
+
+    if (lineData.length > 0) {
+      if (!tradeTaState.lineSeries) {
+        tradeTaState.lineSeries = tradeTaState.chart.addLineSeries({
+          color: "#3AA6FF",
+          lineWidth: 2
+        });
+      }
+      tradeTaState.lineSeries.setData(lineData);
+      tradeTaState.candleSeries.setData([]);
+      tradeTaState.volumeSeries.setData([]);
+      tradeTaState.chart.timeScale().fitContent();
+      updateTradeTaStatus(latestIncomplete);
+      setTradeTaOverlay({ loading: false, error: false, empty: false });
+      return;
+    }
+
+    tradeTaState.candleSeries.setData([]);
+    tradeTaState.volumeSeries.setData([]);
+    if (tradeTaState.lineSeries) {
+      tradeTaState.lineSeries.setData([]);
+    }
+    updateTradeTaStatus(false, true);
+    setTradeTaOverlay({ loading: false, error: false, empty: true });
+  } catch (error) {
+    console.error("Error fetching TA data:", error);
+    updateTradeTaStatus(false);
+    setTradeTaOverlay({ loading: false, error: true, empty: false });
+  }
+}
+
+function updateTradeTaStatus(isIncomplete, isEmpty = false) {
+  if (!tradeTaState.elements.status) {
+    return;
+  }
+  if (isEmpty) {
+    tradeTaState.elements.status.textContent = "Chart will populate after more trading days";
+    return;
+  }
+  tradeTaState.elements.status.textContent = isIncomplete
+    ? "Market closed: showing last session"
+    : "Updated";
 }
 
 function updateCostPreview() {
