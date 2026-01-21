@@ -207,6 +207,78 @@ section {
   font-weight: bold;
 }
 
+.home-performance {
+  margin-top: 2rem;
+}
+
+.sector-performance-card {
+  background: var(--card-background);
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 12%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.sector-performance-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.sector-performance-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.sector-performance-card h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.sector-performance-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+}
+
+.sector-chart-wrapper {
+  background: color-mix(in srgb, var(--primary-color) 6%, transparent);
+  border-radius: 14px;
+  padding: 0.75rem 0.75rem 0.25rem;
+}
+
+.sector-performance-card canvas {
+  width: 100% !important;
+  max-height: 220px;
+}
+
+.sector-performance-card .foot {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.sector-performance-card .foot.muted {
+  color: color-mix(in srgb, var(--text-color) 60%, transparent);
+}
+
 /* Login and User Profile */
 .login-btn {
   background-color: var(--primary-color);

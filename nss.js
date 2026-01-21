@@ -3,6 +3,7 @@ let companyDetails = new Map();
 let currentSectorFilter = 'All';
 let latestSectorCounts = new Map();
 const activeSellRequests = new Set();
+let sectorChart = null;
 
 
 // Default credits given to new users (1 lakh)
@@ -432,6 +433,105 @@ function handleSearchResultClick(symbol) {
   openTradeModal(symbol);
 }
 
+function buildSectorPerformanceData(stocks) {
+  const sectorStats = new Map();
+  const currentLanguage = getCurrentLanguage();
+
+  stocks.forEach(stock => {
+    const companyInfo = companyDetails.get(stock.symbol) || { sector: 'N/A' };
+    const sectorName = companyInfo.sector || 'N/A';
+    const changeValue = parseFloat(String(stock.changePercent ?? '0').replace('%', ''));
+
+    if (!Number.isFinite(changeValue)) {
+      return;
+    }
+
+    const quantityRaw = Number(
+      stock.quantity ??
+        stock.qty ??
+        stock.totalQuantity ??
+        stock.totalQty ??
+        stock.volume ??
+        stock.sharesOutstanding
+    );
+    const weight = Number.isFinite(quantityRaw) && quantityRaw > 0 ? quantityRaw : 1;
+
+    const entry = sectorStats.get(sectorName) || { sum: 0, weight: 0 };
+    entry.sum += changeValue * weight;
+    entry.weight += weight;
+    sectorStats.set(sectorName, entry);
+  });
+
+  return Array.from(sectorStats.entries())
+    .map(([sector, values]) => ({
+      sectorName: getLocalizedSectorName(sector, currentLanguage),
+      pctWeighted: values.weight ? Number((values.sum / values.weight).toFixed(2)) : 0
+    }))
+    .sort((a, b) => Math.abs(b.pctWeighted) - Math.abs(a.pctWeighted));
+}
+
+function renderSectorChartWeighted(sectors, updatedAt) {
+  const chartElement = document.getElementById("sectorChart");
+  if (!chartElement) {
+    return;
+  }
+
+  const labels = sectors.map(s => s.sectorName);
+  const pct = sectors.map(s => s.pctWeighted);
+  const textColor = getComputedStyle(document.body).getPropertyValue('--text-color').trim() || '#333';
+  const gridColor = textColor.startsWith('rgb')
+    ? textColor.replace('rgb', 'rgba').replace(')', ', 0.12)')
+    : 'rgba(0, 0, 0, 0.12)';
+
+  const context = chartElement.getContext("2d");
+  const gradient = context.createLinearGradient(0, 0, 0, chartElement.height || 200);
+  gradient.addColorStop(0, "rgba(52, 152, 219, 0.95)");
+  gradient.addColorStop(1, "rgba(46, 204, 113, 0.35)");
+
+  if (!sectorChart) {
+    sectorChart = new Chart(context, {
+      type: "bar",
+      data: { labels, datasets: [{ label: "% Change (qty-weighted)", data: pct, backgroundColor: gradient, borderColor: "rgba(52, 152, 219, 0.9)", borderWidth: 1, borderRadius: 8, barThickness: 18 }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: contextItem => `${contextItem.parsed.y}%`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: textColor }
+          },
+          y: {
+            grid: { color: gridColor },
+            ticks: {
+              color: textColor,
+              callback: value => `${value}%`
+            }
+          }
+        }
+      }
+    });
+  } else {
+    sectorChart.data.labels = labels;
+    sectorChart.data.datasets[0].data = pct;
+    sectorChart.data.datasets[0].backgroundColor = gradient;
+    sectorChart.update();
+  }
+
+  const updatedEl = document.getElementById("sectorUpdated");
+  if (updatedEl) {
+    updatedEl.textContent = `Updated: ${updatedAt || "—"}`;
+  }
+}
+
 // Update loadAllStocks function to add data attributes and new trade button
 function loadAllStocks() {
   fetch("https://nss-c26z.onrender.com/AllStocks")
@@ -488,6 +588,9 @@ function loadAllStocks() {
         latestSectorCounts = new Map(sectorCounts);
         renderSectorFilters(latestSectorCounts);
         applySectorFilter();
+
+        const sectorPerformance = buildSectorPerformanceData(data);
+        renderSectorChartWeighted(sectorPerformance, new Date().toLocaleString());
       }
     })
     .catch(() => {
