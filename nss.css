@@ -194,6 +194,41 @@ section {
   margin: 0;
 }
 
+/* Home Market Section */
+.home-market-section {
+  margin-bottom: 3rem;
+}
+
+.home-card {
+  background: var(--card-background);
+  border-radius: 25px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.home-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.home-card-header h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: var(--primary-color);
+}
+
+.home-card-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  color: var(--text-color);
+}
+
 /* Motivation Message */
 .motivation-message {
   text-align: center;
@@ -462,9 +497,34 @@ section {
   overflow-x: auto;
 }
 
-.all-stocks h3 {
-  margin: 0 0 1rem 0;
+.all-stocks-header h3 {
+  margin: 0;
   color: var(--primary-color);
+}
+
+.all-stocks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-color);
+}
+
+.sort-controls select {
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  font-family: inherit;
+  background: #fff;
 }
 
 #allStocksTable {
@@ -491,56 +551,6 @@ section {
 
 #allStocksTable tr.highlight {
   animation: highlightRow 2s ease-out;
-}
-
-/* Trade Form */
-.trade-form {
-  background: var(--card-background);
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  box-shadow: var(--shadow);
-}
-
-.trade-form h3 {
-  margin: 0 0 1rem 0;
-  color: var(--primary-color);
-}
-
-.trade-inputs {
-  display: grid;
-  grid-template-columns: 2fr 2fr 1fr;
-  gap: 1rem;
-  align-items: start;
-}
-
-.trade-form input {
-  padding: 0.75rem;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: var(--border-radius);
-  font-size: 1rem;
-}
-
-.trade-form button {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 0.75rem;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
-}
-
-.trade-form button:hover {
-  background: var(--secondary-color);
-}
-
-#tradeResult {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  border-radius: var(--border-radius);
-  text-align: center;
-  font-weight: 500;
 }
 
 /* Responsive Design for Market Section */
@@ -572,9 +582,6 @@ section {
     grid-template-columns: repeat(2, 1fr);
   }
   
-  .trade-inputs {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 480px) {
@@ -3197,14 +3204,6 @@ section {
   
   .features-grid {
     grid-template-columns: 1fr;
-  }
-  
-  .trade-form {
-    padding: 0.5rem;
-  }
-  
-  .trade-form input {
-    font-size: 0.9rem;
   }
   
   .modal-buttons {

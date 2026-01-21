@@ -164,6 +164,19 @@
           </div>
         </div>
 
+        <div class="home-market-section">
+          <div class="home-card">
+            <div class="home-card-header">
+              <h2 data-translate="sectorPerformanceTitle">Sector Performance (Qty-weighted %)</h2>
+              <div class="home-card-meta">
+                <span data-translate="updatedAtLabel">Updated:</span>
+                <span id="sectorPerformanceUpdated">—</span>
+              </div>
+            </div>
+            <canvas id="sectorPerformanceChart" height="160"></canvas>
+          </div>
+        </div>
+
         <div class="motivation-message">
           <h2 data-translate="motivation">Doing good so far investor!</h2>
         </div>
@@ -221,7 +234,18 @@
         </div>
 
         <div class="all-stocks">
-          <h3 data-translate="allStocks">All Stocks</h3>
+          <div class="all-stocks-header">
+            <h3 data-translate="allStocks">All Stocks</h3>
+            <div class="sort-controls">
+              <label for="marketSort" data-translate="sortBy">Sort by</label>
+              <select id="marketSort">
+                <option value="highest-rs" data-translate="highestRs">Highest RS</option>
+                <option value="lowest-rs" data-translate="lowestRs">Lowest RS</option>
+                <option value="highest-change" data-translate="highestChange">Highest % Change</option>
+                <option value="lowest-change" data-translate="lowestChange">Lowest % Change</option>
+              </select>
+            </div>
+          </div>
           <table id="allStocksTable">
             <thead>
               <tr>
@@ -230,21 +254,12 @@
                 <th data-translate="sector">Sector</th>
                 <th data-translate="ltp">LTP</th>
                 <th data-translate="change">Change</th>
+                <th data-translate="rs">RS</th>
                 <th data-translate="action">Action</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
-        </div>
-
-        <div id="tradeForm" class="trade-form">
-          <h3>Quick Trade</h3>
-          <div class="trade-inputs">
-            <input type="text" id="symbol" placeholder="Stock Symbol" required>
-            <input type="number" id="amount" placeholder="Amount to invest" required>
-            <button type="submit">Trade Now</button>
-          </div>
-          <div id="tradeResult"></div>
         </div>
       </div>
     </section>
