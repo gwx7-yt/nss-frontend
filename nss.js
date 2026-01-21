@@ -514,7 +514,8 @@ const homeDashboardState = {
   latestSectorOverview: null,
   lastBreadth: null,
   lastSectorMetrics: null,
-  indexSeeded: false
+  indexSeeded: false,
+  indexEndpoint: null
 };
 
 function initializeHomeDashboard() {
@@ -614,21 +615,47 @@ function fetchHomeData(url) {
 }
 
 async function fetchNepseIndexValue() {
+  const fallbackEndpoints = [
+    `${API_BASE}/Index`,
+    `${API_BASE}/NepseIndex`,
+    `${API_BASE}/MarketIndex`
+  ];
+  const extractIndexValue = (data) => {
+    // Extract the index value from a known index response shape.
+    return toNum(data?.index ?? data?.nepseIndex ?? data?.value ?? data?.price);
+  };
+
   try {
-    const response = await fetch(`${API_BASE}/StockPrice?symbol=NEPSE`, { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error(`Index request failed: ${response.status}`);
+    const endpointsToTry = [];
+    if (homeDashboardState.indexEndpoint) {
+      endpointsToTry.push(homeDashboardState.indexEndpoint);
+    } else {
+      endpointsToTry.push(`${API_BASE}/StockPrice?symbol=NEPSE`);
     }
-    const data = await response.json();
-    console.debug('Home index raw response:', data);
-    // Extract the index value from the existing StockPrice response shape.
-    const value = toNum(data?.price ?? data?.index ?? data?.value);
-    if (!Number.isFinite(value) || value === 0) {
-      console.warn('Home index value invalid, skipping point:', value);
-      return null;
+
+    endpointsToTry.push(...fallbackEndpoints);
+
+    for (const endpoint of endpointsToTry) {
+      const response = await fetch(endpoint, { cache: 'no-store' });
+      if (!response.ok) {
+        if (response.status === 404 && endpoint === homeDashboardState.indexEndpoint) {
+          homeDashboardState.indexEndpoint = null;
+        }
+        continue;
+      }
+      const data = await response.json();
+      console.debug('Home index raw response:', data);
+      const value = extractIndexValue(data);
+      if (!Number.isFinite(value) || value === 0) {
+        console.warn('Home index value invalid, skipping point:', value);
+        continue;
+      }
+      homeDashboardState.indexEndpoint = endpoint;
+      console.debug('Home index parsed value:', value);
+      return value;
     }
-    console.debug('Home index parsed value:', value);
-    return value;
+
+    return null;
   } catch (error) {
     return null;
   }
@@ -748,7 +775,8 @@ function renderBreadth(breadth) {
 }
 
 function calculateSectorPerformance(sectorOverview, priceVolume) {
-  if (!Array.isArray(sectorOverview)) {
+  const sectors = Array.isArray(sectorOverview) ? sectorOverview : sectorOverview?.sectors || [];
+  if (!Array.isArray(sectors)) {
     return [];
   }
   const quantityMap = new Map();
@@ -767,7 +795,7 @@ function calculateSectorPerformance(sectorOverview, priceVolume) {
     });
   }
 
-  sectorOverview.forEach(sector => {
+  sectors.forEach(sector => {
     const companies = sector?.companies || sector?.companyList || sector?.items || [];
     companies.forEach(company => {
       const pct = toNum(company?.percentageChange ?? company?.changePercent ?? company?.percentage_change ?? company?.change);
@@ -781,7 +809,7 @@ function calculateSectorPerformance(sectorOverview, priceVolume) {
   const fractionalCount = pctSamples.filter(value => Math.abs(value) > 0 && Math.abs(value) < 0.5).length;
   const conversionFactor = sampleCount > 0 && fractionalCount / sampleCount > 0.6 ? 100 : 1;
 
-  const sectorValues = sectorOverview.map(sector => {
+  const sectorValues = sectors.map(sector => {
     const companies = sector?.companies || sector?.companyList || sector?.items || [];
     let weightedSum = 0;
     let totalQty = 0;
