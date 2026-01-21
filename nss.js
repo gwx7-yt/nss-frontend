@@ -502,6 +502,10 @@ function getTranslationValue(key, fallback = '') {
   return languageTexts[key] || fallback;
 }
 
+function toNum(value) {
+  return Number(String(value ?? '').replace(/,/g, ''));
+}
+
 const homeDashboardState = {
   indexPoints: [],
   indexChart: null,
@@ -534,7 +538,10 @@ async function seedHomeIndexChart() {
     updateUpdatedStamp('homeIndexUpdated', timeLabel);
     homeDashboardState.indexSeeded = true;
     updateIndexChart();
-    console.debug('Home index seeded points:', homeDashboardState.indexPoints.length);
+    console.debug('Home index seed value/points:', {
+      value: indexValue,
+      points: homeDashboardState.indexPoints.length
+    });
   }
 }
 
@@ -582,7 +589,10 @@ async function tickHomeDashboard() {
 
   updateIndexChart();
   if (homeDashboardState.indexPoints.length > 0) {
-    console.debug('Home index points after update:', homeDashboardState.indexPoints.length);
+    console.debug('Home index value/points:', {
+      value: indexValue,
+      points: homeDashboardState.indexPoints.length
+    });
   }
 
   updateTodayCard({
@@ -612,7 +622,7 @@ async function fetchNepseIndexValue() {
     const data = await response.json();
     console.debug('Home index raw response:', data);
     // Extract the index value from the existing StockPrice response shape.
-    const value = parseFloat(data?.price ?? data?.index ?? data?.value);
+    const value = toNum(data?.price ?? data?.index ?? data?.value);
     if (!Number.isFinite(value) || value === 0) {
       console.warn('Home index value invalid, skipping point:', value);
       return null;
@@ -749,8 +759,8 @@ function calculateSectorPerformance(sectorOverview, priceVolume) {
       if (!symbol) {
         return;
       }
-      const qtyRaw = row?.totalTradeQuantity ?? row?.totalTradedQuantity ?? row?.totalQuantity;
-      const qty = parseFloat(qtyRaw);
+      const qtyRaw = row?.totalTradeQuantity ?? row?.totalTradedQuantity;
+      const qty = toNum(qtyRaw);
       if (Number.isFinite(qty)) {
         quantityMap.set(symbol, qty);
       }
@@ -760,7 +770,7 @@ function calculateSectorPerformance(sectorOverview, priceVolume) {
   sectorOverview.forEach(sector => {
     const companies = sector?.companies || sector?.companyList || sector?.items || [];
     companies.forEach(company => {
-      const pct = parseFloat(company?.percentageChange ?? company?.changePercent ?? company?.percentage_change ?? company?.change);
+      const pct = toNum(company?.percentageChange ?? company?.changePercent ?? company?.percentage_change ?? company?.change);
       if (Number.isFinite(pct) && pct !== 0) {
         pctSamples.push(pct);
       }
@@ -780,7 +790,7 @@ function calculateSectorPerformance(sectorOverview, priceVolume) {
 
     companies.forEach(company => {
       const symbol = company?.symbol || company?.companySymbol;
-      const rawPct = parseFloat(company?.percentageChange ?? company?.changePercent ?? company?.percentage_change ?? company?.change);
+      const rawPct = toNum(company?.percentageChange ?? company?.changePercent ?? company?.percentage_change ?? company?.change);
       const pct = Number.isFinite(rawPct) ? rawPct * conversionFactor : NaN;
       if (!Number.isFinite(pct)) {
         return;
@@ -798,20 +808,26 @@ function calculateSectorPerformance(sectorOverview, priceVolume) {
       return null;
     }
 
-    const value = totalQty > 0 ? weightedSum / totalQty : simpleSum / count;
+    const usedFallback = totalQty === 0;
+    const value = usedFallback ? simpleSum / count : weightedSum / totalQty;
     return {
       sector: sector?.sectorName || sector?.name || sector?.sector || 'N/A',
-      value
+      value,
+      usedFallback
     };
   }).filter(Boolean);
 
   console.debug('Sector sample conversion factor:', conversionFactor);
   console.debug(
     'Sector values preview:',
-    sectorValues.slice(0, 3).map(item => ({ sector: item.sector, value: item.value }))
+    sectorValues.slice(0, 3).map(item => ({
+      sector: item.sector,
+      value: item.value,
+      usedFallback: item.usedFallback
+    }))
   );
 
-  return sectorValues;
+  return sectorValues.map(({ sector, value }) => ({ sector, value }));
 }
 
 function getChartColors() {
