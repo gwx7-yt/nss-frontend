@@ -507,43 +507,21 @@ function toNum(value) {
 }
 
 const homeDashboardState = {
-  indexPoints: [],
-  indexChart: null,
   sectorChart: null,
   latestPriceVolume: null,
   latestSectorOverview: null,
   lastBreadth: null,
-  lastSectorMetrics: null,
-  indexSeeded: false,
-  indexEndpoint: null
+  lastSectorMetrics: null
 };
 
 function initializeHomeDashboard() {
-  const indexCanvas = document.getElementById('homeIndexChart');
   const sectorCanvas = document.getElementById('homeSectorChart');
-  if (!indexCanvas || !sectorCanvas) {
+  if (!sectorCanvas) {
     return;
   }
 
-  seedHomeIndexChart().then(() => {
-    tickHomeDashboard();
-    setInterval(tickHomeDashboard, 20000);
-  });
-}
-
-async function seedHomeIndexChart() {
-  const timeLabel = formatKathmanduTime(new Date());
-  const indexValue = await fetchNepseIndexValue();
-  if (!homeDashboardState.indexSeeded && indexValue !== null) {
-    appendIndexPoint(indexValue, timeLabel);
-    updateUpdatedStamp('homeIndexUpdated', timeLabel);
-    homeDashboardState.indexSeeded = true;
-    updateIndexChart();
-    console.debug('Home index seed value/points:', {
-      value: indexValue,
-      points: homeDashboardState.indexPoints.length
-    });
-  }
+  tickHomeDashboard();
+  setInterval(tickHomeDashboard, 20000);
 }
 
 async function tickHomeDashboard() {
@@ -580,27 +558,11 @@ async function tickHomeDashboard() {
     updateUpdatedStamp('homeSectorUpdated', timeLabel);
   }
 
-  const indexValue = await fetchNepseIndexValue();
-  if (indexValue !== null) {
-    if (marketOpen) {
-      appendIndexPoint(indexValue, timeLabel);
-    }
-    updateUpdatedStamp('homeIndexUpdated', timeLabel);
-  }
-
-  updateIndexChart();
-  if (homeDashboardState.indexPoints.length > 0) {
-    console.debug('Home index value/points:', {
-      value: indexValue,
-      points: homeDashboardState.indexPoints.length
-    });
-  }
-
   updateTodayCard({
     marketOpen,
     breadth: homeDashboardState.lastBreadth,
     sectorMetrics: homeDashboardState.lastSectorMetrics,
-    indexChange: getIndexChange()
+    indexChange: null
   });
 }
 
@@ -612,53 +574,6 @@ function fetchHomeData(url) {
       }
       return response.json();
     });
-}
-
-async function fetchNepseIndexValue() {
-  const fallbackEndpoints = [
-    `${API_BASE}/Index`,
-    `${API_BASE}/NepseIndex`,
-    `${API_BASE}/MarketIndex`
-  ];
-  const extractIndexValue = (data) => {
-    // Extract the index value from a known index response shape.
-    return toNum(data?.index ?? data?.nepseIndex ?? data?.value ?? data?.price);
-  };
-
-  try {
-    const endpointsToTry = [];
-    if (homeDashboardState.indexEndpoint) {
-      endpointsToTry.push(homeDashboardState.indexEndpoint);
-    } else {
-      endpointsToTry.push(`${API_BASE}/StockPrice?symbol=NEPSE`);
-    }
-
-    endpointsToTry.push(...fallbackEndpoints);
-
-    for (const endpoint of endpointsToTry) {
-      const response = await fetch(endpoint, { cache: 'no-store' });
-      if (!response.ok) {
-        if (response.status === 404 && endpoint === homeDashboardState.indexEndpoint) {
-          homeDashboardState.indexEndpoint = null;
-        }
-        continue;
-      }
-      const data = await response.json();
-      console.debug('Home index raw response:', data);
-      const value = extractIndexValue(data);
-      if (!Number.isFinite(value) || value === 0) {
-        console.warn('Home index value invalid, skipping point:', value);
-        continue;
-      }
-      homeDashboardState.indexEndpoint = endpoint;
-      console.debug('Home index parsed value:', value);
-      return value;
-    }
-
-    return null;
-  } catch (error) {
-    return null;
-  }
 }
 
 function formatKathmanduTime(date) {
@@ -925,82 +840,6 @@ function updateSectorChart(sectorMetrics) {
     homeDashboardState.sectorChart.data.datasets[0].backgroundColor = barColors;
     homeDashboardState.sectorChart.update();
   }
-}
-
-function appendIndexPoint(value, timeLabel) {
-  homeDashboardState.indexPoints.push({ t: new Date(), v: value, label: timeLabel });
-  if (homeDashboardState.indexPoints.length > 240) {
-    homeDashboardState.indexPoints.shift();
-  }
-}
-
-function updateIndexChart() {
-  const canvas = document.getElementById('homeIndexChart');
-  if (!canvas) {
-    return;
-  }
-  const colors = getChartColors();
-  const labels = homeDashboardState.indexPoints.map(point => point.label);
-  const values = homeDashboardState.indexPoints.map(point => point.v);
-
-  if (!homeDashboardState.indexChart) {
-    homeDashboardState.indexChart = new Chart(canvas.getContext('2d'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [
-          {
-            data: values,
-            borderColor: colors.primary,
-            backgroundColor: 'rgba(0, 180, 216, 0.12)',
-            fill: true,
-            tension: 0.35,
-            pointRadius: 0
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: context => convertDigitsForLanguage(context.parsed.y.toFixed(2), getCurrentLanguage())
-            }
-          }
-        },
-        scales: {
-          x: {
-            ticks: { color: colors.text, maxTicksLimit: 6 },
-            grid: { display: false }
-          },
-          y: {
-            ticks: {
-              color: colors.text,
-              callback: value => convertDigitsForLanguage(value, getCurrentLanguage())
-            },
-            grid: { color: colors.muted }
-          }
-        }
-      }
-    });
-  } else {
-    homeDashboardState.indexChart.data.labels = labels;
-    homeDashboardState.indexChart.data.datasets[0].data = values;
-    homeDashboardState.indexChart.update();
-  }
-}
-
-function getIndexChange() {
-  const points = homeDashboardState.indexPoints;
-  if (points.length < 2) {
-    return null;
-  }
-  const last = points[points.length - 1].v;
-  const prev = points[points.length - 2].v;
-  const change = last - prev;
-  return Number.isFinite(change) ? change : null;
 }
 
 function updateTodayCard({ marketOpen, breadth, sectorMetrics, indexChange }) {
