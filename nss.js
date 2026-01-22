@@ -522,6 +522,13 @@ function compareNumericWithNulls(aValue, bValue, direction = 'desc') {
   return direction === 'asc' ? aValue - bValue : bValue - aValue;
 }
 
+function getSortableName(stock) {
+  const rawName = stock.companyName ?? '';
+  const trimmedName = typeof rawName === 'string' ? rawName.trim() : String(rawName).trim();
+  const effectiveName = trimmedName.length > 0 ? trimmedName : stock.symbol || '';
+  return effectiveName.toLowerCase();
+}
+
 function sortStocks(stocks) {
   const mapped = stocks.map((stock, index) => ({ stock, index }));
 
@@ -532,15 +539,15 @@ function sortStocks(stocks) {
 
     switch (currentSortOption) {
       case 'name-asc': {
-        const nameA = (aStock.companyName || aStock.symbol || '').toLowerCase();
-        const nameB = (bStock.companyName || bStock.symbol || '').toLowerCase();
-        result = nameA.localeCompare(nameB);
+        const nameA = getSortableName(aStock);
+        const nameB = getSortableName(bStock);
+        result = nameA.localeCompare(nameB, 'en', { sensitivity: 'base' });
         break;
       }
       case 'name-desc': {
-        const nameA = (aStock.companyName || aStock.symbol || '').toLowerCase();
-        const nameB = (bStock.companyName || bStock.symbol || '').toLowerCase();
-        result = nameB.localeCompare(nameA);
+        const nameA = getSortableName(aStock);
+        const nameB = getSortableName(bStock);
+        result = nameB.localeCompare(nameA, 'en', { sensitivity: 'base' });
         break;
       }
       case 'change-asc':
