@@ -387,72 +387,85 @@
     </section>
 
     <section id="about" style="display: none;">
-      <div class="about-content">
-        <!-- NSS Explanation -->
-        <div class="about-card nss-explanation">
-          <div class="card-icon">
-            <span class="icon">📈</span>
-          </div>
-          <h2 data-translate="nssTitle">Nepal Stock Simulator (NSS)</h2>
-          <p data-translate="nssDesc">
-            A virtual stock trading platform designed to help beginners learn about the Nepal Stock Exchange (NEPSE) in a risk-free environment.
-            Practice trading with virtual credits and track your portfolio performance.
-          </p>
-          <div class="features-grid">
-            <div class="feature">
-              <span class="feature-icon">💼</span>
-              <h3 data-translate="feature1">Virtual Trading</h3>
-              <p data-translate="feature1Desc">Trade with virtual credits, no real money involved</p>
-            </div>
-            <div class="feature">
-              <span class="feature-icon">📊</span>
-              <h3 data-translate="feature2">Real-time Data</h3>
-              <p data-translate="feature2Desc">Access live NEPSE stock prices and market data</p>
-            </div>
-            <div class="feature">
-              <span class="feature-icon">🎯</span>
-              <h3 data-translate="feature3">Learning Tools</h3>
-              <p data-translate="feature3Desc">Educational resources for stock market beginners</p>
-            </div>
-          </div>
-        </div>
+      <div class="nss-about">
+        <div class="nss-about__bg"></div>
 
-        <!-- Founder Info -->
-        <div class="about-card founder-info">
-          <div class="card-icon">
-            <span class="icon">👨‍💻</span>
-          </div>
-          <h2 data-translate="founderTitle">About the Founder</h2>
-          <div class="founder-content">
-            <div class="founder-image">
-              <img src="founder2.jpg" alt="Founder" class="founder-img">
-            </div>
-            <div class="founder-details">
-              <h3 data-translate="founderName">Subigya Raj Kharel</h3>
-              <p class="founder-role" data-translate="founderRole">Student Developer</p>
-              <p class="founder-bio" data-translate="founderBio">
-                Subigya Raj Kharel is a student developer from Kathmandu, Nepal. Currently studying in grade 9, Subigya loves to code and make different kinds of websites and apps.
-              </p>
-            </div>
-          </div>
-        </div>
+        <div class="nss-about__container">
+          <header class="nss-about__header" data-reveal>
+            <div class="nss-about__kicker">What this is not</div>
+            <h2 class="nss-about__title">A simulator built for learning, not hype.</h2>
+            <p class="nss-about__lead">Nepal Stock Simulator helps you understand how markets behave, how decisions feel, and why discipline matters. It is a safe place to practice before real money is on the line.</p>
+          </header>
 
-        <!-- Social Links -->
-        <div class="about-card social-links">
-          <div class="card-icon">
-            <span class="icon">🌐</span>
+          <div class="nss-about__grid">
+            <article class="nss-about__card" data-reveal>
+              <h3 class="nss-about__cardTitle">Not a trading app</h3>
+              <p class="nss-about__cardText">You cannot place real orders here. This is practice, not execution.</p>
+            </article>
+
+            <article class="nss-about__card" data-reveal>
+              <h3 class="nss-about__cardTitle">Not a get rich quick scheme</h3>
+              <p class="nss-about__cardText">If someone promises guaranteed returns, run. This platform teaches process, not shortcuts.</p>
+            </article>
+
+            <article class="nss-about__card" data-reveal>
+              <h3 class="nss-about__cardTitle">Not financial advice</h3>
+              <p class="nss-about__cardText">We do not tell you what to buy or sell. You learn to think, research, and decide.</p>
+            </article>
+
+            <article class="nss-about__card" data-reveal>
+              <h3 class="nss-about__cardTitle">Not gambling</h3>
+              <p class="nss-about__cardText">We focus on reasoning and risk management. Random bets are the fastest way to lose.</p>
+            </article>
+
+            <article class="nss-about__card nss-about__card--wide" data-reveal>
+              <h3 class="nss-about__cardTitle">No real money required</h3>
+              <p class="nss-about__cardText">You start with credits. Your wallet stays untouched. Your lessons do not have to be expensive.</p>
+            </article>
           </div>
-          <h2 data-translate="connectTitle">Connect With Us</h2>
-          <div class="social-grid">
-            <a href="https://www.instagram.com/nepalstocksimulator/" class="social-link instagram" target="_blank" rel="noopener">
-              <span class="social-icon">📸</span>
-              <span class="social-text" data-translate="instagram">Instagram</span>
-            </a>
-            <a href="https://www.youtube.com/@nepalstocksimulator" class="social-link youtube" target="_blank" rel="noopener">
-              <span class="social-icon">📺</span>
-              <span class="social-text" data-translate="youtube">YouTube</span>
-            </a>
-          </div>
+
+          <p class="nss-about__smirk" data-reveal>Lose fake money here so you do not lose real money later.</p>
+
+          <section class="nss-about__founder" aria-label="About the Founder" data-reveal>
+            <div class="nss-about__founderCard">
+              <div class="nss-about__founderMedia">
+                <img class="nss-about__founderImg" src="founder2.jpg" alt="Subigya Kharel" loading="lazy" />
+              </div>
+
+              <div class="nss-about__founderBody">
+                <div class="nss-about__kicker">About the Founder</div>
+                <h3 class="nss-about__founderName">Subigya Kharel</h3>
+                <div class="nss-about__founderRole">Founder of Nepal Stock Simulator</div>
+                <p class="nss-about__founderBio">I am a student developer focused on making finance education simple, practical, and accessible for Nepali learners. Nepal Stock Simulator is built to help beginners practice investing concepts with clarity, confidence, and zero real world risk.</p>
+
+                <div class="nss-about__meta">
+                  <div class="nss-about__metaCol">
+                    <div class="nss-about__metaLabel">Contact</div>
+                    <div class="nss-about__metaItem">subigyadev@gmail.com</div>
+                    <div class="nss-about__metaItem">9823568381</div>
+                  </div>
+
+                  <div class="nss-about__metaCol">
+                    <div class="nss-about__metaLabel">Links</div>
+                    <div class="nss-about__btnRow">
+                      <a class="nss-about__btn" href="https://www.linkedin.com/in/subigya-kharel/" target="_blank" rel="noopener">LinkedIn</a>
+                      <a class="nss-about__btn" href="mailto:subigyadev@gmail.com">Email</a>
+                      <a class="nss-about__btn" href="tel:9823568381">Call</a>
+                    </div>
+                  </div>
+
+                  <div class="nss-about__metaCol">
+                    <div class="nss-about__metaLabel">Nepal Stock Simulator</div>
+                    <div class="nss-about__btnRow">
+                      <a class="nss-about__btn nss-about__btn--soft" href="https://www.instagram.com/nepalstocksimulator/" target="_blank" rel="noopener">Instagram</a>
+                      <a class="nss-about__btn nss-about__btn--soft" href="https://www.youtube.com/@nepalstocksimulator" target="_blank" rel="noopener">YouTube</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
         </div>
       </div>
     </section>

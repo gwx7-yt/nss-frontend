@@ -3399,3 +3399,224 @@ section {
   opacity: 1;
   bottom: 40px;
 }
+
+.nss-about {
+  position: relative;
+  padding: 4rem 1.5rem;
+  background: linear-gradient(180deg, #f7fafc 0%, #eef4fb 100%);
+  overflow: hidden;
+}
+
+.nss-about__bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.nss-about__container {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.nss-about__header {
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.nss-about__kicker {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(37, 56, 88, 0.7);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.nss-about__title {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  margin-bottom: 0.75rem;
+  color: #1c2b45;
+}
+
+.nss-about__lead {
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: rgba(28, 43, 69, 0.8);
+}
+
+.nss-about__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin: 2rem 0 1.5rem;
+}
+
+.nss-about__card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nss-about__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.1);
+}
+
+.nss-about__cardTitle {
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
+  color: #1c2b45;
+}
+
+.nss-about__cardText {
+  color: rgba(28, 43, 69, 0.75);
+  line-height: 1.6;
+}
+
+.nss-about__smirk {
+  font-style: italic;
+  color: rgba(37, 56, 88, 0.7);
+  margin-bottom: 2.5rem;
+}
+
+.nss-about__founderCard {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.nss-about__founderMedia {
+  width: 100%;
+}
+
+.nss-about__founderImg {
+  width: 100%;
+  height: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.nss-about__founderName {
+  font-size: 1.6rem;
+  margin: 0.5rem 0 0.2rem;
+  color: #1c2b45;
+}
+
+.nss-about__founderRole {
+  font-weight: 600;
+  color: rgba(28, 43, 69, 0.7);
+  margin-bottom: 0.75rem;
+}
+
+.nss-about__founderBio {
+  color: rgba(28, 43, 69, 0.78);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+.nss-about__meta {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.nss-about__metaLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(37, 56, 88, 0.8);
+  margin-bottom: 0.4rem;
+}
+
+.nss-about__metaItem {
+  color: rgba(28, 43, 69, 0.75);
+  line-height: 1.5;
+}
+
+.nss-about__btnRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.nss-about__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(59, 88, 150, 0.2);
+  background: #f2f6fb;
+  color: #1d3b72;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.nss-about__btn:hover,
+.nss-about__btn:focus-visible {
+  border-color: rgba(59, 88, 150, 0.45);
+  box-shadow: 0 6px 16px rgba(59, 88, 150, 0.2);
+}
+
+.nss-about__btn--soft {
+  background: #f7f9fc;
+  color: #2c4c86;
+}
+
+.nss-about [data-reveal] {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 450ms ease, transform 450ms ease;
+}
+
+.nss-about [data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (min-width: 640px) {
+  .nss-about__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .nss-about__card--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 960px) {
+  .nss-about__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .nss-about__founderCard {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nss-about [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .nss-about__card,
+  .nss-about__btn {
+    transition: none;
+  }
+}

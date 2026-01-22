@@ -3347,3 +3347,51 @@ function drawChartGame() {
 document.addEventListener('DOMContentLoaded', () => {
   setupChartTradingGame();
 });
+
+let aboutRevealInitialized = false;
+
+const initAboutReveal = () => {
+  if (aboutRevealInitialized) {
+    return;
+  }
+  aboutRevealInitialized = true;
+
+  const aboutSection = document.querySelector('.nss-about');
+  if (!aboutSection) {
+    return;
+  }
+
+  const revealItems = aboutSection.querySelectorAll('[data-reveal]');
+  if (!revealItems.length) {
+    return;
+  }
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    revealItems.forEach((item) => item.classList.add('is-visible'));
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries, currentObserver) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          currentObserver.unobserve(entry.target);
+        }
+      });
+    },
+    {
+      threshold: 0.15,
+      rootMargin: '0px 0px -10% 0px'
+    }
+  );
+
+  revealItems.forEach((item, index) => {
+    item.style.transitionDelay = `${Math.min(index * 60, 240)}ms`;
+    observer.observe(item);
+  });
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  initAboutReveal();
+});
