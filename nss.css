@@ -3399,3 +3399,549 @@ section {
   opacity: 1;
   bottom: 40px;
 }
+
+.nss-about {
+  position: relative;
+  padding: 4rem 1.5rem;
+  background: linear-gradient(180deg, #f7fafc 0%, #eef4fb 55%, #f8fbff 100%);
+  background-color: #f3f7fc;
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow: hidden;
+}
+
+.nss-about__bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 55%),
+    radial-gradient(circle at 80% 8%, rgba(216, 232, 255, 0.5), rgba(255, 255, 255, 0) 60%),
+    radial-gradient(circle at 60% 90%, rgba(199, 214, 245, 0.35), rgba(255, 255, 255, 0) 65%);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.nss-about__container {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.nss-about__header {
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.nss-about__kicker {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(37, 56, 88, 0.7);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.nss-about__kicker::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(120deg, #8cb4ff, #c1d9ff);
+  box-shadow: 0 0 0 4px rgba(140, 180, 255, 0.2);
+}
+
+.nss-about__title {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  margin-bottom: 0.75rem;
+  color: #1c2b45;
+}
+
+.nss-about__lead {
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: rgba(28, 43, 69, 0.8);
+}
+
+.nss-about__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin: 2rem 0 1.5rem;
+}
+
+.nss-about__card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.nss-about__card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, rgba(120, 160, 230, 0.35), rgba(255, 255, 255, 0.1));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.nss-about__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.1);
+  border-color: rgba(120, 145, 190, 0.4);
+  background: linear-gradient(180deg, #ffffff, #f6f9ff);
+}
+
+.nss-about__cardTitle {
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
+  color: #1c2b45;
+}
+
+.nss-about__cardText {
+  color: rgba(28, 43, 69, 0.82);
+  line-height: 1.6;
+}
+
+.nss-about__smirk {
+  font-style: italic;
+  color: rgba(37, 56, 88, 0.62);
+  margin-bottom: 2.5rem;
+  letter-spacing: 0.03em;
+}
+
+.nss-about__founderCard {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nss-about__founderCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(136, 170, 255, 0.12), transparent 55%);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.nss-about__founderCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, rgba(120, 160, 230, 0.35), rgba(255, 255, 255, 0.1));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.nss-about__founderCard:hover {
+  box-shadow: 0 22px 44px rgba(15, 23, 42, 0.16);
+  transform: translateY(-2px);
+}
+
+.nss-about__founderCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+.nss-about__founderMedia {
+  width: 100%;
+}
+
+.nss-about__founderImg {
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 50%;
+  aspect-ratio: 1 / 1;
+  border: 2px solid rgba(140, 180, 255, 0.75);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.16), 0 0 0 6px rgba(140, 180, 255, 0.18);
+  background: #fff;
+}
+
+.nss-about__founderName {
+  font-size: 1.6rem;
+  margin: 0.5rem 0 0.2rem;
+  color: #1c2b45;
+}
+
+.nss-about__founderNameNepali {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: rgba(43, 67, 120, 0.8);
+  margin-bottom: 0.6rem;
+}
+
+.nss-about__founderRole {
+  font-weight: 600;
+  color: rgba(28, 43, 69, 0.7);
+  margin-bottom: 0.75rem;
+}
+
+.nss-about__founderBio {
+  color: rgba(28, 43, 69, 0.78);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+.nss-about__meta {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.nss-about__metaLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(37, 56, 88, 0.8);
+  margin-bottom: 0.4rem;
+}
+
+.nss-about__metaItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(28, 43, 69, 0.75);
+  line-height: 1.5;
+}
+
+.nss-about__metaIcon {
+  width: 20px;
+  height: 20px;
+  color: #1d3b72;
+  display: inline-flex;
+}
+
+.nss-about__metaIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.nss-about__metaText {
+  word-break: break-word;
+}
+
+.nss-about__metaLink {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.nss-about__metaLink:hover,
+.nss-about__metaLink:focus-visible {
+  color: #1d3b72;
+  text-decoration: underline;
+}
+
+.nss-about__btnRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.nss-about__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(59, 88, 150, 0.2);
+  background: linear-gradient(135deg, #f2f6fb, #e8f0ff);
+  color: #1d3b72;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 6px 14px rgba(30, 64, 120, 0.12);
+}
+
+.nss-about__btn:hover,
+.nss-about__btn:focus-visible {
+  border-color: rgba(59, 88, 150, 0.45);
+  box-shadow: 0 10px 22px rgba(59, 88, 150, 0.25);
+  transform: translateY(-1px);
+}
+
+.nss-about__btn:focus-visible {
+  outline: 2px solid rgba(99, 135, 210, 0.6);
+  outline-offset: 2px;
+}
+
+.nss-about__btn--soft {
+  background: linear-gradient(135deg, #f7f9fc, #edf3ff);
+  color: #2c4c86;
+}
+
+.nss-about__btnIcon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+}
+
+.nss-about__btnIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.nss-about__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (min-width: 960px) {
+  .nss-about__card--long .nss-about__cardTitle {
+    font-size: 1.05rem;
+    max-width: 18ch;
+  }
+
+  .nss-about__card--wide {
+    grid-column: span 2;
+  }
+}
+
+.nss-about [data-reveal] {
+  opacity: 0;
+  transform: translateY(10px) scale(0.99);
+  transition: opacity 450ms ease, transform 450ms ease, filter 450ms ease;
+  filter: blur(0.4px);
+}
+
+.nss-about [data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+@media (min-width: 640px) {
+  .nss-about__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .nss-about__card--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 960px) {
+  .nss-about__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .nss-about__founderCard {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: center;
+  }
+
+  .nss-about__founderMedia {
+    display: flex;
+    justify-content: center;
+  }
+
+  .nss-about__founderImg {
+    max-height: 280px;
+    max-width: 280px;
+  }
+}
+
+[data-theme="dark"] .nss-about {
+  background: linear-gradient(180deg, #0b1220 0%, #0f1c33 55%, #0b1220 100%);
+}
+
+[data-theme="dark"] .nss-about__bg {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(37, 56, 88, 0.6), rgba(11, 18, 32, 0) 55%),
+    radial-gradient(circle at 80% 8%, rgba(42, 68, 120, 0.45), rgba(11, 18, 32, 0) 60%),
+    radial-gradient(circle at 60% 90%, rgba(30, 41, 59, 0.5), rgba(11, 18, 32, 0) 65%);
+}
+
+[data-theme="dark"] .nss-about__kicker {
+  color: rgba(226, 232, 240, 0.7);
+}
+
+[data-theme="dark"] .nss-about__kicker::before {
+  background: linear-gradient(120deg, #5b8dff, #8fb8ff);
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+}
+
+[data-theme="dark"] .nss-about__title,
+[data-theme="dark"] .nss-about__cardTitle,
+[data-theme="dark"] .nss-about__founderName {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .nss-about__founderNameNepali {
+  color: rgba(186, 206, 235, 0.85);
+}
+
+[data-theme="dark"] .nss-about__lead,
+[data-theme="dark"] .nss-about__cardText,
+[data-theme="dark"] .nss-about__founderBio,
+[data-theme="dark"] .nss-about__metaItem,
+[data-theme="dark"] .nss-about__founderRole,
+[data-theme="dark"] .nss-about__smirk {
+  color: rgba(226, 232, 240, 0.78);
+}
+
+[data-theme="dark"] .nss-about__card,
+[data-theme="dark"] .nss-about__founderCard {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(148, 163, 184, 0.2);
+  box-shadow: 0 14px 30px rgba(2, 6, 23, 0.45);
+}
+
+[data-theme="dark"] .nss-about__card:hover {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(18, 28, 48, 0.95));
+}
+
+[data-theme="dark"] .nss-about__btn {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(36, 52, 76, 0.9));
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+[data-theme="dark"] .nss-about__btn--soft {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(42, 58, 84, 0.8));
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .nss-about__btn:focus-visible {
+  outline: 2px solid rgba(148, 197, 255, 0.6);
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] .nss-about__metaIcon {
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .nss-about__metaLink:hover,
+[data-theme="dark"] .nss-about__metaLink:focus-visible {
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .nss-about__founderImg {
+  border-color: rgba(148, 197, 255, 0.55);
+  box-shadow: 0 12px 26px rgba(2, 6, 23, 0.5), 0 0 0 6px rgba(96, 165, 250, 0.2);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nss-about [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .nss-about__card,
+  .nss-about__btn,
+  .nss-about__founderCard {
+    transition: none;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :not([data-theme="light"]) .nss-about {
+    background: linear-gradient(180deg, #0b1220 0%, #0f1c33 55%, #0b1220 100%);
+  }
+
+  :not([data-theme="light"]) .nss-about__bg {
+    background:
+      radial-gradient(circle at 12% 18%, rgba(37, 56, 88, 0.6), rgba(11, 18, 32, 0) 55%),
+      radial-gradient(circle at 80% 8%, rgba(42, 68, 120, 0.45), rgba(11, 18, 32, 0) 60%),
+      radial-gradient(circle at 60% 90%, rgba(30, 41, 59, 0.5), rgba(11, 18, 32, 0) 65%);
+  }
+
+  :not([data-theme="light"]) .nss-about__kicker {
+    color: rgba(226, 232, 240, 0.7);
+  }
+
+  :not([data-theme="light"]) .nss-about__kicker::before {
+    background: linear-gradient(120deg, #5b8dff, #8fb8ff);
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.25);
+  }
+
+  :not([data-theme="light"]) .nss-about__title,
+  :not([data-theme="light"]) .nss-about__cardTitle,
+  :not([data-theme="light"]) .nss-about__founderName {
+    color: #e2e8f0;
+  }
+
+  :not([data-theme="light"]) .nss-about__founderNameNepali {
+    color: rgba(186, 206, 235, 0.85);
+  }
+
+  :not([data-theme="light"]) .nss-about__lead,
+  :not([data-theme="light"]) .nss-about__cardText,
+  :not([data-theme="light"]) .nss-about__founderBio,
+  :not([data-theme="light"]) .nss-about__metaItem,
+  :not([data-theme="light"]) .nss-about__founderRole,
+  :not([data-theme="light"]) .nss-about__smirk {
+    color: rgba(226, 232, 240, 0.78);
+  }
+
+  :not([data-theme="light"]) .nss-about__card,
+  :not([data-theme="light"]) .nss-about__founderCard {
+    background: rgba(15, 23, 42, 0.9);
+    border-color: rgba(148, 163, 184, 0.2);
+    box-shadow: 0 14px 30px rgba(2, 6, 23, 0.45);
+  }
+
+  :not([data-theme="light"]) .nss-about__btn {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(36, 52, 76, 0.9));
+    color: #e2e8f0;
+    border-color: rgba(148, 163, 184, 0.3);
+  }
+
+  :not([data-theme="light"]) .nss-about__btn--soft {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.75), rgba(42, 58, 84, 0.8));
+    color: #e2e8f0;
+  }
+
+  :not([data-theme="light"]) .nss-about__metaIcon {
+    color: #93c5fd;
+  }
+
+  :not([data-theme="light"]) .nss-about__metaLink:hover,
+  :not([data-theme="light"]) .nss-about__metaLink:focus-visible {
+    color: #93c5fd;
+  }
+
+  :not([data-theme="light"]) .nss-about__founderImg {
+    border-color: rgba(148, 197, 255, 0.55);
+    box-shadow: 0 12px 26px rgba(2, 6, 23, 0.5), 0 0 0 6px rgba(96, 165, 250, 0.2);
+    background: rgba(15, 23, 42, 0.9);
+  }
+}
