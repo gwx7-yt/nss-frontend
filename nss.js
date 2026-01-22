@@ -4,10 +4,13 @@ let currentSectorFilter = 'All';
 let latestSectorCounts = new Map();
 const activeSellRequests = new Set();
 const API_BASE = "https://nss-c26z.onrender.com";
+let allStocksData = [];
+let currentSortOption = 'name-asc';
+let currentSearchTerm = '';
 
 
-// Default credits given to new users (1 lakh)
-const DEFAULT_CREDITS = 100000;
+// Default credits given to new users (10 lakh)
+const DEFAULT_CREDITS = 1000000;
 // Daily bonus amount
 const DAILY_BONUS = 1000;
 
@@ -129,6 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
   upgradeOldUsers();
   updatePortfolio();
   initNavigation();
+  initSortControls();
 
   if (!localStorage.getItem('allUsers')) {
     addSampleUsers();
@@ -280,7 +284,7 @@ function upgradeOldUsers() {
     user.updatedToNewStarterPack = true;
     localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('credits', user.credits.toString());
-    showToast("🎉 You've been upgraded to 1 lakh credits!");
+    showToast("🎉 You've been upgraded to 1,000,000 credits!");
   }
 }
 
@@ -433,6 +437,228 @@ function handleSearchResultClick(symbol) {
   openTradeModal(symbol);
 }
 
+function parsePercentChange(stock) {
+  const rawPercent = stock.changePercent ?? stock.percentageChange ?? stock.percentChange;
+  if (rawPercent !== undefined && rawPercent !== null) {
+    const cleaned = String(rawPercent).replace('%', '').trim();
+    const parsed = parseFloat(cleaned);
+    if (!Number.isNaN(parsed)) {
+      return parsed;
+    }
+  }
+
+  const changeValue = parseFloat(stock.change);
+  const priceValue = parseFloat(stock.price ?? stock.ltp);
+  if (Number.isFinite(changeValue) && Number.isFinite(priceValue)) {
+    const base = priceValue - changeValue;
+    if (base !== 0) {
+      const calculated = (changeValue / base) * 100;
+      if (Number.isFinite(calculated)) {
+        return calculated;
+      }
+    }
+  }
+
+  return null;
+}
+
+function computeSectorAverages(stocks) {
+  const sums = new Map();
+  const counts = new Map();
+
+  stocks.forEach(stock => {
+    if (!Number.isFinite(stock.percentChange)) {
+      return;
+    }
+    const sector = stock.sectorName || 'N/A';
+    sums.set(sector, (sums.get(sector) || 0) + stock.percentChange);
+    counts.set(sector, (counts.get(sector) || 0) + 1);
+  });
+
+  const averages = new Map();
+  sums.forEach((sum, sector) => {
+    const count = counts.get(sector) || 0;
+    averages.set(sector, count >= 2 ? sum / count : null);
+  });
+
+  return averages;
+}
+
+function formatRelativeStrength(value, language) {
+  if (!Number.isFinite(value)) {
+    return '—';
+  }
+  const fixed = value.toFixed(1);
+  const prefix = value > 0 ? '+' : '';
+  return convertDigitsForLanguage(`${prefix}${fixed}`, language);
+}
+
+function getFilteredStocks() {
+  const searchActive = currentSearchTerm.length >= 2;
+  const searchLower = currentSearchTerm.toLowerCase();
+
+  return allStocksData.filter(stock => {
+    const sectorMatch = currentSectorFilter === 'All' || stock.sectorName === currentSectorFilter;
+    if (!sectorMatch) {
+      return false;
+    }
+
+    if (!searchActive) {
+      return true;
+    }
+
+    const symbolMatch = stock.symbol.toLowerCase().includes(searchLower);
+    const nameMatch = (stock.companyName || '').toLowerCase().includes(searchLower);
+    return symbolMatch || nameMatch;
+  });
+}
+
+function compareNumericWithNulls(aValue, bValue, direction = 'desc') {
+  const aValid = Number.isFinite(aValue);
+  const bValid = Number.isFinite(bValue);
+  if (!aValid && !bValid) return 0;
+  if (!aValid) return 1;
+  if (!bValid) return -1;
+  return direction === 'asc' ? aValue - bValue : bValue - aValue;
+}
+
+function sortStocks(stocks) {
+  const mapped = stocks.map((stock, index) => ({ stock, index }));
+
+  mapped.sort((a, b) => {
+    const aStock = a.stock;
+    const bStock = b.stock;
+    let result = 0;
+
+    switch (currentSortOption) {
+      case 'name-asc': {
+        const nameA = (aStock.companyName || aStock.symbol || '').toLowerCase();
+        const nameB = (bStock.companyName || bStock.symbol || '').toLowerCase();
+        result = nameA.localeCompare(nameB);
+        break;
+      }
+      case 'name-desc': {
+        const nameA = (aStock.companyName || aStock.symbol || '').toLowerCase();
+        const nameB = (bStock.companyName || bStock.symbol || '').toLowerCase();
+        result = nameB.localeCompare(nameA);
+        break;
+      }
+      case 'change-asc':
+        result = compareNumericWithNulls(aStock.percentChange, bStock.percentChange, 'asc');
+        break;
+      case 'change-desc':
+        result = compareNumericWithNulls(aStock.percentChange, bStock.percentChange, 'desc');
+        break;
+      case 'rs-asc':
+        result = compareNumericWithNulls(aStock.relativeStrength, bStock.relativeStrength, 'asc');
+        break;
+      case 'rs-desc':
+        result = compareNumericWithNulls(aStock.relativeStrength, bStock.relativeStrength, 'desc');
+        break;
+      default:
+        result = 0;
+    }
+
+    if (result === 0) {
+      result = a.index - b.index;
+    }
+    return result;
+  });
+
+  return mapped.map(item => item.stock);
+}
+
+function renderAllStocksTable() {
+  const tbody = document.querySelector("#allStocksTable tbody");
+  if (!tbody) return;
+
+  const currentLanguage = getCurrentLanguage();
+  const filteredStocks = getFilteredStocks();
+  const sortedStocks = sortStocks(filteredStocks);
+
+  tbody.innerHTML = "";
+
+  sortedStocks.forEach(stock => {
+    const row = document.createElement("tr");
+    row.setAttribute('data-symbol', stock.symbol);
+    row.dataset.sector = stock.sectorName || 'N/A';
+
+    const priceDisplay = Number.isFinite(stock.priceNumber)
+      ? convertDigitsForLanguage(stock.priceNumber.toFixed(2), currentLanguage)
+      : convertDigitsForLanguage(stock.priceRaw, currentLanguage);
+
+    let changeClass = 'gain';
+    let changeDisplay = '—';
+    if (Number.isFinite(stock.percentChange)) {
+      changeClass = stock.percentChange >= 0 ? 'gain' : 'loss';
+      const changeSymbol = stock.percentChange >= 0 ? '+' : '';
+      changeDisplay = convertDigitsForLanguage(`${changeSymbol}${stock.percentChange.toFixed(2)}%`, currentLanguage);
+    } else if (stock.changeRaw) {
+      const rawChange = String(stock.changeRaw).trim();
+      changeClass = rawChange.startsWith('-') ? 'loss' : 'gain';
+      const prefix = rawChange.startsWith('+') || rawChange.startsWith('-') ? '' : '+';
+      const ensurePercent = rawChange.includes('%') ? rawChange : `${rawChange}%`;
+      changeDisplay = convertDigitsForLanguage(`${prefix}${ensurePercent}`, currentLanguage);
+    }
+
+    const rsDisplay = formatRelativeStrength(stock.relativeStrength, currentLanguage);
+    const rsClass = Number.isFinite(stock.relativeStrength)
+      ? (stock.relativeStrength > 0 ? 'gain' : stock.relativeStrength < 0 ? 'loss' : '')
+      : '';
+    const tradeLabel = getTranslationValue('trade', 'Trade');
+
+    row.innerHTML = `
+      <td>${stock.symbol}</td>
+      <td>${stock.companyName}</td>
+      <td>${getLocalizedSectorName(stock.sectorName || 'N/A', currentLanguage)}</td>
+      <td>${priceDisplay}</td>
+      <td class="${changeClass}">${changeDisplay}</td>
+      <td class="${rsClass}">${rsDisplay}</td>
+      <td><button onclick="openTradeModal('${stock.symbol}')" class="trade-btn">${tradeLabel}</button></td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  const emptyState = document.getElementById('sectorEmptyState');
+  if (emptyState) {
+    emptyState.style.display = filteredStocks.length === 0 ? 'block' : 'none';
+    if (filteredStocks.length === 0) {
+      emptyState.textContent = getTranslationValue('noSectorResults', 'No stocks found for this sector.');
+    }
+  }
+
+  updateSelectedSectorLabel();
+}
+
+function updateSortButtons() {
+  document.querySelectorAll('.sort-btn').forEach(button => {
+    const isActive = button.dataset.sort === currentSortOption;
+    button.classList.toggle('active', isActive);
+    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  });
+}
+
+function initSortControls() {
+  const sortButtons = document.querySelectorAll('.sort-btn');
+  if (!sortButtons.length) {
+    return;
+  }
+
+  sortButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const sortValue = button.dataset.sort;
+      if (!sortValue || sortValue === currentSortOption) {
+        return;
+      }
+      currentSortOption = sortValue;
+      updateSortButtons();
+      renderAllStocksTable();
+    });
+  });
+
+  updateSortButtons();
+}
+
 // Update loadAllStocks function to add data attributes and new trade button
 function loadAllStocks() {
   fetch("https://nss-c26z.onrender.com/AllStocks")
@@ -441,54 +667,40 @@ function loadAllStocks() {
       const tbody = document.querySelector("#allStocksTable tbody");
       if (tbody) {
         const sectorCounts = new Map();
-        tbody.innerHTML = "";
-        data.forEach(stock => {
-          const row = document.createElement("tr");
-          row.setAttribute('data-symbol', stock.symbol);
-          const currentLanguage = getCurrentLanguage();
-          const priceNumber = parseFloat(stock.price);
-          const changeNumber = parseFloat(stock.changePercent);
-          let changeClass = !Number.isNaN(changeNumber) && changeNumber >= 0 ? "gain" : "loss";
-          let changeSymbol = !Number.isNaN(changeNumber) && changeNumber >= 0 ? "+" : "";
+        allStocksData = data.map(stock => {
           const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: 'N/A' };
           const sectorName = companyInfo.sector || 'N/A';
-          const displaySectorName = getLocalizedSectorName(sectorName, currentLanguage);
-
-          row.dataset.sector = sectorName;
           sectorCounts.set(sectorName, (sectorCounts.get(sectorName) || 0) + 1);
 
-          const priceDisplay = !Number.isNaN(priceNumber)
-            ? convertDigitsForLanguage(priceNumber.toFixed(2), currentLanguage)
-            : convertDigitsForLanguage(stock.price, currentLanguage);
+          const priceNumber = parseFloat(stock.price);
+          const percentChange = parsePercentChange(stock);
 
-          let changeDisplay;
-          if (!Number.isNaN(changeNumber)) {
-            changeDisplay = convertDigitsForLanguage(`${changeSymbol}${changeNumber.toFixed(2)}%`, currentLanguage);
-          } else {
-            const rawChange = String(stock.changePercent || '0');
-            const trimmedChange = rawChange.trim();
-            changeClass = trimmedChange.startsWith('-') ? 'loss' : 'gain';
-            changeSymbol = trimmedChange.startsWith('+') || trimmedChange.startsWith('-') ? '' : '+';
-            const ensurePercent = trimmedChange.includes('%') ? trimmedChange : `${trimmedChange}%`;
-            changeDisplay = convertDigitsForLanguage(`${changeSymbol}${ensurePercent}`, currentLanguage);
-          }
+          return {
+            symbol: stock.symbol,
+            companyName: companyInfo.name,
+            sectorName,
+            priceNumber: Number.isFinite(priceNumber) ? priceNumber : null,
+            priceRaw: stock.price,
+            changeRaw: stock.changePercent,
+            percentChange
+          };
+        });
 
-          const tradeLabel = getTranslationValue('trade', 'Trade');
-
-          row.innerHTML = `
-            <td>${stock.symbol}</td>
-            <td>${companyInfo.name}</td>
-            <td>${displaySectorName}</td>
-            <td>${priceDisplay}</td>
-            <td class="${changeClass}">${changeDisplay}</td>
-            <td><button onclick="openTradeModal('${stock.symbol}')" class="trade-btn">${tradeLabel}</button></td>
-          `;
-          tbody.appendChild(row);
+        const sectorAverages = computeSectorAverages(allStocksData);
+        allStocksData = allStocksData.map(stock => {
+          const sectorAverage = sectorAverages.get(stock.sectorName);
+          const relativeStrength = Number.isFinite(stock.percentChange) && Number.isFinite(sectorAverage)
+            ? stock.percentChange - sectorAverage
+            : null;
+          return {
+            ...stock,
+            relativeStrength
+          };
         });
 
         latestSectorCounts = new Map(sectorCounts);
         renderSectorFilters(latestSectorCounts);
-        applySectorFilter();
+        renderAllStocksTable();
       }
     })
     .catch(() => {
@@ -862,29 +1074,50 @@ function updateTodayCard({ marketOpen, breadth, sectorMetrics, indexChange }) {
   }
 
   let sentence = '';
+  const currentLanguage = getCurrentLanguage();
+  const isNepali = currentLanguage === 'nepali';
+
   if (marketOpen) {
     if (sentiment === 'bullish') {
       sentence = topSector
-        ? `Markets are up so far today with broad buying and strength in ${topSector}.`
-        : 'Markets are up so far today with broad buying.';
+        ? (isNepali
+          ? `बजार आज सकारात्मक छ, ${topSector} मा बलियो खरिद देखिएको छ।`
+          : `Markets are up so far today with broad buying and strength in ${topSector}.`)
+        : (isNepali
+          ? 'बजार आज सकारात्मक छ र व्यापक खरिद देखिएको छ।'
+          : 'Markets are up so far today with broad buying.');
     } else if (sentiment === 'bearish') {
-      sentence = 'Markets are under pressure today as selling outweighs buying.';
+      sentence = isNepali
+        ? 'बजार आज दबाबमा छ, बेच्ने दबाब बढी छ।'
+        : 'Markets are under pressure today as selling outweighs buying.';
     } else {
-      sentence = 'Markets are mixed today with no clear direction yet.';
+      sentence = isNepali
+        ? 'बजार आज मिश्रित छ, स्पष्ट दिशा छैन।'
+        : 'Markets are mixed today with no clear direction yet.';
     }
   } else {
     if (sentiment === 'bullish') {
       sentence = topSector
-        ? `The market closed higher today, led by strength in ${topSector}.`
-        : 'The market closed higher today.';
+        ? (isNepali
+          ? `बजार आज उच्च बन्द भयो, ${topSector} ले नेतृत्व गर्‍यो।`
+          : `The market closed higher today, led by strength in ${topSector}.`)
+        : (isNepali
+          ? 'बजार आज उच्च बन्द भयो।'
+          : 'The market closed higher today.');
     } else if (sentiment === 'bearish') {
-      sentence = 'The market closed lower today amid broad selling pressure.';
+      sentence = isNepali
+        ? 'बजार आज घटेर बन्द भयो, बेच्ने दबाब हाबी रह्यो।'
+        : 'The market closed lower today amid broad selling pressure.';
     } else {
-      sentence = 'The market ended mixed today with no clear directional conviction.';
+      sentence = isNepali
+        ? 'बजार आज मिश्रित अवस्थामा बन्द भयो।'
+        : 'The market ended mixed today with no clear directional conviction.';
     }
   }
 
-  textEl.textContent = sentence || 'Markets are mixed today with no clear direction yet.';
+  textEl.textContent = sentence || (isNepali
+    ? 'बजार आज मिश्रित छ, स्पष्ट दिशा छैन।'
+    : 'Markets are mixed today with no clear direction yet.');
   badgeEl.textContent = getTranslationValue(sentiment, sentiment);
   badgeEl.classList.remove('bullish', 'bearish', 'mixed');
   badgeEl.classList.add(sentiment);
@@ -970,97 +1203,72 @@ function updateSelectedSectorLabel() {
 }
 
 function applySectorFilter() {
-  const tbody = document.querySelector('#allStocksTable tbody');
-  if (!tbody) return;
-
-  const rows = tbody.querySelectorAll('tr');
-  let visibleCount = 0;
-
-  rows.forEach(row => {
-    const sector = row.getAttribute('data-sector') || 'N/A';
-    const shouldShow = currentSectorFilter === 'All' || sector === currentSectorFilter;
-    row.style.display = shouldShow ? '' : 'none';
-    if (shouldShow) {
-      visibleCount += 1;
-    }
-  });
-
-  const emptyState = document.getElementById('sectorEmptyState');
-  if (emptyState) {
-    emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
-    if (visibleCount === 0) {
-      emptyState.textContent = getTranslationValue('noSectorResults', 'No stocks found for this sector.');
-    }
-  }
-
-  updateSelectedSectorLabel();
+  renderAllStocksTable();
 }
 
 // Update search functionality
 document.getElementById("stockSearch").addEventListener("input", (e) => {
   const searchTerm = e.target.value.toLowerCase();
   const resultsDiv = document.getElementById("searchResults");
-  
+
+  currentSearchTerm = searchTerm;
+  renderAllStocksTable();
+
   if (searchTerm.length < 2) {
     resultsDiv.style.display = "none";
     return;
   }
 
-  fetch("https://nss-c26z.onrender.com/AllStocks")
-    .then(res => res.json())
-    .then(data => {
-      const currentLanguage = getCurrentLanguage();
-      const matches = data.filter(stock => {
-        const companyInfo = companyDetails.get(stock.symbol);
-        return stock.symbol.toLowerCase().includes(searchTerm) ||
-          (companyInfo && companyInfo.name.toLowerCase().includes(searchTerm));
-      });
+  if (!allStocksData.length) {
+    resultsDiv.style.display = "none";
+    return;
+  }
 
-      if (matches.length > 0) {
-        resultsDiv.innerHTML = matches.slice(0, 5).map(stock => {
-          const companyInfo = companyDetails.get(stock.symbol) || { name: stock.symbol, sector: 'N/A' };
-          const priceNumber = parseFloat(stock.price);
-          const changeNumber = parseFloat(stock.changePercent);
-          let changeClass = !Number.isNaN(changeNumber) && changeNumber >= 0 ? 'gain' : 'loss';
-          const priceDisplay = !Number.isNaN(priceNumber)
-            ? convertDigitsForLanguage(priceNumber.toFixed(2), currentLanguage)
-            : convertDigitsForLanguage(stock.price, currentLanguage);
+  const currentLanguage = getCurrentLanguage();
+  const matches = allStocksData.filter(stock => {
+    return stock.symbol.toLowerCase().includes(searchTerm) ||
+      (stock.companyName && stock.companyName.toLowerCase().includes(searchTerm));
+  });
 
-          let percentageDisplay;
-          if (!Number.isNaN(changeNumber)) {
-            percentageDisplay = convertDigitsForLanguage(`${changeNumber >= 0 ? '+' : ''}${changeNumber.toFixed(2)}%`, currentLanguage);
-          } else {
-            const rawChange = String(stock.changePercent || '0').trim();
-            changeClass = rawChange.startsWith('-') ? 'loss' : 'gain';
-            const prefix = rawChange.startsWith('+') || rawChange.startsWith('-') ? '' : '+';
-            const ensurePercent = rawChange.includes('%') ? rawChange : `${rawChange}%`;
-            percentageDisplay = convertDigitsForLanguage(`${prefix}${ensurePercent}`, currentLanguage);
-          }
+  if (matches.length > 0) {
+    resultsDiv.innerHTML = matches.slice(0, 5).map(stock => {
+      const priceDisplay = Number.isFinite(stock.priceNumber)
+        ? convertDigitsForLanguage(stock.priceNumber.toFixed(2), currentLanguage)
+        : convertDigitsForLanguage(stock.priceRaw, currentLanguage);
 
-          const displaySector = getLocalizedSectorName(companyInfo.sector || 'N/A', currentLanguage);
-          return `
-            <div class="search-result" onclick="handleSearchResultClick('${stock.symbol}')">
-              <div class="stock-info">
-                <strong>${stock.symbol}</strong>
-                <span>${companyInfo.name}</span>
-                <small>${displaySector}</small>
-              </div>
-              <div class="stock-price ${changeClass}">
-                ${priceDisplay}
-                (${percentageDisplay})
-              </div>
-            </div>
-          `;
-        }).join('');
-        resultsDiv.style.display = "block";
-      } else {
-        resultsDiv.innerHTML = '<div class="no-results">No matches found</div>';
-        resultsDiv.style.display = "block";
+      let changeClass = 'gain';
+      let percentageDisplay = '—';
+      if (Number.isFinite(stock.percentChange)) {
+        changeClass = stock.percentChange >= 0 ? 'gain' : 'loss';
+        percentageDisplay = convertDigitsForLanguage(`${stock.percentChange >= 0 ? '+' : ''}${stock.percentChange.toFixed(2)}%`, currentLanguage);
+      } else if (stock.changeRaw) {
+        const rawChange = String(stock.changeRaw).trim();
+        changeClass = rawChange.startsWith('-') ? 'loss' : 'gain';
+        const prefix = rawChange.startsWith('+') || rawChange.startsWith('-') ? '' : '+';
+        const ensurePercent = rawChange.includes('%') ? rawChange : `${rawChange}%`;
+        percentageDisplay = convertDigitsForLanguage(`${prefix}${ensurePercent}`, currentLanguage);
       }
-    })
-    .catch(() => {
-      console.error("⚠️ Error searching stocks");
-    });
+
+      const displaySector = getLocalizedSectorName(stock.sectorName || 'N/A', currentLanguage);
+      return `
+        <div class="search-result" onclick="handleSearchResultClick('${stock.symbol}')">
+          <div class="stock-info">
+            <strong>${stock.symbol}</strong>
+            <span>${stock.companyName}</span>
+            <small>${displaySector}</small>
+          </div>
+          <div class="stock-price ${changeClass}">
+            ${priceDisplay}
+            (${percentageDisplay})
+          </div>
+        </div>
+      `;
+    }).join('');
+    resultsDiv.style.display = "block";
+  } else {
+    resultsDiv.innerHTML = '<div class="no-results">No matches found</div>';
+    resultsDiv.style.display = "block";
+  }
 });
 
 // Add event listener for trade amount input
@@ -1123,11 +1331,6 @@ function showSection(sectionId) {
   const selectedSection = document.getElementById(sectionId);
   if (selectedSection) {
     selectedSection.style.display = 'block';
-    
-    // Update leaderboard when that section is shown
-    if (sectionId === 'leaderboard') {
-      updateLeaderboard();
-    }
   }
 }
 
@@ -1294,135 +1497,6 @@ function sellInvestment(index, buttonElement) {
     });
 }
 
-// Function to update the leaderboard
-function updateLeaderboard() {
-    // Get or initialize the global leaderboard data
-    let leaderboardData = JSON.parse(localStorage.getItem('leaderboardData') || '[]');
-    
-    // Update current user's data in the leaderboard
-    const userCredits = parseFloat(localStorage.getItem('credits') || DEFAULT_CREDITS);
-    const userInvestments = JSON.parse(localStorage.getItem('investments') || '[]');
-    
-    // Calculate total investment value
-    let totalInvestmentValue = 0;
-    for (const investment of userInvestments) {
-        const currentPrice = parseFloat(investment.currentPrice || investment.price);
-        const quantity = parseFloat(investment.quantity);
-        totalInvestmentValue += currentPrice * quantity;
-    }
-
-    // Calculate net worth (credits + investments)
-    const netWorth = userCredits + totalInvestmentValue;
-
-    // Add current user to leaderboard if they have made any trades
-    if (userInvestments.length > 0) {
-        const userData = {
-            name: 'Investor #' + Math.floor(Math.random() * 1000), // Temporary random ID until login is implemented
-            netWorth: netWorth,
-            lastUpdated: new Date().toISOString()
-        };
-
-        // Update or add user to leaderboard
-        const userIndex = leaderboardData.findIndex(entry => entry.netWorth === netWorth);
-        if (userIndex === -1) {
-            leaderboardData.push(userData);
-        }
-    }
-
-    // Sort by net worth and remove old entries (older than 7 days)
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
-    leaderboardData = leaderboardData
-        .filter(entry => new Date(entry.lastUpdated) > oneWeekAgo)
-        .sort((a, b) => b.netWorth - a.netWorth);
-
-    // Save updated leaderboard
-    localStorage.setItem('leaderboardData', JSON.stringify(leaderboardData));
-
-    // Update podium spots (top 3)
-    const podiumSpots = ['gold', 'silver', 'bronze'];
-    podiumSpots.forEach((spot, index) => {
-        const spotElement = document.querySelector(`.${spot}`);
-        if (spotElement) {
-            if (leaderboardData[index]) {
-                const user = leaderboardData[index];
-                spotElement.querySelector('.name').textContent = user.name;
-                spotElement.querySelector('.net-worth').textContent = formatMoney(user.netWorth);
-            } else {
-                spotElement.querySelector('.name').textContent = '-';
-                spotElement.querySelector('.net-worth').textContent = formatMoney(0);
-            }
-        }
-    });
-
-    // Update rankings list (positions 4-50)
-    const rankingsList = document.querySelector('.rankings-list');
-    if (rankingsList) {
-        rankingsList.innerHTML = '';
-        
-        // Add ranks 4 through 50
-        for (let i = 3; i < Math.min(leaderboardData.length, 50); i++) {
-            const user = leaderboardData[i];
-            const rankItem = document.createElement('div');
-            rankItem.className = 'ranking-item';
-            rankItem.innerHTML = `
-                <div class="rank">#${i + 1}</div>
-                <div class="investor-info">
-                    <div class="investor-avatar">👤</div>
-                    <span class="investor-name">${user.name}</span>
-                </div>
-                <div class="investor-worth">${formatMoney(user.netWorth)}</div>
-            `;
-            rankingsList.appendChild(rankItem);
-        }
-
-        // If there are less than 4 players, show a message
-        if (leaderboardData.length <= 3) {
-            const messageItem = document.createElement('div');
-            messageItem.className = 'ranking-item message';
-            messageItem.innerHTML = `
-                <div class="investor-info">
-                    <span class="investor-name">Make some trades to appear on the leaderboard!</span>
-                </div>
-            `;
-            rankingsList.appendChild(messageItem);
-        }
-    }
-}
-
-// Helper function to format money values
-function formatMoney(amount) {
-    const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'NPR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(amount);
-
-    return convertDigitsForLanguage(formatted);
-}
-
-// Update leaderboard after trades and portfolio updates
-function onPortfolioChange() {
-    updatePortfolio();
-    updateLeaderboard();
-}
-
-// Modify existing trade confirmation to update leaderboard
-const originalConfirmTrade = confirmTrade;
-confirmTrade = function() {
-    originalConfirmTrade();
-    updateLeaderboard();
-};
-
-// Modify existing sellInvestment to update leaderboard
-const originalSellInvestment = sellInvestment;
-sellInvestment = function(...args) {
-    originalSellInvestment(...args);
-    updateLeaderboard();
-};
-
 // For testing purposes, let's add some sample users
 function addSampleUsers() {
   // Clear existing users
@@ -1493,7 +1567,6 @@ const translations = {
         updated: 'Updated',
         market: 'Market',
         portfolio: 'Portfolio',
-        leaderboard: 'Leaderboard',
         settings: 'Settings',
         about: 'About',
         teamNav: 'Our Team',
@@ -1511,6 +1584,7 @@ const translations = {
         price: 'Price',
         ltp: 'LTP',
         change: 'Change',
+        relativeStrength: 'RS',
         action: 'Action',
         trade: 'Trade',
         buyPrice: 'Buy Price',
@@ -1521,9 +1595,6 @@ const translations = {
         plAmount: 'P/L Amount',
         plPercent: 'P/L %',
         sell: 'Sell',
-        topInvestors: 'Top Investors',
-        rank: 'Rank',
-        investor: 'Investor',
         themeMode: 'Theme Mode',
         lightMode: 'Light Mode',
         darkMode: 'Dark Mode',
@@ -1575,7 +1646,7 @@ const translations = {
         allSectors: 'All Sectors',
         noSectorResults: 'No stocks found for this sector.',
         nssTitle: "Nepal Stock Simulator (NSS)",
-        nssDesc: "A virtual stock trading platform designed to help beginners learn about the Nepal Stock Exchange (NEPSE) in a risk-free environment. Practice trading with virtual credits, track your portfolio, and compete with other investors on the leaderboard.",
+        nssDesc: "A virtual stock trading platform designed to help beginners learn about the Nepal Stock Exchange (NEPSE) in a risk-free environment. Practice trading with virtual credits and track your portfolio performance.",
         feature1: "Virtual Trading",
         feature1Desc: "Trade with virtual credits, no real money involved",
         feature2: "Real-time Data",
@@ -1684,7 +1755,6 @@ const translations = {
         updated: 'अपडेट',
         market: 'बजार',
         portfolio: 'पोर्टफोलियो',
-        leaderboard: 'लिडरबोर्ड',
         settings: 'सेटिङ',
         about: 'बारेमा',
         teamNav: 'हाम्रो टीम',
@@ -1702,6 +1772,7 @@ const translations = {
         price: 'मूल्य',
         ltp: 'अन्तिम मूल्य',
         change: 'परिवर्तन',
+        relativeStrength: 'आरएस',
         action: 'कार्य',
         trade: 'बेचौं',
         buyPrice: 'किन्दाको मूल्य',
@@ -1712,9 +1783,6 @@ const translations = {
         plAmount: 'नाफा/नोक्सान',
         plPercent: 'नाफा/नोक्सान%',
         sell: 'बेचौं',
-        topInvestors: 'उत्कृष्ट लगानीकर्ता',
-        rank: 'स्थान',
-        investor: 'लगानीकर्ता',
         themeMode: 'थीम',
         lightMode: 'मोड',
         darkMode: 'लाइट मोड',
@@ -1766,7 +1834,7 @@ const translations = {
         allSectors: 'सबै सेक्टर',
         noSectorResults: 'यस सेक्टरमा कुनै शेयर भेटिएन।',
         nssTitle: "नेपाल स्टक सिमुलेटर (NSS)",
-        nssDesc: "जोखिम-मुक्त वातावरणमा नेपाल स्टक एक्सचेन्ज (NEPSE) को बारेमा सिक्न सुरुवात गर्नेहरूलाई मद्दत गर्न डिजाइन गरिएको एक आभासी स्टक ट्रेडिङ प्लेटफर्म। आभासी क्रेडिटहरूसँग अभ्यास गर्नुहोस्, आफ्नो पोर्टफोलियो ट्र्याक गर्नुहोस्, र लिडरबोर्डमा अन्य लगानीकर्ताहरूसँग प्रतिस्पर्धा गर्नुहोस्।",
+        nssDesc: "जोखिम-मुक्त वातावरणमा नेपाल स्टक एक्सचेन्ज (NEPSE) को बारेमा सिक्न सुरुवात गर्नेहरूलाई मद्दत गर्न डिजाइन गरिएको एक आभासी स्टक ट्रेडिङ प्लेटफर्म। आभासी क्रेडिटहरूसँग अभ्यास गर्नुहोस् र आफ्नो पोर्टफोलियोको प्रदर्शन ट्र्याक गर्नुहोस्।",
         feature1: "आभासी ट्रेडिङ",
         feature1Desc: "आभासी क्रेडिटहरूसँग ट्रेड गर्नुहोस्, वास्तविक पैसा होइन",
         feature2: "रियल-टाइम डाटा",
@@ -2552,7 +2620,8 @@ function updateTableHeaders(language) {
         headers[2].textContent = texts.sector || 'Sector';
         headers[3].textContent = texts.ltp || 'LTP';
         headers[4].textContent = texts.change || 'Change';
-        headers[5].textContent = texts.action || 'Action';
+        headers[5].textContent = texts.relativeStrength || 'RS';
+        headers[6].textContent = texts.action || 'Action';
     }
 
     // Update investment history table
