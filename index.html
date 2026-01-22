@@ -29,7 +29,7 @@
         <p>Let's learn how to use the Nepal Stock Simulator. First, let's understand the credit system.</p>
         <p>💰 1 Credit = 1 NPR (Nepali Rupee)</p>
 
-        <p>You start with 100,000 credits. Earn more through daily bonuses and weekly spins!</p>
+        <p>You start with 1,000,000 credits. Earn more through daily bonuses and weekly spins!</p>
 
       </div>
 
@@ -76,7 +76,7 @@
       </div>
 
       <div class="tutorial-step" data-step="6">
-        <h2>Join the Leaderboard! 🏆</h2>
+        <h2>Set up your investor profile 👤</h2>
         <p>Let's set up your investor profile:</p>
         <div class="name-input">
           <label for="investorName">Your Name:</label>
@@ -106,10 +106,6 @@
         <a href="#portfolio" class="nav-icon">
           <img src="portfolio-icon.png" alt="Portfolio" class="nav-img">
           <span data-translate="portfolio">Portfolio</span>
-        </a>
-        <a href="#leaderboard" class="nav-icon">
-          <img src="leaderboard-icon.png" alt="Leaderboard" class="nav-img">
-          <span data-translate="leaderboard">Leaderboard</span>
         </a>
         <a href="#settings" class="nav-icon">
           <img src="settings-icon.png" alt="Settings" class="nav-img">
@@ -237,14 +233,23 @@
           </div>
         </div>
 
-    
-
         <div class="sector-categories">
           <div class="sector-header">
             <h3 data-translate="browseBySector">Browse by Sector</h3>
             <span id="selectedSectorLabel" class="selected-sector" data-translate="allSectors">All Sectors</span>
           </div>
           <div id="sectorFilters" class="sector-chip-group"></div>
+          <div class="market-sort">
+            <span class="sort-label" data-translate="sortBy">Sort:</span>
+            <div class="sort-options" role="group" aria-label="Market sorting">
+              <button type="button" class="sort-chip active" data-sort="name-asc" data-translate="sortAToZ">A to Z</button>
+              <button type="button" class="sort-chip" data-sort="name-desc" data-translate="sortZToA">Z to A</button>
+              <button type="button" class="sort-chip" data-sort="change-desc" data-translate="sortChangeHigh">% Change ↓</button>
+              <button type="button" class="sort-chip" data-sort="change-asc" data-translate="sortChangeLow">% Change ↑</button>
+              <button type="button" class="sort-chip" data-sort="rs-desc" data-translate="sortRsHigh">RS ↓</button>
+              <button type="button" class="sort-chip" data-sort="rs-asc" data-translate="sortRsLow">RS ↑</button>
+            </div>
+          </div>
           <p id="sectorEmptyState" class="sector-empty" style="display: none;" data-translate="noSectorResults">
             No stocks found for this sector.
           </p>
@@ -260,6 +265,7 @@
                 <th data-translate="sector">Sector</th>
                 <th data-translate="ltp">LTP</th>
                 <th data-translate="change">Change</th>
+                <th data-translate="rs">RS</th>
                 <th data-translate="action">Action</th>
               </tr>
             </thead>
@@ -267,15 +273,6 @@
           </table>
         </div>
 
-        <div id="tradeForm" class="trade-form">
-          <h3>Quick Trade</h3>
-          <div class="trade-inputs">
-            <input type="text" id="symbol" placeholder="Stock Symbol" required>
-            <input type="number" id="amount" placeholder="Amount to invest" required>
-            <button type="submit">Trade Now</button>
-          </div>
-          <div id="tradeResult"></div>
-        </div>
       </div>
     </section>
 
@@ -322,41 +319,6 @@
               Start Investing Now 🚀
             </button>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Leaderboard Section -->
-    <section id="leaderboard" class="section">
-      <div class="leaderboard-content">
-        <h2 data-translate="topInvestors">Top Investors</h2>
-        <div class="podium-wrapper">
-          <div class="podium">
-            <div class="podium-spot silver">
-              <div class="crown">👑</div>
-              <div class="avatar">👤</div>
-              <div class="name">-</div>
-              <div class="net-worth">$0</div>
-              <div class="platform platform-2">2</div>
-            </div>
-            <div class="podium-spot gold">
-              <div class="crown">👑</div>
-              <div class="avatar">👤</div>
-              <div class="name">-</div>
-              <div class="net-worth">$0</div>
-              <div class="platform platform-1">1</div>
-            </div>
-            <div class="podium-spot bronze">
-              <div class="crown">👑</div>
-              <div class="avatar">👤</div>
-              <div class="name">-</div>
-              <div class="net-worth">$0</div>
-              <div class="platform platform-3">3</div>
-            </div>
-          </div>
-        </div>
-        <div class="rankings-list">
-          <!-- Rankings will be populated by JavaScript -->
         </div>
       </div>
     </section>
@@ -432,7 +394,7 @@
           <h2 data-translate="nssTitle">Nepal Stock Simulator (NSS)</h2>
           <p data-translate="nssDesc">
             A virtual stock trading platform designed to help beginners learn about the Nepal Stock Exchange (NEPSE) in a risk-free environment.
-            Practice trading with virtual credits, track your portfolio, and compete with other investors on the leaderboard.
+            Practice trading with virtual credits and track your portfolio with confidence.
           </p>
           <div class="features-grid">
             <div class="feature">
