@@ -3404,6 +3404,9 @@ section {
   position: relative;
   padding: 4rem 1.5rem;
   background: linear-gradient(180deg, #f7fafc 0%, #eef4fb 55%, #f8fbff 100%);
+  background-color: #f3f7fc;
+  background-repeat: no-repeat;
+  background-size: cover;
   overflow: hidden;
 }
 
@@ -3509,14 +3512,15 @@ section {
 }
 
 .nss-about__cardText {
-  color: rgba(28, 43, 69, 0.75);
+  color: rgba(28, 43, 69, 0.82);
   line-height: 1.6;
 }
 
 .nss-about__smirk {
   font-style: italic;
-  color: rgba(37, 56, 88, 0.7);
+  color: rgba(37, 56, 88, 0.62);
   margin-bottom: 2.5rem;
+  letter-spacing: 0.03em;
 }
 
 .nss-about__founderCard {
@@ -3577,8 +3581,8 @@ section {
   object-fit: cover;
   border-radius: 50%;
   aspect-ratio: 1 / 1;
-  border: 2px solid rgba(170, 189, 220, 0.6);
-  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.18);
+  border: 2px solid rgba(140, 180, 255, 0.75);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.16), 0 0 0 6px rgba(140, 180, 255, 0.18);
   background: #fff;
 }
 
@@ -3643,6 +3647,18 @@ section {
   word-break: break-word;
 }
 
+.nss-about__metaLink {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.nss-about__metaLink:hover,
+.nss-about__metaLink:focus-visible {
+  color: #1d3b72;
+  text-decoration: underline;
+}
+
 .nss-about__btnRow {
   display: flex;
   flex-wrap: wrap;
@@ -3704,6 +3720,17 @@ section {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+@media (min-width: 960px) {
+  .nss-about__card--long .nss-about__cardTitle {
+    font-size: 1.05rem;
+    max-width: 18ch;
+  }
+
+  .nss-about__card--wide {
+    grid-column: span 2;
+  }
 }
 
 .nss-about [data-reveal] {
@@ -3786,7 +3813,7 @@ section {
 [data-theme="dark"] .nss-about__metaItem,
 [data-theme="dark"] .nss-about__founderRole,
 [data-theme="dark"] .nss-about__smirk {
-  color: rgba(226, 232, 240, 0.7);
+  color: rgba(226, 232, 240, 0.78);
 }
 
 [data-theme="dark"] .nss-about__card,
@@ -3820,8 +3847,14 @@ section {
   color: #93c5fd;
 }
 
+[data-theme="dark"] .nss-about__metaLink:hover,
+[data-theme="dark"] .nss-about__metaLink:focus-visible {
+  color: #93c5fd;
+}
+
 [data-theme="dark"] .nss-about__founderImg {
-  border-color: rgba(148, 197, 255, 0.35);
+  border-color: rgba(148, 197, 255, 0.55);
+  box-shadow: 0 12px 26px rgba(2, 6, 23, 0.5), 0 0 0 6px rgba(96, 165, 250, 0.2);
   background: rgba(15, 23, 42, 0.9);
 }
 
@@ -3876,7 +3909,7 @@ section {
   :not([data-theme="light"]) .nss-about__metaItem,
   :not([data-theme="light"]) .nss-about__founderRole,
   :not([data-theme="light"]) .nss-about__smirk {
-    color: rgba(226, 232, 240, 0.7);
+    color: rgba(226, 232, 240, 0.78);
   }
 
   :not([data-theme="light"]) .nss-about__card,
@@ -3901,8 +3934,14 @@ section {
     color: #93c5fd;
   }
 
+  :not([data-theme="light"]) .nss-about__metaLink:hover,
+  :not([data-theme="light"]) .nss-about__metaLink:focus-visible {
+    color: #93c5fd;
+  }
+
   :not([data-theme="light"]) .nss-about__founderImg {
-    border-color: rgba(148, 197, 255, 0.35);
+    border-color: rgba(148, 197, 255, 0.55);
+    box-shadow: 0 12px 26px rgba(2, 6, 23, 0.5), 0 0 0 6px rgba(96, 165, 250, 0.2);
     background: rgba(15, 23, 42, 0.9);
   }
 }
