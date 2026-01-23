@@ -32,7 +32,7 @@ const COMPANY_REPLACEMENTS = [
 
 const NEPALI_COMPANY_NAME_MAP = JSON.parse(`{
   "आरम्भ चौतारी लघुवित्त वित्तीय संस्था लिमिटेड": "Aarambha Chautari Laghubitta Bittya Sanstha Limited",
-  "आत्मनिर्भर लघुवित्त वित्तीय संस्था लिमिटेड": "Aatmanirbhar Laghubitta Bittya Sanstha Limited",
+  "आत्मनिर्भर लघुवित्त वित्तीय संस्था लिमिटेड": "Aatmanirbhar Laghubitta Bittitya Sanstha Limited",
   "कृषि विकास बैंक लिमिटेड": "Agricultural Development Bank Limited",
   "अंकु खोला जलविद्युत कम्पनी लिमिटेड": "Ankhu Khola Jalvidhyut Company Limited",
   "एपीआई पावर कम्पनी लिमिटेड": "API Power Company Limited",
@@ -81,8 +81,8 @@ const NEPALI_COMPANY_NAME_MAP = JSON.parse(`{
   "इमर्जिङ नेपाल लिमिटेड": "Emerging Nepal Limited",
   "एभरेष्ट बैंक लिमिटेड": "Everest Bank Limited",
   "एक्सेल डेभलपमेन्ट बैंक लिमिटेड": "Excel Development Bank Limited",
-  "फर्स्ट माइक्रोफाइनान्स लघुवित्त वित्तीय संस्था लिमिटेड": "First Microfinance Laghubitta Bittiya Sanstha Limited",
-  "फरवार्ड माइक्रोफाइनान्स लघुवित्त वित्तीय संस्था लिमिटेड": "Forward Micro Finance Laghubitta Bittiya Sanstha Limited",
+  "फर्स्ट माइक्रोफाइनान्स लघुवित्त वित्तीय संस्था लिमिटेड": "First Micro Finance Laghubitta Bittiya Sanstha Limited",
+  "फरवार्ड माइक्रोफाइनान्स लघुवित्त वित्तीय संस्था लिमिटेड": "Forward Microfinance Laghubitta Bittiya Sanstha Limited",
   "गणपति लघुवित्त वित्तीय संस्था लिमिटेड": "Ganapati Laghubitta Bittiya Sanstha Limited",
   "गरिमा विकास बैंक लिमिटेड": "Garima Bikas Bank Limited",
   "घलेम्दी हाइड्रो लिमिटेड": "Ghalemdi Hydro Limited",
@@ -95,7 +95,7 @@ const NEPALI_COMPANY_NAME_MAP = JSON.parse(`{
   "ग्रीन भेन्चर्स लिमिटेड": "Green Ventures Limited",
   "ग्रीनलाइफ हाइड्रोपावर लिमिटेड": "Greenlife Hydropower Limited",
   "गार्डियन माइक्रो लाइफ इन्स्योरेन्स लिमिटेड": "Guardian Micro Life Insurance Limited",
-  "गुहेश्वरी मर्चेन्ट बैंकिङ एण्ड फाइनान्स लिमिटेड": "Guheshwori Merchant Banking and Finance Limited",
+  "गुहेश्वरी मर्चेन्ट बैंकिङ एण्ड फाइनान्स लिमिटेड": "Guheswori Merchant Banking & Finance Ltd.",
   "गुराँस लघुवित्त वित्तीय संस्था लिमिटेड": "Gurans Laghubitta Bittiya Sanstha Limited",
   "गोर्खाज फाइनान्स लिमिटेड": "Gurkhas Finance Ltd.",
   "हाथवे इन्भेस्टमेन्ट नेपाल लिमिटेड": "Hathway Investment Nepal Limited",
