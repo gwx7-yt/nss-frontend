@@ -718,6 +718,23 @@ function getNumberFontFamily(language = getCurrentLanguage()) {
   return '"Inter", "Poppins", "Roboto", sans-serif';
 }
 
+function normalizeNumberNodes(language) {
+  const nodes = document.querySelectorAll('.np-number');
+  if (!nodes.length) {
+    return;
+  }
+  const isNepali = isNepaliLanguage(language);
+  nodes.forEach(node => {
+    if (!node.textContent) {
+      return;
+    }
+    const baseText = typeof toEnglishNumerals === 'function'
+      ? toEnglishNumerals(node.textContent)
+      : node.textContent;
+    node.textContent = isNepali ? toNepaliNumerals(baseText) : baseText;
+  });
+}
+
 const homeDashboardState = {
   sectorChart: null,
   latestPriceVolume: null,
@@ -2668,6 +2685,7 @@ function updateLanguage(language) {
 
     // Localize static numbers in the UI
     localizeStaticNumbers(language);
+    normalizeNumberNodes(language);
     refreshHomeDashboardLocale();
 }
 
