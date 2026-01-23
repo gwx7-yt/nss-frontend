@@ -7,6 +7,7 @@
   <link rel="icon" href="NSSlogo.png" type="image/x-icon" />
 
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Mukta:wght@400;500;600;700&family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="nss.css" />
@@ -29,9 +30,9 @@
       <div class="tutorial-step" data-step="1">
         <h2>Welcome to NSS! 👋</h2>
         <p>Let's learn how to use the Nepal Stock Simulator. First, let's understand the credit system.</p>
-        <p data-localize-numbers>💰 1 Credit = 1 NPR (Nepali Rupee)</p>
+        <p data-localize-numbers>💰 <span class="np-number">1</span> Credit = <span class="np-number">1</span> NPR (Nepali Rupee)</p>
 
-        <p data-localize-numbers>You start with 1,000,000 credits. Earn more through daily bonuses and weekly spins!</p>
+        <p data-localize-numbers>You start with <span class="np-number">1,000,000</span> credits. Earn more through daily bonuses and weekly spins!</p>
 
       </div>
 
@@ -48,12 +49,12 @@
 
       <div class="tutorial-step" data-step="3">
         <h2>How to Buy Stocks 🛒</h2>
-        <p data-localize-numbers>1. Find a stock you want to buy</p>
-        <p data-localize-numbers>2. Click the "Trade" button</p>
-        <p data-localize-numbers>3. Enter the number of shares you want to buy</p>
-        <p data-localize-numbers>4. Confirm your purchase</p>
+        <p data-localize-numbers><span class="np-number">1</span>. Find a stock you want to buy</p>
+        <p data-localize-numbers><span class="np-number">2</span>. Click the "Trade" button</p>
+        <p data-localize-numbers><span class="np-number">3</span>. Enter the number of shares you want to buy</p>
+        <p data-localize-numbers><span class="np-number">4</span>. Confirm your purchase</p>
 
-        <p data-localize-numbers>Note: Minimum purchase is 10 shares</p>
+        <p data-localize-numbers>Note: Minimum purchase is <span class="np-number">10</span> shares</p>
 
       </div>
 
@@ -72,8 +73,8 @@
         <h2>Earning More Credits 💎</h2>
         <p>Click the '+' button next to your credits to:</p>
         <ul>
-          <li data-localize-numbers>Claim 1000 credits daily bonus</li>
-          <li data-localize-numbers>Spin the wheel weekly to win up to 5000 credits</li>
+          <li data-localize-numbers>Claim <span class="np-number">1000</span> credits daily bonus</li>
+          <li data-localize-numbers>Spin the wheel weekly to win up to <span class="np-number">5000</span> credits</li>
         </ul>
       </div>
 
@@ -125,7 +126,7 @@
       <div class="nav-right">
         <div class="credits-display">
           <img src="coins-stack.png" alt="Credits" class="credits-icon">
-          <span><span data-translate="credits">Credits</span>: <span id="creditBalance">(number of credits)</span></span>
+          <span><span data-translate="credits">Credits</span>: <span id="creditBalance" class="np-number">(number of credits)</span></span>
           <button class="add-credits-btn" aria-label="Add credits">+</button>
         </div>
       </div>
@@ -145,25 +146,25 @@
                 <div id="homeMarketState" class="home-status-value">OPEN</div>
                 <div class="home-updated">
                   <span data-translate="lastUpdated">Last updated</span>
-                  <span id="homeLastUpdated">--</span>
+                  <span id="homeLastUpdated" class="np-number">--</span>
                 </div>
               </div>
               <div class="home-status-kpis">
                 <div class="home-kpi">
                   <span data-translate="advancers">Advancers</span>
-                  <span id="homeAdv" class="home-kpi-value gain">0</span>
+                  <span id="homeAdv" class="home-kpi-value gain np-number">0</span>
                 </div>
                 <div class="home-kpi">
                   <span data-translate="decliners">Decliners</span>
-                  <span id="homeDec" class="home-kpi-value loss">0</span>
+                  <span id="homeDec" class="home-kpi-value loss np-number">0</span>
                 </div>
                 <div class="home-kpi">
                   <span data-translate="unchanged">Unchanged</span>
-                  <span id="homeUnch" class="home-kpi-value">0</span>
+                  <span id="homeUnch" class="home-kpi-value np-number">0</span>
                 </div>
                 <div class="home-kpi">
                   <span data-translate="total">Total</span>
-                  <span id="homeTotal" class="home-kpi-value">0</span>
+                  <span id="homeTotal" class="home-kpi-value np-number">0</span>
                 </div>
               </div>
             </div>
@@ -186,7 +187,7 @@
             </div>
             <div class="home-updated home-updated-right">
               <span data-translate="updated">Updated</span>
-              <span id="homeSectorUpdated">--</span>
+              <span id="homeSectorUpdated" class="np-number">--</span>
             </div>
           </div>
 
@@ -313,28 +314,17 @@
             Buy More Stocks 🚀
           </button>
         </div>
-
-        <!-- No investments message -->
-        <div id="noInvestments" class="no-investments">
-          <div class="message">
-            <h3 data-translate="noInvestments">No investments yet! 🎯</h3>
-            <p data-translate="startInvestingDesc">Head over to the Market section to start your investment journey!</p>
-            <button onclick="showSection('market')" class="start-investing-btn" data-translate="startInvesting">
-              Start Investing Now 🚀
-            </button>
-          </div>
-        </div>
       </div>
     </section>
 
     <section id="settings" style="display: none;">
       <div class="settings-content">
-        <h2 class="section-title" data-translate="settings">Settings ⚙️</h2>
+        <h2 class="section-title" data-translate="settings">Settings</h2>
 
         <div class="settings-grid">
           <!-- Theme Settings -->
           <div class="settings-card">
-            <h3 data-translate="themeMode">Theme Mode 🎨</h3>
+            <h3 data-translate="themeMode">Theme Mode</h3>
             <div class="theme-toggle">
               <button id="lightMode" class="theme-btn active">
                 <span class="icon">☀️</span>
@@ -349,7 +339,7 @@
 
           <!-- Text Size Settings -->
           <div class="settings-card">
-            <h3 data-translate="textSize">Text Size 📝</h3>
+            <h3 data-translate="textSize">Text Size</h3>
             <div class="text-size-controls">
               <button id="smallText" class="size-btn">
                 <span class="label" data-translate="small">Small</span>
@@ -364,19 +354,26 @@
                 <span class="preview">Aa</span>
               </button>
             </div>
+            <p class="text-size-preview">Preview: Invest smart with clarity.</p>
           </div>
 
           <!-- Language Settings -->
           <div class="settings-card">
-            <h3 data-translate="language">Language भाषा</h3>
+            <h3 data-translate="language">Language</h3>
             <div class="language-toggle">
               <button id="englishLang" class="lang-btn active">
                 <span class="icon">🇬🇧</span>
-                <span class="label" data-translate="english">English</span>
+                <span class="label-group">
+                  <span class="label" data-translate="english">English</span>
+                  <span class="region">(GB)</span>
+                </span>
               </button>
               <button id="nepaliLang" class="lang-btn">
                 <span class="icon">🇳🇵</span>
-                <span class="label" data-translate="nepali">नेपाली</span>
+                <span class="label-group">
+                  <span class="label" data-translate="nepali">नेपाली</span>
+                  <span class="region">(NP)</span>
+                </span>
               </button>
             </div>
           </div>
@@ -458,7 +455,7 @@
                           <path d="M7.1 3.5a1.8 1.8 0 0 1 1.8 1.4l.6 2.6a1.8 1.8 0 0 1-.5 1.7l-1.2 1.2a12.7 12.7 0 0 0 5.8 5.8l1.2-1.2a1.8 1.8 0 0 1 1.7-.5l2.6.6a1.8 1.8 0 0 1 1.4 1.8v2a1.9 1.9 0 0 1-2 2c-8.2 0-14.9-6.7-14.9-14.9a1.9 1.9 0 0 1 2-2h2Z" fill="currentColor"/>
                         </svg>
                       </span>
-                      <a class="nss-about__metaLink" href="tel:9823568381" data-localize-numbers>9823568381</a>
+                      <a class="nss-about__metaLink" href="tel:9823568381" data-localize-numbers><span class="np-number">9823568381</span></a>
                     </div>
                   </div>
 
@@ -580,15 +577,15 @@
       <div class="chart-game-scoreboard">
         <div class="score-item">
           <span data-translate="chartGameProgressLabel">Progress</span>
-          <strong id="chartGameProgress">0/160</strong>
+          <strong id="chartGameProgress" class="np-number">0/160</strong>
         </div>
         <div class="score-item">
           <span data-translate="chartGameCurrentReturnLabel">Current Return</span>
-          <strong id="chartGameCurrentReturn">0%</strong>
+          <strong id="chartGameCurrentReturn" class="np-number">0%</strong>
         </div>
         <div class="score-item">
           <span data-translate="chartGameTotalReturnLabel">Total Return</span>
-          <strong id="chartGameTotalReturn">0%</strong>
+          <strong id="chartGameTotalReturn" class="np-number">0%</strong>
         </div>
       </div>
 
@@ -603,12 +600,12 @@
 
           <div class="chart-game-results-row">
             <span data-translate="chartGameYourReturnLabel">Your return</span>
-            <strong id="chartGameYourReturn">0%</strong>
+            <strong id="chartGameYourReturn" class="np-number">0%</strong>
           </div>
 
           <div class="chart-game-results-row">
             <span data-translate="chartGameBuyHoldLabel">Buy &amp; Hold</span>
-            <strong id="chartGameBuyHold">0%</strong>
+            <strong id="chartGameBuyHold" class="np-number">0%</strong>
           </div>
 
           <p id="chartGameStatusMessage"></p>
@@ -650,11 +647,11 @@
       </div>
 
       <div class="quantity-preview">
-        <p>Share price: <span id="modalPricePreview">0</span> credits</p>
-        <p data-localize-numbers>0.6% broker fee: <span id="modalBrokerFeePreview">0</span> credits</p>
-        <p data-localize-numbers>0.015% SEBON fee: <span id="modalSebonFeePreview">0</span> credits</p>
-        <p data-localize-numbers>0.1% DP fee: <span id="modalDpFeePreview">0</span> credits</p>
-        <p>Total: <span class="quantity" id="modalCostPreview">0</span> credits</p>
+        <p>Share price: <span id="modalPricePreview" class="np-number">0</span> credits</p>
+        <p data-localize-numbers><span class="np-number">0.6%</span> broker fee: <span id="modalBrokerFeePreview" class="np-number">0</span> credits</p>
+        <p data-localize-numbers><span class="np-number">0.015%</span> SEBON fee: <span id="modalSebonFeePreview" class="np-number">0</span> credits</p>
+        <p data-localize-numbers><span class="np-number">0.1%</span> DP fee: <span id="modalDpFeePreview" class="np-number">0</span> credits</p>
+        <p>Total: <span class="quantity np-number" id="modalCostPreview">0</span> credits</p>
       </div>
 
       <div class="modal-buttons">

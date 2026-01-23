@@ -11,11 +11,46 @@ const DIGIT_MAP = {
   '9': '९'
 };
 
+const REVERSE_DIGIT_MAP = Object.fromEntries(
+  Object.entries(DIGIT_MAP).map(([latin, nepali]) => [nepali, latin])
+);
+
 function toNepaliNumerals(value) {
   if (value === null || value === undefined) {
     return '';
   }
   return String(value).replace(/\d/g, digit => DIGIT_MAP[digit] || digit);
+}
+
+function toEnglishNumerals(value) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return String(value).replace(/[०-९]/g, digit => REVERSE_DIGIT_MAP[digit] || digit);
+}
+
+function getUiLang(language) {
+  const currentLanguage = language ?? (typeof localStorage !== 'undefined' ? localStorage.getItem('language') : '');
+  return isNepaliLanguage(currentLanguage) ? 'np' : 'en';
+}
+
+function getNumberLocale(language) {
+  return getUiLang(language) === 'np' ? 'ne-NP' : 'en-US';
+}
+
+function parseNumeric(value) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === 'string') {
+    const cleaned = value.trim().replace(/,/g, '');
+    const parsed = Number.parseFloat(cleaned);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
 }
 
 function isNepaliLanguage(language) {
@@ -24,42 +59,33 @@ function isNepaliLanguage(language) {
 }
 
 function formatNumber(value, opts = {}, language = 'english') {
-  const { decimals, useCommas = false, prefix = '', suffix = '' } = opts;
-  if (value === null || value === undefined || value === '') {
-    return '';
+  const {
+    decimals,
+    useCommas = false,
+    prefix = '',
+    suffix = '',
+    fallback = '—'
+  } = opts;
+  const numericValue = parseNumeric(value);
+  if (numericValue === null) {
+    return fallback;
   }
 
-  let numericValue = null;
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    numericValue = value;
-  } else if (typeof value === 'string') {
-    const cleaned = value.trim().replace(/,/g, '');
-    if (cleaned && !Number.isNaN(Number(cleaned))) {
-      numericValue = Number(cleaned);
-    }
-  }
+  const locale = getNumberLocale(language);
+  const formatOptions = {
+    useGrouping: Boolean(useCommas)
+  };
 
-  let formatted = '';
-  if (numericValue !== null) {
-    if (typeof decimals === 'number') {
-      formatted = numericValue.toFixed(decimals);
-    } else {
-      formatted = String(numericValue);
-    }
-
-    if (useCommas) {
-      const sign = formatted.startsWith('-') ? '-' : '';
-      const unsigned = sign ? formatted.slice(1) : formatted;
-      const [integerPart, fractionalPart] = unsigned.split('.');
-      const withCommas = Number(integerPart).toLocaleString('en-US');
-      formatted = fractionalPart !== undefined ? `${sign}${withCommas}.${fractionalPart}` : `${sign}${withCommas}`;
-    }
+  if (typeof decimals === 'number') {
+    formatOptions.minimumFractionDigits = decimals;
+    formatOptions.maximumFractionDigits = decimals;
   } else {
-    formatted = String(value);
+    formatOptions.minimumFractionDigits = 0;
+    formatOptions.maximumFractionDigits = 20;
   }
 
-  const output = `${prefix}${formatted}${suffix}`;
-  return isNepaliLanguage(language) ? toNepaliNumerals(output) : output;
+  const formatted = new Intl.NumberFormat(locale, formatOptions).format(numericValue);
+  return `${prefix}${formatted}${suffix}`;
 }
 
 function formatCurrencyNPR(value, language = 'english', opts = {}) {
@@ -68,18 +94,44 @@ function formatCurrencyNPR(value, language = 'english', opts = {}) {
 }
 
 function formatPercent(value, language = 'english', opts = {}) {
-  if (!Number.isFinite(Number(value))) {
-    return '—';
+  const { decimals = 2, showSign = true, fallback = '—' } = opts;
+  const numericValue = parseNumeric(value);
+  if (numericValue === null) {
+    return fallback;
   }
-  const { decimals = 2, showSign = true } = opts;
-  const numericValue = Number(value);
   const sign = showSign && numericValue > 0 ? '+' : '';
-  const formatted = formatNumber(numericValue, { decimals }, language);
+  const formatted = formatNumber(numericValue, { decimals, useCommas: true, fallback }, language);
   return `${sign}${formatted}%`;
 }
 
+function formatPrice(value, language = 'english') {
+  return formatNumber(value, { decimals: 2, useCommas: true }, language);
+}
+
+function formatPoints(value, language = 'english') {
+  return formatNumber(value, { decimals: 2, useCommas: true }, language);
+}
+
+function formatCompactInt(value, language = 'english', opts = {}) {
+  const { fallback = '—' } = opts;
+  const numericValue = parseNumeric(value);
+  if (numericValue === null) {
+    return fallback;
+  }
+  const locale = getNumberLocale(language);
+  return new Intl.NumberFormat(locale, {
+    notation: 'compact',
+    maximumFractionDigits: 0
+  }).format(numericValue);
+}
+
 window.toNepaliNumerals = toNepaliNumerals;
+window.toEnglishNumerals = toEnglishNumerals;
+window.getUiLang = getUiLang;
 window.isNepaliLanguage = isNepaliLanguage;
 window.formatNumber = formatNumber;
 window.formatCurrencyNPR = formatCurrencyNPR;
 window.formatPercent = formatPercent;
+window.formatPrice = formatPrice;
+window.formatPoints = formatPoints;
+window.formatCompactInt = formatCompactInt;
