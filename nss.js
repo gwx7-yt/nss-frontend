@@ -107,7 +107,6 @@ document.addEventListener("DOMContentLoaded", () => {
   updatePortfolio();
   initNavigation();
   initSortControls();
-  initNumberLocalizationObserver();
 
 });
 
@@ -122,13 +121,13 @@ function fetchTopGainers() {
           const row = document.createElement("tr");
           const ltpNumber = parseFloat(item.ltp);
           const percentageNumber = parseFloat(item.percentageChange);
-          const ltpDisplay = !Number.isNaN(ltpNumber)
-            ? formatNumber(ltpNumber, { decimals: 2, useCommas: true }, getCurrentLanguage())
-            : formatNumber(item.ltp, { useCommas: true }, getCurrentLanguage());
-          const percentageFallback = `${item.percentageChange}${String(item.percentageChange).includes('%') ? '' : '%'}`;
-          const percentageDisplay = !Number.isNaN(percentageNumber)
-            ? formatPercent(percentageNumber, getCurrentLanguage(), { decimals: 2, showSign: true })
-            : (isNepaliLanguage(getCurrentLanguage()) ? toNepaliNumerals(percentageFallback) : percentageFallback);
+          const currentLanguage = getCurrentLanguage();
+          const ltpDisplay = Number.isFinite(ltpNumber)
+            ? formatPrice(ltpNumber, currentLanguage)
+            : formatPrice(item.ltp, currentLanguage);
+          const percentageDisplay = Number.isFinite(percentageNumber)
+            ? formatPercent(percentageNumber, currentLanguage, { decimals: 2, showSign: true })
+            : formatPercent(item.percentageChange, currentLanguage, { decimals: 2, showSign: true });
           row.innerHTML = `
             <td>${item.symbol}</td>
             <td>${ltpDisplay}</td>
@@ -154,14 +153,14 @@ function fetchTopLosers() {
           const row = document.createElement("tr");
           const ltpNumber = parseFloat(item.ltp);
           const percentageNumber = parseFloat(item.percentageChange);
-          const ltpDisplay = !Number.isNaN(ltpNumber)
-            ? formatNumber(ltpNumber, { decimals: 2, useCommas: true }, getCurrentLanguage())
-            : formatNumber(item.ltp, { useCommas: true }, getCurrentLanguage());
+          const currentLanguage = getCurrentLanguage();
+          const ltpDisplay = Number.isFinite(ltpNumber)
+            ? formatPrice(ltpNumber, currentLanguage)
+            : formatPrice(item.ltp, currentLanguage);
           const changeClass = !Number.isNaN(percentageNumber) && percentageNumber >= 0 ? 'gain' : 'loss';
-          const percentageFallback = `${item.percentageChange}${String(item.percentageChange).includes('%') ? '' : '%'}`;
-          const percentageDisplay = !Number.isNaN(percentageNumber)
-            ? formatPercent(percentageNumber, getCurrentLanguage(), { decimals: 2, showSign: true })
-            : (isNepaliLanguage(getCurrentLanguage()) ? toNepaliNumerals(percentageFallback) : percentageFallback);
+          const percentageDisplay = Number.isFinite(percentageNumber)
+            ? formatPercent(percentageNumber, currentLanguage, { decimals: 2, showSign: true })
+            : formatPercent(item.percentageChange, currentLanguage, { decimals: 2, showSign: true });
           row.innerHTML = `
             <td>${item.symbol}</td>
             <td>${ltpDisplay}</td>
@@ -569,8 +568,8 @@ function renderAllStocksTable() {
     row.dataset.sector = stock.sectorName || 'N/A';
 
     const priceDisplay = Number.isFinite(stock.priceNumber)
-      ? formatNumber(stock.priceNumber, { decimals: 2, useCommas: true }, currentLanguage)
-      : formatNumber(stock.priceRaw, { useCommas: true }, currentLanguage);
+      ? formatPrice(stock.priceNumber, currentLanguage)
+      : formatPrice(stock.priceRaw, currentLanguage);
 
     let changeClass = 'gain';
     let changeDisplay = '—';
@@ -580,10 +579,7 @@ function renderAllStocksTable() {
     } else if (stock.changeRaw) {
       const rawChange = String(stock.changeRaw).trim();
       changeClass = rawChange.startsWith('-') ? 'loss' : 'gain';
-      const prefix = rawChange.startsWith('+') || rawChange.startsWith('-') ? '' : '+';
-      const ensurePercent = rawChange.includes('%') ? rawChange : `${rawChange}%`;
-      const changeFallback = `${prefix}${ensurePercent}`;
-      changeDisplay = isNepaliLanguage(currentLanguage) ? toNepaliNumerals(changeFallback) : changeFallback;
+      changeDisplay = formatPercent(rawChange, currentLanguage, { decimals: 2, showSign: true });
     }
 
     const rsDisplay = formatRelativeStrength(stock.relativeStrength, currentLanguage);
@@ -1253,8 +1249,8 @@ if (stockSearchInput) {
     if (matches.length > 0) {
       resultsDiv.innerHTML = matches.slice(0, 5).map(stock => {
         const priceDisplay = Number.isFinite(stock.priceNumber)
-          ? formatNumber(stock.priceNumber, { decimals: 2, useCommas: true }, currentLanguage)
-          : formatNumber(stock.priceRaw, { useCommas: true }, currentLanguage);
+          ? formatPrice(stock.priceNumber, currentLanguage)
+          : formatPrice(stock.priceRaw, currentLanguage);
 
         let changeClass = 'gain';
         let percentageDisplay = '—';
@@ -1264,10 +1260,7 @@ if (stockSearchInput) {
         } else if (stock.changeRaw) {
           const rawChange = String(stock.changeRaw).trim();
           changeClass = rawChange.startsWith('-') ? 'loss' : 'gain';
-          const prefix = rawChange.startsWith('+') || rawChange.startsWith('-') ? '' : '+';
-          const ensurePercent = rawChange.includes('%') ? rawChange : `${rawChange}%`;
-          const percentFallback = `${prefix}${ensurePercent}`;
-          percentageDisplay = isNepaliLanguage(currentLanguage) ? toNepaliNumerals(percentFallback) : percentFallback;
+          percentageDisplay = formatPercent(rawChange, currentLanguage, { decimals: 2, showSign: true });
         }
 
         const displaySector = getLocalizedSectorName(stock.sectorName || 'N/A', currentLanguage);
@@ -2647,75 +2640,18 @@ function updateLanguage(language) {
 }
 
 const localizedNumberNodes = new WeakMap();
-let numberLocalizationObserverInitialized = false;
-
-function shouldSkipLocalization(node) {
-    const parent = node.parentElement;
-    if (!parent) {
-        return true;
-    }
-    const tagName = parent.tagName;
-    if (['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT'].includes(tagName)) {
-        return true;
-    }
-    return Boolean(parent.closest('[data-no-localize]'));
-}
 
 function localizeStaticNumbers(language) {
-    const root = document.body;
-    if (!root) {
-        return;
-    }
-    const isNepali = isNepaliLanguage(language);
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-        acceptNode: node => {
-            if (!node.nodeValue || !/[0-9०-९]/.test(node.nodeValue)) {
-                return NodeFilter.FILTER_SKIP;
+    document.querySelectorAll('[data-localize-numbers]').forEach(element => {
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
+        let node;
+        while ((node = walker.nextNode())) {
+            if (!localizedNumberNodes.has(node)) {
+                localizedNumberNodes.set(node, node.nodeValue);
             }
-            if (shouldSkipLocalization(node)) {
-                return NodeFilter.FILTER_REJECT;
-            }
-            return NodeFilter.FILTER_ACCEPT;
+            const baseText = localizedNumberNodes.get(node);
+            node.nodeValue = isNepaliLanguage(language) ? toNepaliNumerals(baseText) : baseText;
         }
-    });
-
-    let node;
-    while ((node = walker.nextNode())) {
-        if (!localizedNumberNodes.has(node)) {
-            const baseText = isNepali && typeof toEnglishNumerals === 'function'
-                ? toEnglishNumerals(node.nodeValue)
-                : node.nodeValue;
-            localizedNumberNodes.set(node, baseText);
-        } else if (!isNepali) {
-            localizedNumberNodes.set(node, node.nodeValue);
-        }
-        const baseText = localizedNumberNodes.get(node);
-        node.nodeValue = isNepali ? toNepaliNumerals(baseText) : baseText;
-    }
-}
-
-function initNumberLocalizationObserver() {
-    if (numberLocalizationObserverInitialized) {
-        return;
-    }
-    numberLocalizationObserverInitialized = true;
-    let pending = null;
-    const observer = new MutationObserver(() => {
-        if (!isNepaliLanguage(getCurrentLanguage())) {
-            return;
-        }
-        if (pending) {
-            clearTimeout(pending);
-        }
-        pending = setTimeout(() => {
-            localizeStaticNumbers(getCurrentLanguage());
-        }, 0);
-    });
-
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        characterData: true
     });
 }
 
