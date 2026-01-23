@@ -10,6 +10,8 @@
   --card-background: #ffffff;
   --white: #ffffff;
   --text-color: #333;
+  --text-muted: #6b7280;
+  --nav-text-color: #ffffff;
   --border-color: #ddd;
   --primary-color: #3498db;
   --secondary-color: #2ecc71;
@@ -65,7 +67,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .nav-icon {
   text-decoration: none;
-  color: var(--text-color);
+  color: var(--nav-text-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -98,6 +100,7 @@ h1, h2, h3, h4, h5, h6 {
 .nav-icon span {
   font-weight: 500;
   font-size: 1rem;
+  color: inherit;
 }
 
 .credits-display {
@@ -470,6 +473,7 @@ section {
   max-height: 300px;
   overflow-y: auto;
   display: none;
+  z-index: 10;
 }
 
 .sector-categories {
@@ -2290,6 +2294,7 @@ section {
 [data-theme="dark"] {
   --nav-bg: linear-gradient(90deg, #0d1b2a, #1b263b);
   --text-color: #f5f5f5;
+  --text-muted: rgba(248, 250, 252, 0.7);
   --card-background: #1e1e1e;
   --background-color: #121212;
   --background-gradient: linear-gradient(180deg, #1a1a1a 0%, #000000 100%);

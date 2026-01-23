@@ -7,6 +7,7 @@ const API_BASE = "https://nss-c26z.onrender.com";
 let allStocksData = [];
 let currentSortOption = 'name-asc';
 let currentSearchTerm = '';
+let navigationInitialized = false;
 
 
 // Default credits given to new users (10 lakh)
@@ -134,9 +135,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initNavigation();
   initSortControls();
 
-  if (!localStorage.getItem('allUsers')) {
-    addSampleUsers();
-  }
 });
 
 function fetchTopGainers() {
@@ -1214,69 +1212,72 @@ function applySectorFilter() {
 }
 
 // Update search functionality
-document.getElementById("stockSearch").addEventListener("input", (e) => {
-  const searchTerm = e.target.value.toLowerCase();
-  const resultsDiv = document.getElementById("searchResults");
+const stockSearchInput = document.getElementById("stockSearch");
+if (stockSearchInput) {
+  stockSearchInput.addEventListener("input", (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const resultsDiv = document.getElementById("searchResults");
 
-  currentSearchTerm = searchTerm;
-  renderAllStocksTable();
+    currentSearchTerm = searchTerm;
+    renderAllStocksTable();
 
-  if (searchTerm.length < 2) {
-    resultsDiv.style.display = "none";
-    return;
-  }
+    if (searchTerm.length < 2) {
+      resultsDiv.style.display = "none";
+      return;
+    }
 
-  if (!allStocksData.length) {
-    resultsDiv.style.display = "none";
-    return;
-  }
+    if (!allStocksData.length) {
+      resultsDiv.style.display = "none";
+      return;
+    }
 
-  const currentLanguage = getCurrentLanguage();
-  const matches = allStocksData.filter(stock => {
-    return stock.symbol.toLowerCase().includes(searchTerm) ||
-      (stock.companyName && stock.companyName.toLowerCase().includes(searchTerm));
+    const currentLanguage = getCurrentLanguage();
+    const matches = allStocksData.filter(stock => {
+      return stock.symbol.toLowerCase().includes(searchTerm) ||
+        (stock.companyName && stock.companyName.toLowerCase().includes(searchTerm));
+    });
+
+    if (matches.length > 0) {
+      resultsDiv.innerHTML = matches.slice(0, 5).map(stock => {
+        const priceDisplay = Number.isFinite(stock.priceNumber)
+          ? convertDigitsForLanguage(stock.priceNumber.toFixed(2), currentLanguage)
+          : convertDigitsForLanguage(stock.priceRaw, currentLanguage);
+
+        let changeClass = 'gain';
+        let percentageDisplay = '—';
+        if (Number.isFinite(stock.percentChange)) {
+          changeClass = stock.percentChange >= 0 ? 'gain' : 'loss';
+          percentageDisplay = convertDigitsForLanguage(`${stock.percentChange >= 0 ? '+' : ''}${stock.percentChange.toFixed(2)}%`, currentLanguage);
+        } else if (stock.changeRaw) {
+          const rawChange = String(stock.changeRaw).trim();
+          changeClass = rawChange.startsWith('-') ? 'loss' : 'gain';
+          const prefix = rawChange.startsWith('+') || rawChange.startsWith('-') ? '' : '+';
+          const ensurePercent = rawChange.includes('%') ? rawChange : `${rawChange}%`;
+          percentageDisplay = convertDigitsForLanguage(`${prefix}${ensurePercent}`, currentLanguage);
+        }
+
+        const displaySector = getLocalizedSectorName(stock.sectorName || 'N/A', currentLanguage);
+        return `
+          <div class="search-result" onclick="handleSearchResultClick('${stock.symbol}')">
+            <div class="stock-info">
+              <strong>${stock.symbol}</strong>
+              <span>${stock.companyName}</span>
+              <small>${displaySector}</small>
+            </div>
+            <div class="stock-price ${changeClass}">
+              ${priceDisplay}
+              (${percentageDisplay})
+            </div>
+          </div>
+        `;
+      }).join('');
+      resultsDiv.style.display = "block";
+    } else {
+      resultsDiv.innerHTML = '<div class="no-results">No matches found</div>';
+      resultsDiv.style.display = "block";
+    }
   });
-
-  if (matches.length > 0) {
-    resultsDiv.innerHTML = matches.slice(0, 5).map(stock => {
-      const priceDisplay = Number.isFinite(stock.priceNumber)
-        ? convertDigitsForLanguage(stock.priceNumber.toFixed(2), currentLanguage)
-        : convertDigitsForLanguage(stock.priceRaw, currentLanguage);
-
-      let changeClass = 'gain';
-      let percentageDisplay = '—';
-      if (Number.isFinite(stock.percentChange)) {
-        changeClass = stock.percentChange >= 0 ? 'gain' : 'loss';
-        percentageDisplay = convertDigitsForLanguage(`${stock.percentChange >= 0 ? '+' : ''}${stock.percentChange.toFixed(2)}%`, currentLanguage);
-      } else if (stock.changeRaw) {
-        const rawChange = String(stock.changeRaw).trim();
-        changeClass = rawChange.startsWith('-') ? 'loss' : 'gain';
-        const prefix = rawChange.startsWith('+') || rawChange.startsWith('-') ? '' : '+';
-        const ensurePercent = rawChange.includes('%') ? rawChange : `${rawChange}%`;
-        percentageDisplay = convertDigitsForLanguage(`${prefix}${ensurePercent}`, currentLanguage);
-      }
-
-      const displaySector = getLocalizedSectorName(stock.sectorName || 'N/A', currentLanguage);
-      return `
-        <div class="search-result" onclick="handleSearchResultClick('${stock.symbol}')">
-          <div class="stock-info">
-            <strong>${stock.symbol}</strong>
-            <span>${stock.companyName}</span>
-            <small>${displaySector}</small>
-          </div>
-          <div class="stock-price ${changeClass}">
-            ${priceDisplay}
-            (${percentageDisplay})
-          </div>
-        </div>
-      `;
-    }).join('');
-    resultsDiv.style.display = "block";
-  } else {
-    resultsDiv.innerHTML = '<div class="no-results">No matches found</div>';
-    resultsDiv.style.display = "block";
-  }
-});
+}
 
 // Add event listener for trade amount input
 document.addEventListener('DOMContentLoaded', () => {
@@ -1295,12 +1296,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  // Initialize navigation
-  initNavigation();
   initializeHomeDashboard();
 });
 
 function initNavigation() {
+  if (navigationInitialized) {
+    return;
+  }
+  navigationInitialized = true;
   // Set home as active by default
   updateActiveSection('home');
 
@@ -1353,13 +1356,21 @@ async function updatePortfolio() {
   tbody.innerHTML = "";
 
   if (investments.length === 0) {
-    tableContainer.style.display = "none";
-    noInvestments.style.display = "block";
+    if (tableContainer) {
+      tableContainer.style.display = "none";
+    }
+    if (noInvestments) {
+      noInvestments.style.display = "block";
+    }
     return;
   }
 
-  tableContainer.style.display = "block";
-  noInvestments.style.display = "none";
+  if (tableContainer) {
+    tableContainer.style.display = "block";
+  }
+  if (noInvestments) {
+    noInvestments.style.display = "none";
+  }
 
   let totalInvested = 0;
   let totalCurrentValue = 0;
@@ -1818,8 +1829,8 @@ const translations = {
         plPercent: 'नाफा/नोक्सान%',
         sell: 'बेचौं',
         themeMode: 'थीम',
-        lightMode: 'मोड',
-        darkMode: 'लाइट मोड',
+        lightMode: 'लाइट मोड',
+        darkMode: 'डार्क मोड',
         textSize: 'अक्षर',
         small: 'सानो',
         medium: 'मध्यम',
@@ -2521,16 +2532,25 @@ function initializeSettings() {
     // Theme
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
-    document.getElementById(savedTheme + 'Mode').classList.add('active');
+    const themeButton = document.getElementById(savedTheme + 'Mode');
+    if (themeButton) {
+        themeButton.classList.add('active');
+    }
 
     // Text Size
     const savedTextSize = localStorage.getItem('textSize') || 'medium';
     document.documentElement.setAttribute('data-text-size', savedTextSize);
-    document.getElementById(savedTextSize + 'Text').classList.add('active');
+    const textSizeButton = document.getElementById(savedTextSize + 'Text');
+    if (textSizeButton) {
+        textSizeButton.classList.add('active');
+    }
 
     // Language - Set English as default
     const savedLanguage = localStorage.getItem('language') || 'english';
-    document.getElementById(savedLanguage + 'Lang').classList.add('active');
+    const languageButton = document.getElementById(savedLanguage + 'Lang');
+    if (languageButton) {
+        languageButton.classList.add('active');
+    }
     updateLanguage(savedLanguage);
 }
 
@@ -2714,9 +2734,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Add click handler for the add credits button
-document.querySelector('.add-credits-btn').addEventListener('click', () => {
-    showBonusModal();
-});
+const addCreditsButton = document.querySelector('.add-credits-btn');
+if (addCreditsButton) {
+    addCreditsButton.addEventListener('click', () => {
+        showBonusModal();
+    });
+}
 
 // Create and show the bonus modal
 function showBonusModal() {
@@ -2836,7 +2859,12 @@ function claimDailyBonus() {
     checkBonusAvailability();
     
     // Show success message
-    showToast(`Daily bonus of ${DAILY_BONUS} credits claimed!`);
+    const currentLanguage = localStorage.getItem('language') || 'english';
+    const bonusAmount = convertDigitsForLanguage(DAILY_BONUS, currentLanguage);
+    const message = currentLanguage === 'nepali'
+        ? `दैनिक बोनस ${bonusAmount} क्रेडिट प्राप्त भयो!`
+        : `Daily bonus of ${bonusAmount} credits claimed!`;
+    showToast(message);
 }
 
 function initWheel() {
