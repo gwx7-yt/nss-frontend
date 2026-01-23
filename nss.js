@@ -107,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
   updatePortfolio();
   initNavigation();
   initSortControls();
+  initDigitNormalizationObserver();
 
 });
 
@@ -2686,10 +2687,13 @@ function updateLanguage(language) {
     // Localize static numbers in the UI
     localizeStaticNumbers(language);
     normalizeNumberNodes(language);
+    normalizeAllTextDigits(language);
     refreshHomeDashboardLocale();
 }
 
 const localizedNumberNodes = new WeakMap();
+let isDigitNormalizationRunning = false;
+let digitNormalizationObserverInitialized = false;
 
 function localizeStaticNumbers(language) {
     document.querySelectorAll('[data-localize-numbers]').forEach(element => {
@@ -2702,6 +2706,68 @@ function localizeStaticNumbers(language) {
             const baseText = localizedNumberNodes.get(node);
             node.nodeValue = isNepaliLanguage(language) ? toNepaliNumerals(baseText) : baseText;
         }
+    });
+}
+
+function normalizeAllTextDigits(language) {
+    if (isDigitNormalizationRunning) {
+        return;
+    }
+    const root = document.body;
+    if (!root) {
+        return;
+    }
+    const normalizeToNepali = isNepaliLanguage(language);
+    isDigitNormalizationRunning = true;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode: node => {
+            if (!node.nodeValue || !/[0-9०-९]/.test(node.nodeValue)) {
+                return NodeFilter.FILTER_SKIP;
+            }
+            const parent = node.parentElement;
+            if (!parent) {
+                return NodeFilter.FILTER_SKIP;
+            }
+            const tagName = parent.tagName;
+            if (['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT'].includes(tagName)) {
+                return NodeFilter.FILTER_REJECT;
+            }
+            if (parent.closest('[data-no-localize]')) {
+                return NodeFilter.FILTER_REJECT;
+            }
+            return NodeFilter.FILTER_ACCEPT;
+        }
+    });
+
+    let node;
+    while ((node = walker.nextNode())) {
+        const baseText = normalizeToNepali
+            ? (typeof toEnglishNumerals === 'function' ? toEnglishNumerals(node.nodeValue) : node.nodeValue)
+            : node.nodeValue;
+        node.nodeValue = normalizeToNepali ? toNepaliNumerals(baseText) : toEnglishNumerals(baseText);
+    }
+    isDigitNormalizationRunning = false;
+}
+
+function initDigitNormalizationObserver() {
+    if (digitNormalizationObserverInitialized) {
+        return;
+    }
+    digitNormalizationObserverInitialized = true;
+    let pending = null;
+    const observer = new MutationObserver(() => {
+        if (pending) {
+            clearTimeout(pending);
+        }
+        pending = setTimeout(() => {
+            normalizeAllTextDigits(getCurrentLanguage());
+        }, 0);
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true
     });
 }
 
