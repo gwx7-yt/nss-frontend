@@ -16,35 +16,8 @@ const DEFAULT_CREDITS = 1000000;
 const DAILY_BONUS = 1000;
 
 
-// Language helpers
-const NEPALI_DIGITS_MAP = {
-  '0': '०',
-  '1': '१',
-  '2': '२',
-  '3': '३',
-  '4': '४',
-  '5': '५',
-  '6': '६',
-  '7': '७',
-  '8': '८',
-  '9': '९'
-};
-
 function getCurrentLanguage() {
   return localStorage.getItem('language') || 'english';
-}
-
-function convertDigitsForLanguage(value, language = getCurrentLanguage()) {
-  if (value === null || value === undefined) {
-    return '';
-  }
-
-  const stringValue = String(value);
-  if (language !== 'nepali') {
-    return stringValue;
-  }
-
-  return stringValue.replace(/[0-9]/g, digit => NEPALI_DIGITS_MAP[digit] || digit);
 }
 
 const sectorTranslations = {
@@ -149,11 +122,12 @@ function fetchTopGainers() {
           const ltpNumber = parseFloat(item.ltp);
           const percentageNumber = parseFloat(item.percentageChange);
           const ltpDisplay = !Number.isNaN(ltpNumber)
-            ? convertDigitsForLanguage(ltpNumber.toFixed(2))
-            : convertDigitsForLanguage(item.ltp);
+            ? formatNumber(ltpNumber, { decimals: 2, useCommas: true }, getCurrentLanguage())
+            : formatNumber(item.ltp, { useCommas: true }, getCurrentLanguage());
+          const percentageFallback = `${item.percentageChange}${String(item.percentageChange).includes('%') ? '' : '%'}`;
           const percentageDisplay = !Number.isNaN(percentageNumber)
-            ? convertDigitsForLanguage(`${percentageNumber >= 0 ? '+' : ''}${percentageNumber.toFixed(2)}%`)
-            : convertDigitsForLanguage(`${item.percentageChange}${String(item.percentageChange).includes('%') ? '' : '%'}`);
+            ? formatPercent(percentageNumber, getCurrentLanguage(), { decimals: 2, showSign: true })
+            : (getCurrentLanguage() === 'nepali' ? toNepaliNumerals(percentageFallback) : percentageFallback);
           row.innerHTML = `
             <td>${item.symbol}</td>
             <td>${ltpDisplay}</td>
@@ -180,12 +154,13 @@ function fetchTopLosers() {
           const ltpNumber = parseFloat(item.ltp);
           const percentageNumber = parseFloat(item.percentageChange);
           const ltpDisplay = !Number.isNaN(ltpNumber)
-            ? convertDigitsForLanguage(ltpNumber.toFixed(2))
-            : convertDigitsForLanguage(item.ltp);
+            ? formatNumber(ltpNumber, { decimals: 2, useCommas: true }, getCurrentLanguage())
+            : formatNumber(item.ltp, { useCommas: true }, getCurrentLanguage());
           const changeClass = !Number.isNaN(percentageNumber) && percentageNumber >= 0 ? 'gain' : 'loss';
+          const percentageFallback = `${item.percentageChange}${String(item.percentageChange).includes('%') ? '' : '%'}`;
           const percentageDisplay = !Number.isNaN(percentageNumber)
-            ? convertDigitsForLanguage(`${percentageNumber >= 0 ? '+' : ''}${percentageNumber.toFixed(2)}%`)
-            : convertDigitsForLanguage(`${item.percentageChange}${String(item.percentageChange).includes('%') ? '' : '%'}`);
+            ? formatPercent(percentageNumber, getCurrentLanguage(), { decimals: 2, showSign: true })
+            : (getCurrentLanguage() === 'nepali' ? toNepaliNumerals(percentageFallback) : percentageFallback);
           row.innerHTML = `
             <td>${item.symbol}</td>
             <td>${ltpDisplay}</td>
@@ -223,7 +198,7 @@ function updateCreditDisplay() {
   const creditBalance = document.getElementById('creditBalance');
   if (creditBalance) {
     const credits = localStorage.getItem('credits') || DEFAULT_CREDITS.toString();
-    creditBalance.textContent = convertDigitsForLanguage(credits);
+    creditBalance.textContent = formatNumber(credits, { useCommas: true }, getCurrentLanguage());
   }
 }
 
@@ -282,7 +257,9 @@ function upgradeOldUsers() {
     user.updatedToNewStarterPack = true;
     localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('credits', user.credits.toString());
-    showToast("🎉 You've been upgraded to 1,000,000 credits!");
+    const currentLanguage = getCurrentLanguage();
+    const creditsDisplay = formatNumber(DEFAULT_CREDITS, { decimals: 0, useCommas: true }, currentLanguage);
+    showToast(`🎉 You've been upgraded to ${creditsDisplay} credits!`);
   }
 }
 
@@ -317,13 +294,13 @@ function openTradeModal(symbol) {
 
       // Check if elements exist before setting content
       if (modalStockSymbol) modalStockSymbol.textContent = symbol;
-      if (modalStockPrice) modalStockPrice.textContent = convertDigitsForLanguage(parseFloat(data.price).toFixed(2), currentLanguage);
+      if (modalStockPrice) modalStockPrice.textContent = formatNumber(parseFloat(data.price), { decimals: 2, useCommas: true }, currentLanguage);
       if (modalTradeShares) {
         modalTradeShares.value = "";
         modalTradeShares.removeEventListener("input", updateCostPreview);
         modalTradeShares.addEventListener("input", updateCostPreview);
       }
-      const zeroDisplay = convertDigitsForLanguage('0', currentLanguage);
+      const zeroDisplay = formatNumber(0, { decimals: 0, useCommas: true }, currentLanguage);
       if (modalPricePreview) modalPricePreview.textContent = zeroDisplay;
       if (modalBrokerFeePreview) modalBrokerFeePreview.textContent = zeroDisplay;
       if (modalSebonFeePreview) modalSebonFeePreview.textContent = zeroDisplay;
@@ -362,11 +339,11 @@ function updateCostPreview() {
   const costPreview = document.getElementById("modalCostPreview");
 
   const currentLanguage = getCurrentLanguage();
-  if (pricePreview) pricePreview.textContent = convertDigitsForLanguage(base.toFixed(2), currentLanguage);
-  if (brokerFeePreview) brokerFeePreview.textContent = convertDigitsForLanguage(brokerFee.toFixed(2), currentLanguage);
-  if (sebonFeePreview) sebonFeePreview.textContent = convertDigitsForLanguage(sebonFee.toFixed(2), currentLanguage);
-  if (dpFeePreview) dpFeePreview.textContent = convertDigitsForLanguage(dpFee.toFixed(2), currentLanguage);
-  if (costPreview) costPreview.textContent = convertDigitsForLanguage(total.toFixed(2), currentLanguage);
+  if (pricePreview) pricePreview.textContent = formatNumber(base, { decimals: 2, useCommas: true }, currentLanguage);
+  if (brokerFeePreview) brokerFeePreview.textContent = formatNumber(brokerFee, { decimals: 2, useCommas: true }, currentLanguage);
+  if (sebonFeePreview) sebonFeePreview.textContent = formatNumber(sebonFee, { decimals: 2, useCommas: true }, currentLanguage);
+  if (dpFeePreview) dpFeePreview.textContent = formatNumber(dpFee, { decimals: 2, useCommas: true }, currentLanguage);
+  if (costPreview) costPreview.textContent = formatNumber(total, { decimals: 2, useCommas: true }, currentLanguage);
 }
 
 function confirmTrade() {
@@ -379,7 +356,9 @@ function confirmTrade() {
   }
 
   if (shares < 10) {
-    showToast("❌ Minimum trade is 10 shares!");
+    const currentLanguage = getCurrentLanguage();
+    const minSharesDisplay = formatNumber(10, { decimals: 0, useCommas: true }, currentLanguage);
+    showToast(`❌ Minimum trade is ${minSharesDisplay} shares!`);
 
     return;
   }
@@ -419,8 +398,8 @@ function confirmTrade() {
   updatePortfolio();
   closeTradeModal();
   const currentLanguage = getCurrentLanguage();
-  const sharesDisplay = convertDigitsForLanguage(shares, currentLanguage);
-  const totalDisplay = convertDigitsForLanguage(total.toFixed(2), currentLanguage);
+  const sharesDisplay = formatNumber(shares, { decimals: 0, useCommas: true }, currentLanguage);
+  const totalDisplay = formatNumber(total, { decimals: 2, useCommas: true }, currentLanguage);
   showToast(`✅ Purchased ${sharesDisplay} shares of ${symbol} for ${totalDisplay} credits!`);
 }
 
@@ -486,9 +465,9 @@ function formatRelativeStrength(value, language) {
   if (!Number.isFinite(value)) {
     return '—';
   }
-  const fixed = value.toFixed(1);
   const prefix = value > 0 ? '+' : '';
-  return convertDigitsForLanguage(`${prefix}${fixed}`, language);
+  const formatted = formatNumber(value, { decimals: 1 }, language);
+  return `${prefix}${formatted}`;
 }
 
 function getFilteredStocks() {
@@ -589,21 +568,21 @@ function renderAllStocksTable() {
     row.dataset.sector = stock.sectorName || 'N/A';
 
     const priceDisplay = Number.isFinite(stock.priceNumber)
-      ? convertDigitsForLanguage(stock.priceNumber.toFixed(2), currentLanguage)
-      : convertDigitsForLanguage(stock.priceRaw, currentLanguage);
+      ? formatNumber(stock.priceNumber, { decimals: 2, useCommas: true }, currentLanguage)
+      : formatNumber(stock.priceRaw, { useCommas: true }, currentLanguage);
 
     let changeClass = 'gain';
     let changeDisplay = '—';
     if (Number.isFinite(stock.percentChange)) {
       changeClass = stock.percentChange >= 0 ? 'gain' : 'loss';
-      const changeSymbol = stock.percentChange >= 0 ? '+' : '';
-      changeDisplay = convertDigitsForLanguage(`${changeSymbol}${stock.percentChange.toFixed(2)}%`, currentLanguage);
+      changeDisplay = formatPercent(stock.percentChange, currentLanguage, { decimals: 2, showSign: true });
     } else if (stock.changeRaw) {
       const rawChange = String(stock.changeRaw).trim();
       changeClass = rawChange.startsWith('-') ? 'loss' : 'gain';
       const prefix = rawChange.startsWith('+') || rawChange.startsWith('-') ? '' : '+';
       const ensurePercent = rawChange.includes('%') ? rawChange : `${rawChange}%`;
-      changeDisplay = convertDigitsForLanguage(`${prefix}${ensurePercent}`, currentLanguage);
+      const changeFallback = `${prefix}${ensurePercent}`;
+      changeDisplay = currentLanguage === 'nepali' ? toNepaliNumerals(changeFallback) : changeFallback;
     }
 
     const rsDisplay = formatRelativeStrength(stock.relativeStrength, currentLanguage);
@@ -614,7 +593,7 @@ function renderAllStocksTable() {
 
     row.innerHTML = `
       <td>${stock.symbol}</td>
-      <td>${stock.companyName}</td>
+      <td>${companyNameForLang(stock.companyName, currentLanguage)}</td>
       <td>${getLocalizedSectorName(stock.sectorName || 'N/A', currentLanguage)}</td>
       <td>${priceDisplay}</td>
       <td class="${changeClass}">${changeDisplay}</td>
@@ -801,6 +780,10 @@ function formatKathmanduTime(date) {
   }).format(date);
 }
 
+function formatTimeLabel(value, language = getCurrentLanguage()) {
+  return language === 'nepali' ? toNepaliNumerals(value) : value;
+}
+
 function getKathmanduTimeParts(date) {
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Kathmandu',
@@ -851,14 +834,14 @@ function updateMarketStatus(isOpen, timeLabel) {
     marketState.textContent = getTranslationValue(isOpen ? 'open' : 'closed', isOpen ? 'OPEN' : 'CLOSED');
   }
   if (lastUpdated) {
-    lastUpdated.textContent = timeLabel;
+    lastUpdated.textContent = formatTimeLabel(timeLabel, getCurrentLanguage());
   }
 }
 
 function updateUpdatedStamp(id, timeLabel) {
   const element = document.getElementById(id);
   if (element) {
-    element.textContent = timeLabel;
+    element.textContent = formatTimeLabel(timeLabel, getCurrentLanguage());
   }
 }
 
@@ -896,7 +879,7 @@ function renderBreadth(breadth) {
   const setValue = (id, value) => {
     const element = document.getElementById(id);
     if (element) {
-      element.textContent = convertDigitsForLanguage(value, getCurrentLanguage());
+      element.textContent = formatNumber(value, { decimals: 0, useCommas: true }, getCurrentLanguage());
     }
   };
 
@@ -1032,7 +1015,7 @@ function updateSectorChart(sectorMetrics) {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: context => `${convertDigitsForLanguage(context.parsed.y.toFixed(2), getCurrentLanguage())}%`
+              label: context => `${formatNumber(context.parsed.y, { decimals: 2, useCommas: true }, getCurrentLanguage())}%`
             }
           }
         },
@@ -1044,7 +1027,7 @@ function updateSectorChart(sectorMetrics) {
           y: {
             ticks: {
               color: colors.text,
-              callback: value => `${convertDigitsForLanguage(value, getCurrentLanguage())}%`
+              callback: value => `${formatNumber(value, { decimals: 0, useCommas: true }, getCurrentLanguage())}%`
             },
             grid: { color: colors.muted }
           }
@@ -1166,7 +1149,7 @@ function renderSectorFilters(sectorCounts) {
     chip.dataset.sector = value;
     chip.innerHTML = `
       <span class="chip-label">${label}</span>
-      <span class="chip-count">${convertDigitsForLanguage(count, currentLanguage)}</span>
+      <span class="chip-count">${formatNumber(count, { decimals: 0, useCommas: true }, currentLanguage)}</span>
     `;
 
     if (value === currentSectorFilter) {
@@ -1240,20 +1223,21 @@ if (stockSearchInput) {
     if (matches.length > 0) {
       resultsDiv.innerHTML = matches.slice(0, 5).map(stock => {
         const priceDisplay = Number.isFinite(stock.priceNumber)
-          ? convertDigitsForLanguage(stock.priceNumber.toFixed(2), currentLanguage)
-          : convertDigitsForLanguage(stock.priceRaw, currentLanguage);
+          ? formatNumber(stock.priceNumber, { decimals: 2, useCommas: true }, currentLanguage)
+          : formatNumber(stock.priceRaw, { useCommas: true }, currentLanguage);
 
         let changeClass = 'gain';
         let percentageDisplay = '—';
         if (Number.isFinite(stock.percentChange)) {
           changeClass = stock.percentChange >= 0 ? 'gain' : 'loss';
-          percentageDisplay = convertDigitsForLanguage(`${stock.percentChange >= 0 ? '+' : ''}${stock.percentChange.toFixed(2)}%`, currentLanguage);
+          percentageDisplay = formatPercent(stock.percentChange, currentLanguage, { decimals: 2, showSign: true });
         } else if (stock.changeRaw) {
           const rawChange = String(stock.changeRaw).trim();
           changeClass = rawChange.startsWith('-') ? 'loss' : 'gain';
           const prefix = rawChange.startsWith('+') || rawChange.startsWith('-') ? '' : '+';
           const ensurePercent = rawChange.includes('%') ? rawChange : `${rawChange}%`;
-          percentageDisplay = convertDigitsForLanguage(`${prefix}${ensurePercent}`, currentLanguage);
+          const percentFallback = `${prefix}${ensurePercent}`;
+          percentageDisplay = currentLanguage === 'nepali' ? toNepaliNumerals(percentFallback) : percentFallback;
         }
 
         const displaySector = getLocalizedSectorName(stock.sectorName || 'N/A', currentLanguage);
@@ -1261,7 +1245,7 @@ if (stockSearchInput) {
           <div class="search-result" onclick="handleSearchResultClick('${stock.symbol}')">
             <div class="stock-info">
               <strong>${stock.symbol}</strong>
-              <span>${stock.companyName}</span>
+              <span>${companyNameForLang(stock.companyName, currentLanguage)}</span>
               <small>${displaySector}</small>
             </div>
             <div class="stock-price ${changeClass}">
@@ -1400,21 +1384,17 @@ async function updatePortfolio() {
         const row = document.createElement("tr");
       const profitLossClass = profitLossAmount >= 0 ? 'gain' : 'loss';
       const profitLossSymbol = profitLossAmount >= 0 ? '📈' : '📉';
-      const buyPriceDisplay = convertDigitsForLanguage(buyPrice.toFixed(2), currentLanguage);
-      const currentPriceDisplay = convertDigitsForLanguage(currentPrice.toFixed(2), currentLanguage);
-      const creditsInvestedDisplay = convertDigitsForLanguage(creditsInvested.toFixed(2), currentLanguage);
-      const creditsNowDisplay = convertDigitsForLanguage(creditsNow.toFixed(2), currentLanguage);
-      const quantityDisplay = convertDigitsForLanguage(quantity.toFixed(4), currentLanguage);
-      const profitLossAmountValue = profitLossAmount.toFixed(2);
-      const profitLossPercentValue = profitLossPercent.toFixed(2);
-      const normalizedAmount = profitLossAmountValue.startsWith('-')
-        ? profitLossAmountValue
-        : `+${profitLossAmountValue}`;
-      const normalizedPercent = profitLossPercentValue.startsWith('-')
-        ? `${profitLossPercentValue}%`
-        : `+${profitLossPercentValue}%`;
-      const profitLossAmountDisplay = convertDigitsForLanguage(normalizedAmount, currentLanguage);
-      const profitLossPercentDisplay = convertDigitsForLanguage(normalizedPercent, currentLanguage);
+      const buyPriceDisplay = formatNumber(buyPrice, { decimals: 2, useCommas: true }, currentLanguage);
+      const currentPriceDisplay = formatNumber(currentPrice, { decimals: 2, useCommas: true }, currentLanguage);
+      const creditsInvestedDisplay = formatNumber(creditsInvested, { decimals: 2, useCommas: true }, currentLanguage);
+      const creditsNowDisplay = formatNumber(creditsNow, { decimals: 2, useCommas: true }, currentLanguage);
+      const quantityDisplay = formatNumber(quantity, { decimals: 4, useCommas: true }, currentLanguage);
+      const profitLossAmountDisplay = formatNumber(
+        profitLossAmount,
+        { decimals: 2, useCommas: true, prefix: profitLossAmount >= 0 ? '+' : '' },
+        currentLanguage
+      );
+      const profitLossPercentDisplay = formatPercent(profitLossPercent, currentLanguage, { decimals: 2, showSign: true });
       const sellLabel = getTranslationValue('sell', 'Sell');
 
         row.innerHTML = `
@@ -1441,12 +1421,12 @@ async function updatePortfolio() {
 
   if (netWorth) {
     const netWorthValue = (parseFloat(localStorage.getItem("credits")) || 0) + totalCurrentValue;
-    netWorth.textContent = convertDigitsForLanguage(netWorthValue.toFixed(2), currentLanguage);
+    netWorth.textContent = formatNumber(netWorthValue, { decimals: 2, useCommas: true }, currentLanguage);
   }
-  if (totalInvestedElement) totalInvestedElement.textContent = convertDigitsForLanguage(totalInvested.toFixed(2), currentLanguage);
+  if (totalInvestedElement) totalInvestedElement.textContent = formatNumber(totalInvested, { decimals: 2, useCommas: true }, currentLanguage);
   if (totalProfit) {
     const profitValue = totalCurrentValue - totalInvested;
-    totalProfit.textContent = convertDigitsForLanguage(profitValue.toFixed(2), currentLanguage);
+    totalProfit.textContent = formatNumber(profitValue, { decimals: 2, useCommas: true, prefix: profitValue >= 0 ? '+' : '' }, currentLanguage);
     totalProfit.className = profitValue >= 0 ? 'stat-value gain' : 'stat-value loss';
   }
 }
@@ -1496,7 +1476,7 @@ function sellInvestment(index, buttonElement) {
 
       updatePortfolio();
       const currentLanguage = getCurrentLanguage();
-      const sellAmountDisplay = convertDigitsForLanguage(sellAmount.toFixed(2), currentLanguage);
+      const sellAmountDisplay = formatNumber(sellAmount, { decimals: 2, useCommas: true }, currentLanguage);
       showToast(`✅ Sold ${inv.symbol} for ${sellAmountDisplay} credits!`);
     })
     .catch((error) => {
@@ -1636,6 +1616,7 @@ const translations = {
         searchPlaceholder: '🔍 Search by company name or symbol...',
         portfolioTitle: 'My Investment Portfolio',
         portfolioDesc: 'Track your investments and their performance',
+        portfolioBrokerFeeNote: '🔍 Note: Portfolio shows slight initial loss due to broker fees',
         portfolioEmpty: 'No investments yet!',
         portfolioEmptyDesc: 'Start your investment journey by trading stocks in the market section.',
         portfolioStats: 'Portfolio Statistics',
@@ -1851,6 +1832,7 @@ const translations = {
         searchPlaceholder: '🔍 कम्पनीको नाम वा प्रतीक खोज्नुहोस्...',
         portfolioTitle: 'मेरो लगानी पोर्टफोलियो',
         portfolioDesc: 'आफ्नो लगानी र तिनीहरूको प्रदर्शन ट्र्याक गर्नुहोस्',
+        portfolioBrokerFeeNote: 'ब्रोकर शुल्कका कारण सुरुआतमा पोर्टफोलियोमा सानो घाटा देखिन सक्छ।',
         portfolioEmpty: 'अहिलेसम्म कुनै लगानी छैन!',
         portfolioEmptyDesc: 'बजार सेक्सनमा स्टक व्यापार गरेर आफ्नो लगानी यात्रा सुरु गर्नुहोस्।',
         portfolioStats: 'पोर्टफोलियो तथ्याङ्क',
@@ -2198,7 +2180,7 @@ let lastQuizView = null;
 let lastQuizQuestionIndex = null;
 
 function formatQuizNumber(value, language = getCurrentLanguage()) {
-    return convertDigitsForLanguage(value, language);
+    return formatNumber(value, { decimals: 0, useCommas: true }, language);
 }
 
 function getQuizTranslations(language = getCurrentLanguage()) {
@@ -2635,6 +2617,25 @@ function updateLanguage(language) {
 
     // Update quiz content
     updateQuizTranslations(language);
+
+    // Localize static numbers in the UI
+    localizeStaticNumbers(language);
+}
+
+const localizedNumberNodes = new WeakMap();
+
+function localizeStaticNumbers(language) {
+    document.querySelectorAll('[data-localize-numbers]').forEach(element => {
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
+        let node;
+        while ((node = walker.nextNode())) {
+            if (!localizedNumberNodes.has(node)) {
+                localizedNumberNodes.set(node, node.nodeValue);
+            }
+            const baseText = localizedNumberNodes.get(node);
+            node.nodeValue = language === 'nepali' ? toNepaliNumerals(baseText) : baseText;
+        }
+    });
 }
 
 // Update dynamic content that's added through JavaScript
@@ -2745,13 +2746,14 @@ if (addCreditsButton) {
 function showBonusModal() {
     const currentLanguage = localStorage.getItem('language') || 'english';
     const texts = translations[currentLanguage];
+    const bonusAmountDisplay = formatNumber(DAILY_BONUS, { decimals: 0, useCommas: true }, currentLanguage);
     
     const modalHTML = `
         <div id="bonusModal" class="bonus-modal">
             <div class="bonus-modal-content">
                 <div class="bonus-section daily-bonus">
                     <h2>${texts.dailyBonus}</h2>
-                    <p>${texts.bonusAmount} ${DAILY_BONUS} ${texts.credits}</p>
+                    <p>${texts.bonusAmount} ${bonusAmountDisplay} ${texts.credits}</p>
                     <button id="claimDailyBonus" class="bonus-btn">${texts.claim}</button>
                     <p id="dailyTimer" class="timer"></p>
                 </div>
@@ -2830,7 +2832,9 @@ function updateDailyTimer(remainingTime) {
     
     const currentLanguage = localStorage.getItem('language') || 'english';
     const texts = translations[currentLanguage];
-    timer.textContent = `${texts.nextAvailable} ${hours}h ${minutes}m`;
+    const hoursDisplay = formatNumber(hours, { decimals: 0, useCommas: true }, currentLanguage);
+    const minutesDisplay = formatNumber(minutes, { decimals: 0, useCommas: true }, currentLanguage);
+    timer.textContent = `${texts.nextAvailable} ${hoursDisplay}h ${minutesDisplay}m`;
 }
 
 function updateWeeklyTimer(remainingTime) {
@@ -2847,7 +2851,9 @@ function updateWeeklyTimer(remainingTime) {
 
     const currentLanguage = localStorage.getItem('language') || 'english';
     const texts = translations[currentLanguage];
-    timer.textContent = `${texts.nextAvailable} ${days}d ${hours}h`;
+    const daysDisplay = formatNumber(days, { decimals: 0, useCommas: true }, currentLanguage);
+    const hoursDisplay = formatNumber(hours, { decimals: 0, useCommas: true }, currentLanguage);
+    timer.textContent = `${texts.nextAvailable} ${daysDisplay}d ${hoursDisplay}h`;
 }
 
 function claimDailyBonus() {
@@ -2860,7 +2866,7 @@ function claimDailyBonus() {
     
     // Show success message
     const currentLanguage = localStorage.getItem('language') || 'english';
-    const bonusAmount = convertDigitsForLanguage(DAILY_BONUS, currentLanguage);
+    const bonusAmount = formatNumber(DAILY_BONUS, { decimals: 0, useCommas: true }, currentLanguage);
     const message = currentLanguage === 'nepali'
         ? `दैनिक बोनस ${bonusAmount} क्रेडिट प्राप्त भयो!`
         : `Daily bonus of ${bonusAmount} credits claimed!`;
@@ -2895,7 +2901,9 @@ function initWheel() {
         ctx.textAlign = 'right';
         ctx.fillStyle = '#000';
         ctx.font = 'bold 24px Arial';
-        ctx.fillText(values[i].toString(), 120, 0);
+        const currentLanguage = getCurrentLanguage();
+        const valueLabel = formatNumber(values[i], { decimals: 0, useCommas: true }, currentLanguage);
+        ctx.fillText(valueLabel, 120, 0);
         ctx.restore();
     }
 
@@ -2969,7 +2977,8 @@ function startSpinWheel() {
         // Show success message
         const currentLanguage = localStorage.getItem('language') || 'english';
         const texts = translations[currentLanguage];
-        showSpinResult(`${texts.spinResult} ${winAmount} ${texts.credits}!`);
+        const winAmountDisplay = formatNumber(winAmount, { decimals: 0, useCommas: true }, currentLanguage);
+        showSpinResult(`${texts.spinResult} ${winAmountDisplay} ${texts.credits}!`);
     }, 4000);
 }
 
@@ -3337,7 +3346,7 @@ function updateChartGameText(language) {
   if (!chartGameState.elements.modal) return;
   const texts = translations[language] || translations.english;
   if (chartGameState.data && chartGameState.elements.meta) {
-    const symbol = language === 'nepali' ? chartGameState.data.symbol_np : chartGameState.data.symbol_en;
+    const symbol = chartGameState.data.symbol_en || chartGameState.data.symbol || chartGameState.data.symbol_np;
     const sectorLabel = getChartGameSectorLabel(chartGameState.data.sector, texts);
     chartGameState.elements.meta.textContent = `${symbol} • ${sectorLabel}`;
   } else if (chartGameState.elements.meta) {
@@ -3358,13 +3367,15 @@ function getChartGameSectorLabel(sector, texts) {
 function formatChartGameProgress(language) {
   const current = chartGameState.candles.length ? chartGameState.currentIndex + 1 : 0;
   const total = chartGameState.candles.length || 0;
-  return `${convertDigitsForLanguage(current.toString(), language)}/${convertDigitsForLanguage(total.toString(), language)}`;
+  const currentDisplay = formatNumber(current, { decimals: 0, useCommas: true }, language);
+  const totalDisplay = formatNumber(total, { decimals: 0, useCommas: true }, language);
+  return `${currentDisplay}/${totalDisplay}`;
 }
 
 function formatChartGamePercent(value, language) {
   const sign = value > 0 ? '+' : '';
-  const formatted = value.toFixed(2);
-  return `${sign}${convertDigitsForLanguage(formatted, language)}%`;
+  const formatted = formatNumber(value, { decimals: 2, useCommas: true }, language);
+  return `${sign}${formatted}%`;
 }
 
 function drawChartGame() {
