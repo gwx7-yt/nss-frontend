@@ -707,7 +707,9 @@ const homeDashboardState = {
   latestPriceVolume: null,
   latestSectorOverview: null,
   lastBreadth: null,
-  lastSectorMetrics: null
+  lastSectorMetrics: null,
+  lastTimeLabel: null,
+  marketOpen: null
 };
 
 function initializeHomeDashboard() {
@@ -724,6 +726,8 @@ async function tickHomeDashboard() {
   const now = new Date();
   const timeLabel = formatKathmanduTime(now);
   const marketOpen = isMarketOpenKathmandu(now);
+  homeDashboardState.lastTimeLabel = timeLabel;
+  homeDashboardState.marketOpen = marketOpen;
 
   updateMarketStatus(marketOpen, timeLabel);
 
@@ -760,6 +764,31 @@ async function tickHomeDashboard() {
     sectorMetrics: homeDashboardState.lastSectorMetrics,
     indexChange: null
   });
+}
+
+function refreshHomeDashboardLocale() {
+  const timeLabel = homeDashboardState.lastTimeLabel;
+  if (timeLabel !== null) {
+    updateMarketStatus(homeDashboardState.marketOpen, timeLabel);
+    updateUpdatedStamp('homeSectorUpdated', timeLabel);
+  }
+
+  if (homeDashboardState.lastBreadth) {
+    renderBreadth(homeDashboardState.lastBreadth);
+  }
+
+  if (homeDashboardState.lastSectorMetrics) {
+    updateSectorChart(homeDashboardState.lastSectorMetrics);
+  }
+
+  if (homeDashboardState.lastBreadth || homeDashboardState.lastSectorMetrics) {
+    updateTodayCard({
+      marketOpen: homeDashboardState.marketOpen,
+      breadth: homeDashboardState.lastBreadth,
+      sectorMetrics: homeDashboardState.lastSectorMetrics,
+      indexChange: null
+    });
+  }
 }
 
 function fetchHomeData(url) {
@@ -1331,7 +1360,6 @@ function showSection(sectionId) {
 async function updatePortfolio() {
   const investments = JSON.parse(localStorage.getItem("investments")) || [];
   const tableBody = document.getElementById("investmentHistory");
-  const noInvestments = document.getElementById("noInvestments");
   const tableContainer = document.querySelector(".table-container");
   
   if (!tableBody) return;
@@ -1343,17 +1371,11 @@ async function updatePortfolio() {
     if (tableContainer) {
       tableContainer.style.display = "none";
     }
-    if (noInvestments) {
-      noInvestments.style.display = "block";
-    }
     return;
   }
 
   if (tableContainer) {
     tableContainer.style.display = "block";
-  }
-  if (noInvestments) {
-    noInvestments.style.display = "none";
   }
 
   let totalInvested = 0;
@@ -2620,6 +2642,7 @@ function updateLanguage(language) {
 
     // Localize static numbers in the UI
     localizeStaticNumbers(language);
+    refreshHomeDashboardLocale();
 }
 
 const localizedNumberNodes = new WeakMap();

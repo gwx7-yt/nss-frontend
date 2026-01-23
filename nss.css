@@ -450,16 +450,52 @@ section {
 
 #stockSearch {
   width: 100%;
-  padding: 1rem;
+  padding: 1rem 1.25rem;
   font-size: 1.1rem;
-  border: 2px solid var(--primary-color);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 50%, transparent);
   border-radius: 50px;
   outline: none;
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.16), rgba(46, 204, 113, 0.12));
+  color: var(--text-color);
+  box-shadow: 0 10px 20px rgba(52, 152, 219, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: var(--transition);
+}
+
+#stockSearch::placeholder {
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
+#stockSearch:hover {
+  border-color: color-mix(in srgb, var(--primary-color) 70%, transparent);
+  box-shadow: 0 12px 24px rgba(52, 152, 219, 0.2), 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 #stockSearch:focus {
-  box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.3);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.25), 0 12px 24px rgba(52, 152, 219, 0.2);
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.22), rgba(46, 204, 113, 0.16));
+}
+
+[data-theme="dark"] #stockSearch {
+  background: linear-gradient(135deg, rgba(100, 181, 246, 0.18), rgba(67, 160, 71, 0.16));
+  border-color: rgba(100, 181, 246, 0.55);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
+  color: var(--text-color);
+}
+
+[data-theme="dark"] #stockSearch::placeholder {
+  color: rgba(248, 250, 252, 0.7);
+}
+
+[data-theme="dark"] #stockSearch:hover {
+  border-color: rgba(100, 181, 246, 0.75);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] #stockSearch:focus {
+  box-shadow: 0 0 0 4px rgba(100, 181, 246, 0.35), 0 14px 28px rgba(0, 0, 0, 0.65);
+  background: linear-gradient(135deg, rgba(100, 181, 246, 0.26), rgba(67, 160, 71, 0.2));
 }
 
 .search-results {
