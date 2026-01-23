@@ -18,6 +18,11 @@ function toNepaliNumerals(value) {
   return String(value).replace(/\d/g, digit => DIGIT_MAP[digit] || digit);
 }
 
+function isNepaliLanguage(language) {
+  const normalized = String(language || '').trim().toLowerCase();
+  return normalized === 'nepali' || normalized === 'ne' || normalized === 'np';
+}
+
 function formatNumber(value, opts = {}, language = 'english') {
   const { decimals, useCommas = false, prefix = '', suffix = '' } = opts;
   if (value === null || value === undefined || value === '') {
@@ -54,11 +59,11 @@ function formatNumber(value, opts = {}, language = 'english') {
   }
 
   const output = `${prefix}${formatted}${suffix}`;
-  return language === 'nepali' ? toNepaliNumerals(output) : output;
+  return isNepaliLanguage(language) ? toNepaliNumerals(output) : output;
 }
 
 function formatCurrencyNPR(value, language = 'english', opts = {}) {
-  const prefix = language === 'nepali' ? 'रु. ' : 'Rs. ';
+  const prefix = isNepaliLanguage(language) ? 'रु. ' : 'Rs. ';
   return formatNumber(value, { ...opts, prefix }, language);
 }
 
@@ -74,6 +79,7 @@ function formatPercent(value, language = 'english', opts = {}) {
 }
 
 window.toNepaliNumerals = toNepaliNumerals;
+window.isNepaliLanguage = isNepaliLanguage;
 window.formatNumber = formatNumber;
 window.formatCurrencyNPR = formatCurrencyNPR;
 window.formatPercent = formatPercent;

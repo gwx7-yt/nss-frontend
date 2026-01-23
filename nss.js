@@ -45,7 +45,7 @@ const sectorTranslations = {
 };
 
 function getLocalizedSectorName(sectorName, language = getCurrentLanguage()) {
-  if (language === 'nepali') {
+  if (isNepaliLanguage(language)) {
     return sectorTranslations.nepali[sectorName] || sectorName;
   }
   return sectorName;
@@ -127,7 +127,7 @@ function fetchTopGainers() {
           const percentageFallback = `${item.percentageChange}${String(item.percentageChange).includes('%') ? '' : '%'}`;
           const percentageDisplay = !Number.isNaN(percentageNumber)
             ? formatPercent(percentageNumber, getCurrentLanguage(), { decimals: 2, showSign: true })
-            : (getCurrentLanguage() === 'nepali' ? toNepaliNumerals(percentageFallback) : percentageFallback);
+            : (isNepaliLanguage(getCurrentLanguage()) ? toNepaliNumerals(percentageFallback) : percentageFallback);
           row.innerHTML = `
             <td>${item.symbol}</td>
             <td>${ltpDisplay}</td>
@@ -160,7 +160,7 @@ function fetchTopLosers() {
           const percentageFallback = `${item.percentageChange}${String(item.percentageChange).includes('%') ? '' : '%'}`;
           const percentageDisplay = !Number.isNaN(percentageNumber)
             ? formatPercent(percentageNumber, getCurrentLanguage(), { decimals: 2, showSign: true })
-            : (getCurrentLanguage() === 'nepali' ? toNepaliNumerals(percentageFallback) : percentageFallback);
+            : (isNepaliLanguage(getCurrentLanguage()) ? toNepaliNumerals(percentageFallback) : percentageFallback);
           row.innerHTML = `
             <td>${item.symbol}</td>
             <td>${ltpDisplay}</td>
@@ -582,7 +582,7 @@ function renderAllStocksTable() {
       const prefix = rawChange.startsWith('+') || rawChange.startsWith('-') ? '' : '+';
       const ensurePercent = rawChange.includes('%') ? rawChange : `${rawChange}%`;
       const changeFallback = `${prefix}${ensurePercent}`;
-      changeDisplay = currentLanguage === 'nepali' ? toNepaliNumerals(changeFallback) : changeFallback;
+      changeDisplay = isNepaliLanguage(currentLanguage) ? toNepaliNumerals(changeFallback) : changeFallback;
     }
 
     const rsDisplay = formatRelativeStrength(stock.relativeStrength, currentLanguage);
@@ -781,7 +781,7 @@ function formatKathmanduTime(date) {
 }
 
 function formatTimeLabel(value, language = getCurrentLanguage()) {
-  return language === 'nepali' ? toNepaliNumerals(value) : value;
+  return isNepaliLanguage(language) ? toNepaliNumerals(value) : value;
 }
 
 function getKathmanduTimeParts(date) {
@@ -1063,7 +1063,7 @@ function updateTodayCard({ marketOpen, breadth, sectorMetrics, indexChange }) {
 
   let sentence = '';
   const currentLanguage = getCurrentLanguage();
-  const isNepali = currentLanguage === 'nepali';
+  const isNepali = isNepaliLanguage(currentLanguage);
 
   if (marketOpen) {
     if (sentiment === 'bullish') {
@@ -1237,7 +1237,7 @@ if (stockSearchInput) {
           const prefix = rawChange.startsWith('+') || rawChange.startsWith('-') ? '' : '+';
           const ensurePercent = rawChange.includes('%') ? rawChange : `${rawChange}%`;
           const percentFallback = `${prefix}${ensurePercent}`;
-          percentageDisplay = currentLanguage === 'nepali' ? toNepaliNumerals(percentFallback) : percentFallback;
+          percentageDisplay = isNepaliLanguage(currentLanguage) ? toNepaliNumerals(percentFallback) : percentFallback;
         }
 
         const displaySector = getLocalizedSectorName(stock.sectorName || 'N/A', currentLanguage);
@@ -2633,7 +2633,7 @@ function localizeStaticNumbers(language) {
                 localizedNumberNodes.set(node, node.nodeValue);
             }
             const baseText = localizedNumberNodes.get(node);
-            node.nodeValue = language === 'nepali' ? toNepaliNumerals(baseText) : baseText;
+            node.nodeValue = isNepaliLanguage(language) ? toNepaliNumerals(baseText) : baseText;
         }
     });
 }
@@ -2867,7 +2867,7 @@ function claimDailyBonus() {
     // Show success message
     const currentLanguage = localStorage.getItem('language') || 'english';
     const bonusAmount = formatNumber(DAILY_BONUS, { decimals: 0, useCommas: true }, currentLanguage);
-    const message = currentLanguage === 'nepali'
+    const message = isNepaliLanguage(currentLanguage)
         ? `दैनिक बोनस ${bonusAmount} क्रेडिट प्राप्त भयो!`
         : `Daily bonus of ${bonusAmount} credits claimed!`;
     showToast(message);
