@@ -130,8 +130,8 @@ function fetchTopGainers() {
             : formatPercent(item.percentageChange, currentLanguage, { decimals: 2, showSign: true });
           row.innerHTML = `
             <td>${item.symbol}</td>
-            <td>${ltpDisplay}</td>
-            <td class="gain">${percentageDisplay}</td>
+            <td>${wrapNumberDisplay(ltpDisplay)}</td>
+            <td class="gain">${wrapNumberDisplay(percentageDisplay)}</td>
           `;
           tbody.appendChild(row);
         });
@@ -163,8 +163,8 @@ function fetchTopLosers() {
             : formatPercent(item.percentageChange, currentLanguage, { decimals: 2, showSign: true });
           row.innerHTML = `
             <td>${item.symbol}</td>
-            <td>${ltpDisplay}</td>
-            <td class="${changeClass}">${percentageDisplay}</td>
+            <td>${wrapNumberDisplay(ltpDisplay)}</td>
+            <td class="${changeClass}">${wrapNumberDisplay(percentageDisplay)}</td>
           `;
           tbody.appendChild(row);
         });
@@ -198,7 +198,7 @@ function updateCreditDisplay() {
   const creditBalance = document.getElementById('creditBalance');
   if (creditBalance) {
     const credits = localStorage.getItem('credits') || DEFAULT_CREDITS.toString();
-    creditBalance.textContent = formatNumber(credits, { useCommas: true }, getCurrentLanguage());
+    setNumberText(creditBalance, formatNumber(credits, { useCommas: true }, getCurrentLanguage()));
   }
 }
 
@@ -206,7 +206,7 @@ function updateCreditDisplay() {
 function showToast(message) {
   const toast = document.createElement('div');
   toast.className = 'toast';
-  toast.textContent = message;
+  toast.innerHTML = message;
   document.body.appendChild(toast);
   requestAnimationFrame(() => toast.classList.add('visible'));
   setTimeout(() => {
@@ -233,7 +233,7 @@ function showSpinResult(message) {
     const result = document.getElementById('spinResult');
     const container = result?.closest('.spin-wheel');
     if (!result || !container) return;
-    result.textContent = message;
+    result.innerHTML = message;
     result.classList.remove('hidden');
     container.classList.add('blur');
     launchConfetti();
@@ -259,7 +259,7 @@ function upgradeOldUsers() {
     localStorage.setItem('credits', user.credits.toString());
     const currentLanguage = getCurrentLanguage();
     const creditsDisplay = formatNumber(DEFAULT_CREDITS, { decimals: 0, useCommas: true }, currentLanguage);
-    showToast(`🎉 You've been upgraded to ${creditsDisplay} credits!`);
+    showToast(`🎉 You've been upgraded to ${wrapNumberDisplay(creditsDisplay)} credits!`);
   }
 }
 
@@ -294,18 +294,18 @@ function openTradeModal(symbol) {
 
       // Check if elements exist before setting content
       if (modalStockSymbol) modalStockSymbol.textContent = symbol;
-      if (modalStockPrice) modalStockPrice.textContent = formatNumber(parseFloat(data.price), { decimals: 2, useCommas: true }, currentLanguage);
+      if (modalStockPrice) setNumberText(modalStockPrice, formatPrice(parseFloat(data.price), currentLanguage));
       if (modalTradeShares) {
         modalTradeShares.value = "";
         modalTradeShares.removeEventListener("input", updateCostPreview);
         modalTradeShares.addEventListener("input", updateCostPreview);
       }
       const zeroDisplay = formatNumber(0, { decimals: 0, useCommas: true }, currentLanguage);
-      if (modalPricePreview) modalPricePreview.textContent = zeroDisplay;
-      if (modalBrokerFeePreview) modalBrokerFeePreview.textContent = zeroDisplay;
-      if (modalSebonFeePreview) modalSebonFeePreview.textContent = zeroDisplay;
-      if (modalDpFeePreview) modalDpFeePreview.textContent = zeroDisplay;
-      if (modalCostPreview) modalCostPreview.textContent = zeroDisplay;
+      setNumberText(modalPricePreview, zeroDisplay);
+      setNumberText(modalBrokerFeePreview, zeroDisplay);
+      setNumberText(modalSebonFeePreview, zeroDisplay);
+      setNumberText(modalDpFeePreview, zeroDisplay);
+      setNumberText(modalCostPreview, zeroDisplay);
       updateCostPreview();
       if (tradeModal) {
         tradeModal.style.display = "block";
@@ -339,11 +339,11 @@ function updateCostPreview() {
   const costPreview = document.getElementById("modalCostPreview");
 
   const currentLanguage = getCurrentLanguage();
-  if (pricePreview) pricePreview.textContent = formatNumber(base, { decimals: 2, useCommas: true }, currentLanguage);
-  if (brokerFeePreview) brokerFeePreview.textContent = formatNumber(brokerFee, { decimals: 2, useCommas: true }, currentLanguage);
-  if (sebonFeePreview) sebonFeePreview.textContent = formatNumber(sebonFee, { decimals: 2, useCommas: true }, currentLanguage);
-  if (dpFeePreview) dpFeePreview.textContent = formatNumber(dpFee, { decimals: 2, useCommas: true }, currentLanguage);
-  if (costPreview) costPreview.textContent = formatNumber(total, { decimals: 2, useCommas: true }, currentLanguage);
+  setNumberText(pricePreview, formatPrice(base, currentLanguage));
+  setNumberText(brokerFeePreview, formatPrice(brokerFee, currentLanguage));
+  setNumberText(sebonFeePreview, formatPrice(sebonFee, currentLanguage));
+  setNumberText(dpFeePreview, formatPrice(dpFee, currentLanguage));
+  setNumberText(costPreview, formatPrice(total, currentLanguage));
 }
 
 function confirmTrade() {
@@ -358,7 +358,7 @@ function confirmTrade() {
   if (shares < 10) {
     const currentLanguage = getCurrentLanguage();
     const minSharesDisplay = formatNumber(10, { decimals: 0, useCommas: true }, currentLanguage);
-    showToast(`❌ Minimum trade is ${minSharesDisplay} shares!`);
+    showToast(`❌ Minimum trade is ${wrapNumberDisplay(minSharesDisplay)} shares!`);
 
     return;
   }
@@ -400,7 +400,7 @@ function confirmTrade() {
   const currentLanguage = getCurrentLanguage();
   const sharesDisplay = formatNumber(shares, { decimals: 0, useCommas: true }, currentLanguage);
   const totalDisplay = formatNumber(total, { decimals: 2, useCommas: true }, currentLanguage);
-  showToast(`✅ Purchased ${sharesDisplay} shares of ${symbol} for ${totalDisplay} credits!`);
+  showToast(`✅ Purchased ${wrapNumberDisplay(sharesDisplay)} shares of ${symbol} for ${wrapNumberDisplay(totalDisplay)} credits!`);
 }
 
 // Update search result click handler
@@ -592,9 +592,9 @@ function renderAllStocksTable() {
       <td>${stock.symbol}</td>
       <td>${companyNameForLang(stock.companyName, currentLanguage)}</td>
       <td>${getLocalizedSectorName(stock.sectorName || 'N/A', currentLanguage)}</td>
-      <td>${priceDisplay}</td>
-      <td class="${changeClass}">${changeDisplay}</td>
-      <td class="${rsClass}">${rsDisplay}</td>
+      <td>${wrapNumberDisplay(priceDisplay)}</td>
+      <td class="${changeClass}">${wrapNumberDisplay(changeDisplay)}</td>
+      <td class="${rsClass}">${wrapNumberDisplay(rsDisplay)}</td>
       <td><button onclick="openTradeModal('${stock.symbol}')" class="trade-btn">${tradeLabel}</button></td>
     `;
     tbody.appendChild(row);
@@ -697,6 +697,25 @@ function getTranslationValue(key, fallback = '') {
 
 function toNum(value) {
   return Number(String(value ?? '').replace(/,/g, ''));
+}
+
+function wrapNumberDisplay(value) {
+  return `<span class="np-number">${value}</span>`;
+}
+
+function setNumberText(element, value) {
+  if (!element) {
+    return;
+  }
+  element.textContent = value;
+  element.classList.add('np-number');
+}
+
+function getNumberFontFamily(language = getCurrentLanguage()) {
+  if (isNepaliLanguage(language)) {
+    return '"Noto Sans Devanagari", "Mukta", "Hind", sans-serif';
+  }
+  return '"Inter", "Poppins", "Roboto", sans-serif';
 }
 
 const homeDashboardState = {
@@ -860,14 +879,14 @@ function updateMarketStatus(isOpen, timeLabel) {
     marketState.textContent = getTranslationValue(isOpen ? 'open' : 'closed', isOpen ? 'OPEN' : 'CLOSED');
   }
   if (lastUpdated) {
-    lastUpdated.textContent = formatTimeLabel(timeLabel, getCurrentLanguage());
+    setNumberText(lastUpdated, formatTimeLabel(timeLabel, getCurrentLanguage()));
   }
 }
 
 function updateUpdatedStamp(id, timeLabel) {
   const element = document.getElementById(id);
   if (element) {
-    element.textContent = formatTimeLabel(timeLabel, getCurrentLanguage());
+    setNumberText(element, formatTimeLabel(timeLabel, getCurrentLanguage()));
   }
 }
 
@@ -905,7 +924,7 @@ function renderBreadth(breadth) {
   const setValue = (id, value) => {
     const element = document.getElementById(id);
     if (element) {
-      element.textContent = formatNumber(value, { decimals: 0, useCommas: true }, getCurrentLanguage());
+      setNumberText(element, formatNumber(value, { decimals: 0, useCommas: true }, getCurrentLanguage()));
     }
   };
 
@@ -1040,6 +1059,9 @@ function updateSectorChart(sectorMetrics) {
         plugins: {
           legend: { display: false },
           tooltip: {
+            bodyFont: {
+              family: getNumberFontFamily(getCurrentLanguage())
+            },
             callbacks: {
               label: context => `${formatNumber(context.parsed.y, { decimals: 2, useCommas: true }, getCurrentLanguage())}%`
             }
@@ -1053,6 +1075,9 @@ function updateSectorChart(sectorMetrics) {
           y: {
             ticks: {
               color: colors.text,
+              font: {
+                family: getNumberFontFamily(getCurrentLanguage())
+              },
               callback: value => `${formatNumber(value, { decimals: 0, useCommas: true }, getCurrentLanguage())}%`
             },
             grid: { color: colors.muted }
@@ -1064,6 +1089,10 @@ function updateSectorChart(sectorMetrics) {
     homeDashboardState.sectorChart.data.labels = labels;
     homeDashboardState.sectorChart.data.datasets[0].data = values;
     homeDashboardState.sectorChart.data.datasets[0].backgroundColor = barColors;
+    homeDashboardState.sectorChart.options.plugins.tooltip.bodyFont.family = getNumberFontFamily(getCurrentLanguage());
+    homeDashboardState.sectorChart.options.scales.y.ticks.font = {
+      family: getNumberFontFamily(getCurrentLanguage())
+    };
     homeDashboardState.sectorChart.update();
   }
 }
@@ -1175,7 +1204,7 @@ function renderSectorFilters(sectorCounts) {
     chip.dataset.sector = value;
     chip.innerHTML = `
       <span class="chip-label">${label}</span>
-      <span class="chip-count">${formatNumber(count, { decimals: 0, useCommas: true }, currentLanguage)}</span>
+      <span class="chip-count np-number">${formatNumber(count, { decimals: 0, useCommas: true }, currentLanguage)}</span>
     `;
 
     if (value === currentSectorFilter) {
@@ -1272,8 +1301,8 @@ if (stockSearchInput) {
               <small>${displaySector}</small>
             </div>
             <div class="stock-price ${changeClass}">
-              ${priceDisplay}
-              (${percentageDisplay})
+              ${wrapNumberDisplay(priceDisplay)}
+              (${wrapNumberDisplay(percentageDisplay)})
             </div>
           </div>
         `;
@@ -1415,13 +1444,13 @@ async function updatePortfolio() {
 
         row.innerHTML = `
         <td><strong>${investment.symbol}</strong></td>
-        <td>${buyPriceDisplay} 💰</td>
-        <td>${currentPriceDisplay} 📊</td>
-        <td>${creditsInvestedDisplay} 💵</td>
-        <td>${creditsNowDisplay} 💸</td>
-        <td>${quantityDisplay} 📊</td>
-        <td class="${profitLossClass}">${profitLossAmountDisplay} ${profitLossSymbol}</td>
-        <td class="${profitLossClass}">${profitLossPercentDisplay} ${profitLossSymbol}</td>
+        <td>${wrapNumberDisplay(buyPriceDisplay)} 💰</td>
+        <td>${wrapNumberDisplay(currentPriceDisplay)} 📊</td>
+        <td>${wrapNumberDisplay(creditsInvestedDisplay)} 💵</td>
+        <td>${wrapNumberDisplay(creditsNowDisplay)} 💸</td>
+        <td>${wrapNumberDisplay(quantityDisplay)} 📊</td>
+        <td class="${profitLossClass}">${wrapNumberDisplay(profitLossAmountDisplay)} ${profitLossSymbol}</td>
+        <td class="${profitLossClass}">${wrapNumberDisplay(profitLossPercentDisplay)} ${profitLossSymbol}</td>
         <td><button onclick="sellInvestment(${investments.indexOf(investment)}, this)" class="sell-btn">${sellLabel}</button></td>
       `;
       tbody.appendChild(row);
@@ -1437,12 +1466,14 @@ async function updatePortfolio() {
 
   if (netWorth) {
     const netWorthValue = (parseFloat(localStorage.getItem("credits")) || 0) + totalCurrentValue;
-    netWorth.textContent = formatNumber(netWorthValue, { decimals: 2, useCommas: true }, currentLanguage);
+    setNumberText(netWorth, formatNumber(netWorthValue, { decimals: 2, useCommas: true }, currentLanguage));
   }
-  if (totalInvestedElement) totalInvestedElement.textContent = formatNumber(totalInvested, { decimals: 2, useCommas: true }, currentLanguage);
+  if (totalInvestedElement) {
+    setNumberText(totalInvestedElement, formatNumber(totalInvested, { decimals: 2, useCommas: true }, currentLanguage));
+  }
   if (totalProfit) {
     const profitValue = totalCurrentValue - totalInvested;
-    totalProfit.textContent = formatNumber(profitValue, { decimals: 2, useCommas: true, prefix: profitValue >= 0 ? '+' : '' }, currentLanguage);
+    setNumberText(totalProfit, formatNumber(profitValue, { decimals: 2, useCommas: true, prefix: profitValue >= 0 ? '+' : '' }, currentLanguage));
     totalProfit.className = profitValue >= 0 ? 'stat-value gain' : 'stat-value loss';
   }
 }
@@ -1493,7 +1524,7 @@ function sellInvestment(index, buttonElement) {
       updatePortfolio();
       const currentLanguage = getCurrentLanguage();
       const sellAmountDisplay = formatNumber(sellAmount, { decimals: 2, useCommas: true }, currentLanguage);
-      showToast(`✅ Sold ${inv.symbol} for ${sellAmountDisplay} credits!`);
+      showToast(`✅ Sold ${inv.symbol} for ${wrapNumberDisplay(sellAmountDisplay)} credits!`);
     })
     .catch((error) => {
       if (error && error.message === "PRICE_FETCH_ERROR") {
@@ -2346,9 +2377,9 @@ if (!quizState.isStarted) {
 
         const scoreLine = document.createElement('div');
         scoreLine.className = 'quiz-result-score';
-        scoreLine.textContent = texts.scoreLine
-            .replace('{score}', formatQuizNumber(quizState.score, language))
-            .replace('{total}', formatQuizNumber(totalQuestions, language));
+        scoreLine.innerHTML = texts.scoreLine
+            .replace('{score}', wrapNumberDisplay(formatQuizNumber(quizState.score, language)))
+            .replace('{total}', wrapNumberDisplay(formatQuizNumber(totalQuestions, language)));
 
         const scoreMessage = document.createElement('div');
         scoreMessage.className = 'quiz-result-message';
@@ -2401,9 +2432,9 @@ if (!quizState.isStarted) {
     progressMeta.className = 'quiz-progress-meta';
 
     const progressLabel = document.createElement('span');
-    progressLabel.textContent = texts.questionProgress
-        .replace('{current}', formatQuizNumber(quizState.currentQuestionIndex + 1, language))
-        .replace('{total}', formatQuizNumber(totalQuestions, language));
+    progressLabel.innerHTML = texts.questionProgress
+        .replace('{current}', wrapNumberDisplay(formatQuizNumber(quizState.currentQuestionIndex + 1, language)))
+        .replace('{total}', wrapNumberDisplay(formatQuizNumber(totalQuestions, language)));
 
     progressMeta.appendChild(progressLabel);
 
@@ -2595,6 +2626,7 @@ document.querySelectorAll('.lang-btn').forEach(btn => {
 // Update text content based on selected language
 function updateLanguage(language) {
     const texts = translations[language];
+    document.documentElement.lang = isNepaliLanguage(language) ? 'ne' : 'en';
     
     // Update all translatable elements
     document.querySelectorAll('[data-translate]').forEach(element => {
@@ -2770,7 +2802,7 @@ function showBonusModal() {
             <div class="bonus-modal-content">
                 <div class="bonus-section daily-bonus">
                     <h2>${texts.dailyBonus}</h2>
-                    <p>${texts.bonusAmount} ${bonusAmountDisplay} ${texts.credits}</p>
+                    <p>${texts.bonusAmount} ${wrapNumberDisplay(bonusAmountDisplay)} ${texts.credits}</p>
                     <button id="claimDailyBonus" class="bonus-btn">${texts.claim}</button>
                     <p id="dailyTimer" class="timer"></p>
                 </div>
@@ -2851,7 +2883,7 @@ function updateDailyTimer(remainingTime) {
     const texts = translations[currentLanguage];
     const hoursDisplay = formatNumber(hours, { decimals: 0, useCommas: true }, currentLanguage);
     const minutesDisplay = formatNumber(minutes, { decimals: 0, useCommas: true }, currentLanguage);
-    timer.textContent = `${texts.nextAvailable} ${hoursDisplay}h ${minutesDisplay}m`;
+    timer.innerHTML = `${texts.nextAvailable} ${wrapNumberDisplay(hoursDisplay)}h ${wrapNumberDisplay(minutesDisplay)}m`;
 }
 
 function updateWeeklyTimer(remainingTime) {
@@ -2870,7 +2902,7 @@ function updateWeeklyTimer(remainingTime) {
     const texts = translations[currentLanguage];
     const daysDisplay = formatNumber(days, { decimals: 0, useCommas: true }, currentLanguage);
     const hoursDisplay = formatNumber(hours, { decimals: 0, useCommas: true }, currentLanguage);
-    timer.textContent = `${texts.nextAvailable} ${daysDisplay}d ${hoursDisplay}h`;
+    timer.innerHTML = `${texts.nextAvailable} ${wrapNumberDisplay(daysDisplay)}d ${wrapNumberDisplay(hoursDisplay)}h`;
 }
 
 function claimDailyBonus() {
@@ -2885,8 +2917,8 @@ function claimDailyBonus() {
     const currentLanguage = localStorage.getItem('language') || 'english';
     const bonusAmount = formatNumber(DAILY_BONUS, { decimals: 0, useCommas: true }, currentLanguage);
     const message = isNepaliLanguage(currentLanguage)
-        ? `दैनिक बोनस ${bonusAmount} क्रेडिट प्राप्त भयो!`
-        : `Daily bonus of ${bonusAmount} credits claimed!`;
+        ? `दैनिक बोनस ${wrapNumberDisplay(bonusAmount)} क्रेडिट प्राप्त भयो!`
+        : `Daily bonus of ${wrapNumberDisplay(bonusAmount)} credits claimed!`;
     showToast(message);
 }
 
@@ -2917,7 +2949,7 @@ function initWheel() {
         ctx.rotate(i * anglePerSegment + anglePerSegment / 2);
         ctx.textAlign = 'right';
         ctx.fillStyle = '#000';
-        ctx.font = 'bold 24px Arial';
+        ctx.font = `bold 24px ${getNumberFontFamily(currentLanguage)}`;
         const currentLanguage = getCurrentLanguage();
         const valueLabel = formatNumber(values[i], { decimals: 0, useCommas: true }, currentLanguage);
         ctx.fillText(valueLabel, 120, 0);
@@ -2995,7 +3027,7 @@ function startSpinWheel() {
         const currentLanguage = localStorage.getItem('language') || 'english';
         const texts = translations[currentLanguage];
         const winAmountDisplay = formatNumber(winAmount, { decimals: 0, useCommas: true }, currentLanguage);
-        showSpinResult(`${texts.spinResult} ${winAmountDisplay} ${texts.credits}!`);
+        showSpinResult(`${texts.spinResult} ${wrapNumberDisplay(winAmountDisplay)} ${texts.credits}!`);
     }, 4000);
 }
 

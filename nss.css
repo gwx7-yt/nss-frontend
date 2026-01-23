@@ -36,6 +36,12 @@ body {
   color: var(--text-color);
 }
 
+html[lang="ne"] .np-number {
+  font-family: "Noto Sans Devanagari", "Mukta", "Hind", sans-serif;
+  font-variant-numeric: normal;
+  font-feature-settings: "lnum" 0, "tnum" 0;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-family);
   font-weight: 500;
