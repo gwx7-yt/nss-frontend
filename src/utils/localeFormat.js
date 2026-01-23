@@ -11,11 +11,22 @@ const DIGIT_MAP = {
   '9': '९'
 };
 
+const REVERSE_DIGIT_MAP = Object.fromEntries(
+  Object.entries(DIGIT_MAP).map(([latin, nepali]) => [nepali, latin])
+);
+
 function toNepaliNumerals(value) {
   if (value === null || value === undefined) {
     return '';
   }
   return String(value).replace(/\d/g, digit => DIGIT_MAP[digit] || digit);
+}
+
+function toEnglishNumerals(value) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return String(value).replace(/[०-९]/g, digit => REVERSE_DIGIT_MAP[digit] || digit);
 }
 
 function isNepaliLanguage(language) {
@@ -79,6 +90,7 @@ function formatPercent(value, language = 'english', opts = {}) {
 }
 
 window.toNepaliNumerals = toNepaliNumerals;
+window.toEnglishNumerals = toEnglishNumerals;
 window.isNepaliLanguage = isNepaliLanguage;
 window.formatNumber = formatNumber;
 window.formatCurrencyNPR = formatCurrencyNPR;
