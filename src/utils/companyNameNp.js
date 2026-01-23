@@ -455,18 +455,7 @@ function transliterateCompanyName(name) {
     return NORMALIZED_OVERRIDES[overrideKey];
   }
 
-  let output = String(name);
-  COMPANY_REPLACEMENTS.forEach(({ regex, value }) => {
-    output = output.replace(regex, value);
-  });
-
-  return output.replace(/[A-Za-z]+/g, match => {
-    const normalized = match.toLowerCase();
-    if (COMPANY_WORD_MAP[normalized]) {
-      return COMPANY_WORD_MAP[normalized];
-    }
-    return transliterateLatinWord(match);
-  });
+  return String(name);
 }
 
 function companyNameForLang(companyName, language = 'english') {
