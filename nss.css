@@ -2962,7 +2962,7 @@ section {
   left: 0;
   width: 100%;
   height: 100%;
-  background: #1a1a1a;
+  background: #ffffff;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -2983,7 +2983,7 @@ section {
 }
 
 .loading-title {
-  color: white;
+  color: #0f172a;
   font-size: 2.5rem;
   margin: 0;
   opacity: 0;
