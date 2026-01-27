@@ -8,6 +8,18 @@ let allStocksData = [];
 let currentSortOption = 'name-asc';
 let currentSearchTerm = '';
 let navigationInitialized = false;
+let homeDashboardInitialized = false;
+
+const loadingState = {
+  pendingCount: 0,
+  hasError: false
+};
+
+const loadingElements = {
+  screen: null,
+  error: null,
+  retry: null
+};
 
 
 // Default credits given to new users (10 lakh)
@@ -61,9 +73,82 @@ function isFirstVisit() {
   return !localStorage.getItem('hasVisitedBefore');
 }
 
+function showLoadingScreen() {
+  if (!loadingElements.screen) {
+    return;
+  }
+  loadingElements.screen.classList.remove('is-hidden');
+  loadingElements.screen.setAttribute('aria-hidden', 'false');
+}
+
+function hideLoadingScreen() {
+  if (!loadingElements.screen) {
+    return;
+  }
+  loadingElements.screen.classList.add('is-hidden');
+  loadingElements.screen.setAttribute('aria-hidden', 'true');
+}
+
+function setLoadingErrorState(hasError) {
+  if (loadingElements.error) {
+    loadingElements.error.hidden = !hasError;
+  }
+  if (loadingElements.retry) {
+    loadingElements.retry.hidden = !hasError;
+  }
+}
+
+function resetLoadingState() {
+  loadingState.pendingCount = 0;
+  loadingState.hasError = false;
+  setLoadingErrorState(false);
+  showLoadingScreen();
+}
+
+function updateLoadingVisibility() {
+  if (loadingState.pendingCount === 0 && !loadingState.hasError) {
+    hideLoadingScreen();
+  } else {
+    showLoadingScreen();
+  }
+}
+
+function handleLoadingError(error) {
+  loadingState.hasError = true;
+  setLoadingErrorState(true);
+  console.error("⚠️ Error during initial load:", error);
+  updateLoadingVisibility();
+}
+
+function trackLoading(promise) {
+  loadingState.pendingCount += 1;
+  updateLoadingVisibility();
+  return promise
+    .catch(error => {
+      handleLoadingError(error);
+      throw error;
+    })
+    .finally(() => {
+      loadingState.pendingCount = Math.max(loadingState.pendingCount - 1, 0);
+      updateLoadingVisibility();
+    });
+}
+
+function showTutorialIfFirstVisit() {
+  if (!isFirstVisit()) {
+    return;
+  }
+  const tutorialOverlay = document.getElementById('tutorialOverlay');
+  if (!tutorialOverlay) {
+    return;
+  }
+  tutorialOverlay.style.display = 'flex';
+  showTutorialStep(1);
+}
+
 // Fetch and store company details
-function fetchCompanyDetails() {
-  fetch("https://nss-c26z.onrender.com/CompanyList")
+function fetchCompanyDetails({ reportError = false } = {}) {
+  return fetch("https://nss-c26z.onrender.com/CompanyList")
     .then(res => res.json())
     .then(data => {
       companyDetails.clear();
@@ -75,44 +160,62 @@ function fetchCompanyDetails() {
         });
       });
       // After getting company details, load stocks
-      loadAllStocks();
+      return loadAllStocks({ reportError });
     })
     .catch((error) => {
       console.error("⚠️ Error fetching company details:", error);
+      if (reportError) {
+        throw error;
+      }
       // Still try to load stocks even if company details fail
-      loadAllStocks();
+      return loadAllStocks({ reportError });
     });
 }
 
 // Handle loading screen and tutorial initialization
 document.addEventListener("DOMContentLoaded", () => {
-  // Loading screen will automatically fade out after 4 seconds due to CSS animation
-  
-  // Check if this is the first visit
-  if (isFirstVisit()) {
-    // Show tutorial after loading screen fades
-    setTimeout(() => {
-      const tutorialOverlay = document.getElementById('tutorialOverlay');
-      tutorialOverlay.style.display = 'flex';
-      showTutorialStep(1);
-    }, 4000);
+  loadingElements.screen = document.getElementById('loadingScreen');
+  loadingElements.error = document.getElementById('loadingError');
+  loadingElements.retry = document.getElementById('loadingRetry');
+
+  const runInitialLoad = () => {
+    resetLoadingState();
+
+    const initialTasks = [
+      trackLoading(fetchCompanyDetails({ reportError: true })),
+      trackLoading(fetchTopGainers({ reportError: true })),
+      trackLoading(fetchTopLosers({ reportError: true })),
+      trackLoading(initializeHomeDashboard({ reportError: true })),
+      trackLoading(updatePortfolio({ reportError: true }))
+    ];
+
+    Promise.all(initialTasks)
+      .then(() => {
+        if (!loadingState.hasError) {
+          setTimeout(showTutorialIfFirstVisit, 400);
+        }
+      })
+      .catch(() => {
+        // Errors are handled by handleLoadingError; keep overlay visible.
+      });
+  };
+
+  if (loadingElements.retry) {
+    loadingElements.retry.addEventListener('click', runInitialLoad);
   }
 
+  runInitialLoad();
+
   // Initialize other features
-  fetchCompanyDetails();
-  fetchTopGainers();
-  fetchTopLosers();
   initCredits();
   upgradeOldUsers();
-  updatePortfolio();
   initNavigation();
   initSortControls();
   initDigitNormalizationObserver();
-
 });
 
-function fetchTopGainers() {
-  fetch("https://nss-c26z.onrender.com/TopGainers")
+function fetchTopGainers({ reportError = false } = {}) {
+  return fetch("https://nss-c26z.onrender.com/TopGainers")
     .then(res => res.json())
     .then(data => {
       const tbody = document.querySelector("#gainersTable tbody");
@@ -138,13 +241,16 @@ function fetchTopGainers() {
         });
       }
     })
-    .catch(() => {
-      console.error("⚠️ Error fetching top gainers");
+    .catch((error) => {
+      console.error("⚠️ Error fetching top gainers", error);
+      if (reportError) {
+        throw error;
+      }
     });
 }
 
-function fetchTopLosers() {
-  fetch("https://nss-c26z.onrender.com/TopLosers")
+function fetchTopLosers({ reportError = false } = {}) {
+  return fetch("https://nss-c26z.onrender.com/TopLosers")
     .then(res => res.json())
     .then(data => {
       const tbody = document.querySelector("#losersTable tbody");
@@ -171,8 +277,11 @@ function fetchTopLosers() {
         });
       }
     })
-    .catch(() => {
-      console.error("⚠️ Error fetching top losers");
+    .catch((error) => {
+      console.error("⚠️ Error fetching top losers", error);
+      if (reportError) {
+        throw error;
+      }
     });
 }
 
@@ -642,8 +751,8 @@ function initSortControls() {
 }
 
 // Update loadAllStocks function to add data attributes and new trade button
-function loadAllStocks() {
-  fetch("https://nss-c26z.onrender.com/AllStocks")
+function loadAllStocks({ reportError = false } = {}) {
+  return fetch("https://nss-c26z.onrender.com/AllStocks")
     .then(res => res.json())
     .then(data => {
       const tbody = document.querySelector("#allStocksTable tbody");
@@ -685,8 +794,11 @@ function loadAllStocks() {
         renderAllStocksTable();
       }
     })
-    .catch(() => {
-      console.error("⚠️ Error loading all stocks");
+    .catch((error) => {
+      console.error("⚠️ Error loading all stocks", error);
+      if (reportError) {
+        throw error;
+      }
     });
 }
 
@@ -746,17 +858,22 @@ const homeDashboardState = {
   marketOpen: null
 };
 
-function initializeHomeDashboard() {
+function initializeHomeDashboard({ reportError = false } = {}) {
+  if (homeDashboardInitialized) {
+    return Promise.resolve();
+  }
+  homeDashboardInitialized = true;
   const sectorCanvas = document.getElementById('homeSectorChart');
   if (!sectorCanvas) {
-    return;
+    return Promise.resolve();
   }
 
-  tickHomeDashboard();
-  setInterval(tickHomeDashboard, 20000);
+  const initialTick = tickHomeDashboard({ reportError });
+  setInterval(() => tickHomeDashboard(), 20000);
+  return initialTick;
 }
 
-async function tickHomeDashboard() {
+async function tickHomeDashboard({ reportError = false } = {}) {
   const now = new Date();
   const timeLabel = formatKathmanduTime(now);
   const marketOpen = isMarketOpenKathmandu(now);
@@ -780,6 +897,9 @@ async function tickHomeDashboard() {
   } catch (error) {
     priceVolume = homeDashboardState.latestPriceVolume;
     sectorOverview = homeDashboardState.latestSectorOverview;
+    if (reportError) {
+      throw error;
+    }
   }
 
   if (priceVolume && sectorOverview && dataUpdated) {
@@ -1398,7 +1518,7 @@ function showSection(sectionId) {
   }
 }
 
-async function updatePortfolio() {
+async function updatePortfolio({ reportError = false } = {}) {
   const investments = JSON.parse(localStorage.getItem("investments")) || [];
   const tableBody = document.getElementById("investmentHistory");
   const tableContainer = document.querySelector(".table-container");
@@ -1422,6 +1542,7 @@ async function updatePortfolio() {
   let totalInvested = 0;
   let totalCurrentValue = 0;
   const currentLanguage = getCurrentLanguage();
+  let encounteredError = false;
 
   for (const investment of investments) {
     try {
@@ -1474,6 +1595,7 @@ async function updatePortfolio() {
       tbody.appendChild(row);
     } catch (error) {
       console.error("Error processing investment:", error);
+      encounteredError = true;
     }
   }
 
@@ -1493,6 +1615,10 @@ async function updatePortfolio() {
     const profitValue = totalCurrentValue - totalInvested;
     setNumberText(totalProfit, formatNumber(profitValue, { decimals: 2, useCommas: true, prefix: profitValue >= 0 ? '+' : '' }, currentLanguage));
     totalProfit.className = profitValue >= 0 ? 'stat-value gain' : 'stat-value loss';
+  }
+
+  if (reportError && encounteredError) {
+    throw new Error('Portfolio data failed to load.');
   }
 }
 

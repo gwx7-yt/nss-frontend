@@ -2958,7 +2958,13 @@ section {
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  animation: fadeOut 0.5s ease 3.5s forwards;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+.loading-screen.is-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .loading-content {
@@ -2979,6 +2985,28 @@ section {
   margin: 0;
   opacity: 0;
   animation: fadeIn 0.5s ease 0.5s forwards;
+}
+
+.loading-error {
+  color: #ffb3b3;
+  font-size: 1rem;
+  margin-top: 1rem;
+  opacity: 0.9;
+}
+
+.loading-retry {
+  margin-top: 1rem;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1a1a1a;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.loading-retry:hover {
+  background: #f2f2f2;
 }
 
 /* Tutorial Overlay */
