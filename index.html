@@ -235,8 +235,8 @@
       <div class="market-content">
         <div class="market-search">
           <div class="search-container">
-            <input type="text" id="stockSearch" data-translate-placeholder="search" placeholder="🔍 Search by company name or symbol...">
-            <div id="searchResults" class="search-results"></div>
+            <input type="text" id="stockSearch" data-translate-placeholder="search" placeholder="🔍 Search by company name or symbol..." aria-label="Search stocks" aria-controls="searchResults" autocomplete="off">
+            <div id="searchResults" class="search-results" aria-live="polite"></div>
           </div>
         </div>
 
@@ -626,10 +626,10 @@
 
   <!-- Trade Modal -->
 
-  <div id="tradeModal" class="trade-modal">
+  <div id="tradeModal" class="trade-modal" role="dialog" aria-modal="true" aria-labelledby="tradeModalTitle" aria-hidden="true">
     <div class="trade-modal-content">
       <div class="trade-modal-header">
-        <h2>Trade Stock</h2>
+        <h2 id="tradeModalTitle">Trade Stock</h2>
       </div>
       
       <div class="stock-details">

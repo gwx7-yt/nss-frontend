@@ -113,7 +113,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function fetchTopGainers() {
   fetch("https://nss-c26z.onrender.com/TopGainers")
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`Request failed: ${res.status}`);
+      }
+      return res.json();
+    })
     .then(data => {
       const tbody = document.querySelector("#gainersTable tbody");
       if (tbody) {
@@ -145,7 +150,12 @@ function fetchTopGainers() {
 
 function fetchTopLosers() {
   fetch("https://nss-c26z.onrender.com/TopLosers")
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`Request failed: ${res.status}`);
+      }
+      return res.json();
+    })
     .then(data => {
       const tbody = document.querySelector("#losersTable tbody");
       if (tbody) {
@@ -310,6 +320,7 @@ function openTradeModal(symbol) {
       updateCostPreview();
       if (tradeModal) {
         tradeModal.style.display = "block";
+        tradeModal.setAttribute('aria-hidden', 'false');
         if (modalTradeShares) modalTradeShares.focus();
       }
     })
@@ -320,7 +331,11 @@ function openTradeModal(symbol) {
 }
 
 function closeTradeModal() {
-  document.getElementById("tradeModal").style.display = "none";
+  const tradeModal = document.getElementById("tradeModal");
+  if (tradeModal) {
+    tradeModal.style.display = "none";
+    tradeModal.setAttribute('aria-hidden', 'true');
+  }
   currentStockData = null;
 }
 
@@ -644,7 +659,12 @@ function initSortControls() {
 // Update loadAllStocks function to add data attributes and new trade button
 function loadAllStocks() {
   fetch("https://nss-c26z.onrender.com/AllStocks")
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`Request failed: ${res.status}`);
+      }
+      return res.json();
+    })
     .then(data => {
       const tbody = document.querySelector("#allStocksTable tbody");
       if (tbody) {
@@ -1271,8 +1291,11 @@ function applySectorFilter() {
 const stockSearchInput = document.getElementById("stockSearch");
 if (stockSearchInput) {
   stockSearchInput.addEventListener("input", (e) => {
-    const searchTerm = e.target.value.toLowerCase();
     const resultsDiv = document.getElementById("searchResults");
+    if (!resultsDiv) {
+      return;
+    }
+    const searchTerm = e.target.value.toLowerCase();
 
     currentSearchTerm = searchTerm;
     renderAllStocksTable();
@@ -1423,9 +1446,13 @@ async function updatePortfolio() {
   let totalCurrentValue = 0;
   const currentLanguage = getCurrentLanguage();
 
-  for (const investment of investments) {
+  for (let i = 0; i < investments.length; i += 1) {
+    const investment = investments[i];
     try {
       const response = await fetch(`https://nss-c26z.onrender.com/StockPrice?symbol=${investment.symbol}`);
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}`);
+      }
       const data = await response.json();
       
       if (data.error) {
@@ -1439,7 +1466,7 @@ async function updatePortfolio() {
       const quantity = parseFloat(investment.quantity);
       const creditsNow = quantity * currentPrice;
       const profitLossAmount = creditsNow - creditsInvested;
-      const profitLossPercent = (profitLossAmount / creditsInvested) * 100;
+      const profitLossPercent = creditsInvested > 0 ? (profitLossAmount / creditsInvested) * 100 : 0;
 
       totalInvested += creditsInvested;
       totalCurrentValue += creditsNow;
@@ -1460,7 +1487,7 @@ async function updatePortfolio() {
       const profitLossPercentDisplay = formatPercent(profitLossPercent, currentLanguage, { decimals: 2, showSign: true });
       const sellLabel = getTranslationValue('sell', 'Sell');
 
-        row.innerHTML = `
+      row.innerHTML = `
         <td><strong>${investment.symbol}</strong></td>
         <td>${wrapNumberDisplay(buyPriceDisplay)} 💰</td>
         <td>${wrapNumberDisplay(currentPriceDisplay)} 📊</td>
@@ -1469,7 +1496,7 @@ async function updatePortfolio() {
         <td>${wrapNumberDisplay(quantityDisplay)} 📊</td>
         <td class="${profitLossClass}">${wrapNumberDisplay(profitLossAmountDisplay)} ${profitLossSymbol}</td>
         <td class="${profitLossClass}">${wrapNumberDisplay(profitLossPercentDisplay)} ${profitLossSymbol}</td>
-        <td><button onclick="sellInvestment(${investments.indexOf(investment)}, this)" class="sell-btn">${sellLabel}</button></td>
+        <td><button onclick="sellInvestment(${i}, this)" class="sell-btn">${sellLabel}</button></td>
       `;
       tbody.appendChild(row);
     } catch (error) {
