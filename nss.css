@@ -1532,26 +1532,54 @@ section {
 
 .trade-input-group {
   margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: calc(var(--border-radius) + 2px);
+  background: rgba(10, 132, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.trade-input-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .trade-input-group label {
   display: block;
-  margin-bottom: 0.5rem;
   color: var(--text-color);
+  font-weight: 600;
+}
+
+.trade-input-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
 .trade-input-group input {
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid var(--primary-color);
-  border-radius: var(--border-radius);
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(0, 180, 216, 0.45);
+  border-radius: calc(var(--border-radius) + 4px);
   font-size: 1rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1f2937;
   transition: all 0.3s ease;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.12);
 }
 
 .trade-input-group input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.3);
+  border-color: rgba(0, 180, 216, 0.95);
+  box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.2);
+}
+
+.trade-input-helper {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
 .quantity-preview {
