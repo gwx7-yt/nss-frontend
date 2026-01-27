@@ -2989,11 +2989,12 @@ section {
   height: clamp(180px, 40vw, 320px);
   border-radius: 50%;
   background: radial-gradient(circle, rgba(15, 23, 42, 0.06), rgba(255, 255, 255, 0));
-  z-index: 0;
+  z-index: -1;
   top: clamp(-35px, -6vw, -60px);
 }
 
 .loading-logo {
+  position: relative;
   width: clamp(120px, 24vw, 200px);
   height: auto;
   animation: pulse 2s infinite;
@@ -3002,6 +3003,7 @@ section {
 }
 
 .loading-text {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
