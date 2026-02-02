@@ -312,6 +312,19 @@ section {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hot-today-card::after {
+  content: '';
+  position: absolute;
+  inset: -40% -10% auto -10%;
+  height: 120%;
+  background: radial-gradient(circle at top, rgba(231, 76, 60, 0.25), transparent 60%);
+  opacity: 0.55;
+  pointer-events: none;
+  animation: hotPulse 3s ease-in-out infinite;
 }
 
 .hot-today-header {
@@ -323,8 +336,9 @@ section {
 
 .hot-today-header h2 {
   margin: 0;
-  color: var(--primary-color);
-  font-size: 1.2rem;
+  color: var(--error-color);
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
 }
 
 .hot-today-subtitle {
@@ -353,18 +367,6 @@ section {
   color: var(--primary-color);
 }
 
-.hot-today-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  letter-spacing: 0.01em;
-}
-
 .hot-today-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -373,7 +375,7 @@ section {
 
 .hot-today-item {
   border-radius: 14px;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(231, 76, 60, 0.35);
   background: var(--card-background);
   padding: 0.85rem 0.95rem;
   display: flex;
@@ -385,12 +387,28 @@ section {
   font-family: inherit;
   appearance: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.hot-today-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(231, 76, 60, 0.12), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .hot-today-item:hover,
 .hot-today-item:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 22px rgba(231, 76, 60, 0.2);
+}
+
+.hot-today-item:hover::after,
+.hot-today-item:focus-visible::after {
+  opacity: 1;
 }
 
 .hot-today-top {
@@ -407,14 +425,17 @@ section {
 }
 
 .hot-today-chip {
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   letter-spacing: 0.08em;
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(231, 76, 60, 0.7);
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: #e74c3c;
   background: transparent;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(231, 76, 60, 0.45);
+  animation: hotFlicker 1.8s ease-in-out infinite;
 }
 
 .hot-today-name {
@@ -472,6 +493,32 @@ section {
 
   .hot-today-actions {
     justify-content: flex-start;
+  }
+}
+
+@keyframes hotPulse {
+  0% {
+    opacity: 0.35;
+    transform: translateY(-6px);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 0.4;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes hotFlicker {
+  0%, 100% {
+    text-shadow: 0 0 6px rgba(231, 76, 60, 0.4);
+    transform: translateY(0);
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(231, 76, 60, 0.7);
+    transform: translateY(-1px);
   }
 }
 

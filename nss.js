@@ -1294,16 +1294,6 @@ function renderHotToday(stocks) {
     }
   }
 
-  const timeEl = document.getElementById('hotTodayTime');
-  if (timeEl) {
-    const timeLabel = new Intl.DateTimeFormat('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    }).format(new Date());
-    setNumberText(timeEl, formatTimeLabel(timeLabel, getCurrentLanguage()));
-  }
-
   const items = getHotToday(stocks, 6);
   grid.innerHTML = '';
 
