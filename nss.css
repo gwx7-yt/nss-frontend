@@ -2852,7 +2852,7 @@ section {
   border-radius: 2px;
 }
 
-/* NSS Explanation Styles */
+/* Arthyq Explanation Styles */
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -3217,7 +3217,7 @@ section {
   left: 0;
   width: 100%;
   height: 100%;
-  background: #ffffff;
+  background: radial-gradient(circle at top, #f8fafc 0%, #ffffff 55%, #eef2ff 100%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -3234,18 +3234,11 @@ section {
   align-items: center;
   gap: clamp(0.75rem, 1.5vw, 1.1rem);
   transform: translateY(clamp(-12px, -2vw, -20px));
-  padding: 1.5rem;
-}
-
-.loading-content::before {
-  content: "";
-  position: absolute;
-  width: clamp(180px, 40vw, 320px);
-  height: clamp(180px, 40vw, 320px);
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(15, 23, 42, 0.06), rgba(255, 255, 255, 0));
-  z-index: -1;
-  top: clamp(-35px, -6vw, -60px);
+  padding: clamp(1.25rem, 2vw, 1.75rem) clamp(1.5rem, 3vw, 2.5rem);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: clamp(18px, 3vw, 28px);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(6px);
 }
 
 .loading-logo {
@@ -3253,7 +3246,12 @@ section {
   width: clamp(120px, 24vw, 200px);
   height: auto;
   animation: pulse 2s infinite;
-  filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.12));
+  border-radius: clamp(18px, 4vw, 32px);
+  padding: clamp(0.35rem, 1vw, 0.75rem);
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
+  object-fit: contain;
+  display: block;
   z-index: 1;
 }
 

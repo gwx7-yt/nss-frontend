@@ -1,10 +1,10 @@
-# Nepal Stock Simulator | Learn NEPSE Trading in Nepal
+# Arthyq | Learn NEPSE Trading in Nepal
 
 Live site: https://nepalstocksim.pages.dev  
 Instagram: https://instagram.com/nepalstocksimulator  
 Contact: nepalstocksimulator@gmail.com
 
-Nepal Stock Simulator is a free NEPSE trading simulator for students and beginners who want to learn investing in Nepal without risking real money. It teaches how the Nepal Stock Exchange works using a simple credit based practice flow, a clean interface, and helpful insights for smarter decisions.
+Arthyq is a free NEPSE trading simulator for students and beginners who want to learn investing in Nepal without risking real money. It teaches how the Nepal Stock Exchange works using a simple credit based practice flow, a clean interface, and helpful insights for smarter decisions.
 
 The goal is simple. Make financial literacy in Nepal practical and accessible. Users can explore virtual stock trading, read market summaries, track portfolio performance, and build confidence before touching real NEPSE trades. This is a learning tool first and a simulator second, designed to build habits like patience, basic analysis, and risk awareness.
 
@@ -18,11 +18,11 @@ If you have feedback, bug reports, or collaboration ideas, open an issue or emai
 
 ## Disclaimer
 
-Nepal Stock Simulator is an **educational simulation project** created to help students and beginners understand how the Nepal Stock Exchange (NEPSE) works.
+Arthyq is an **educational simulation project** created to help students and beginners understand how the Nepal Stock Exchange (NEPSE) works.
 
 This platform **does not support real trading** and **does not involve real money** in any form. All transactions, credits, balances, and portfolio data shown on the site are **purely virtual and simulated**.
 
-Nepal Stock Simulator:
+Arthyq:
 - Does **not** provide financial or investment advice  
 - Does **not** connect to real broker accounts  
 - Does **not** process payments or wallets  
