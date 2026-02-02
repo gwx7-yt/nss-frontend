@@ -2184,7 +2184,7 @@ const translations = {
         chartGameSectorHydro: "सिमुलेटेड हाइड्रो",
         chartGameSectorFinance: "सिमुलेटेड फाइनान्स",
         teamTitle: "हाम्रो टीम",
-        teamDescription: "Arthyq लाई मार्गदर्शन गर्ने र हाम्रो लगानीकर्ता समुदायलाई समर्थन गर्ने समर्पित टोलीलाई भेट्नुहोस्।",
+        teamDescription: "आर्थिक लाई मार्गदर्शन गर्ने र हाम्रो लगानीकर्ता समुदायलाई समर्थन गर्ने समर्पित टोलीलाई भेट्नुहोस्।",
         playgroundTitle: "प्लेग्राउन्ड",
         playgroundSubtitle: "NEPSE का सुरुवाती सिकाइका लागि बनाइएका अन्तरक्रियात्मक अनुभवहरू।",
         managementLabel: "व्यवस्थापन र सञ्चालन",
