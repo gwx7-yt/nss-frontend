@@ -818,6 +818,8 @@ async function tickHomeDashboard() {
     sectorMetrics: homeDashboardState.lastSectorMetrics,
     indexChange: null
   });
+
+  renderHotToday(priceVolume);
 }
 
 function refreshHomeDashboardLocale() {
@@ -842,6 +844,10 @@ function refreshHomeDashboardLocale() {
       sectorMetrics: homeDashboardState.lastSectorMetrics,
       indexChange: null
     });
+  }
+
+  if (homeDashboardState.latestPriceVolume) {
+    renderHotToday(homeDashboardState.latestPriceVolume);
   }
 }
 
@@ -1202,6 +1208,170 @@ function updateTodayCard({ marketOpen, breadth, sectorMetrics, indexChange }) {
   badgeEl.textContent = getTranslationValue(sentiment, sentiment);
   badgeEl.classList.remove('bullish', 'bearish', 'mixed');
   badgeEl.classList.add(sentiment);
+}
+
+function computeHotScore(stock) {
+  const volume = toNum(stock?.totalTradeQuantity ?? stock?.totalTradedQuantity ?? 0);
+  const change = toNum(stock?.percentageChange ?? stock?.changePercent ?? stock?.percentage_change ?? stock?.change ?? 0);
+  const safeVolume = Number.isFinite(volume) ? volume : 0;
+  const safeChange = Number.isFinite(change) ? Math.abs(change) : 0;
+  const score = Math.log10(safeVolume + 1) * (safeChange + 0.2);
+  return Number.isFinite(score) ? score : 0;
+}
+
+function getHotToday(stocks, count = 6) {
+  if (!Array.isArray(stocks)) {
+    return [];
+  }
+  const mapped = stocks.map((stock, index) => ({
+    stock,
+    index,
+    score: computeHotScore(stock)
+  }));
+  mapped.sort((a, b) => {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    return a.index - b.index;
+  });
+  return mapped.slice(0, count).map(item => item.stock);
+}
+
+function formatCompactNumber(value) {
+  const numeric = toNum(value);
+  if (!Number.isFinite(numeric)) {
+    return '—';
+  }
+  const abs = Math.abs(numeric);
+  let divisor = 1;
+  let suffix = '';
+  if (abs >= 1_000_000_000) {
+    divisor = 1_000_000_000;
+    suffix = 'B';
+  } else if (abs >= 1_000_000) {
+    divisor = 1_000_000;
+    suffix = 'M';
+  } else if (abs >= 1_000) {
+    divisor = 1_000;
+    suffix = 'K';
+  }
+
+  const currentLanguage = getCurrentLanguage();
+  if (!suffix) {
+    return formatNumber(numeric, { decimals: 0, useCommas: true }, currentLanguage);
+  }
+  const scaled = numeric / divisor;
+  const formatted = formatNumber(scaled, { decimals: 1, useCommas: true }, currentLanguage);
+  return `${formatted.replace(/\\.0$/, '')}${suffix}`;
+}
+
+function renderHotToday(stocks) {
+  const container = document.getElementById('hot-today');
+  const grid = document.getElementById('hotTodayContent');
+  if (!container || !grid) {
+    return;
+  }
+
+  const viewLink = document.getElementById('hotTodayViewMarket');
+  if (viewLink) {
+    const marketSection = document.getElementById('market');
+    if (!marketSection) {
+      viewLink.style.display = 'none';
+    } else {
+      viewLink.style.display = 'inline-flex';
+      if (!viewLink.dataset.bound) {
+        viewLink.dataset.bound = 'true';
+        viewLink.addEventListener('click', (event) => {
+          if (typeof showSection === 'function') {
+            event.preventDefault();
+            showSection('market');
+            if (typeof updateActiveSection === 'function') {
+              updateActiveSection('market');
+            }
+          }
+        });
+      }
+    }
+  }
+
+  const timeEl = document.getElementById('hotTodayTime');
+  if (timeEl) {
+    const timeLabel = new Intl.DateTimeFormat('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).format(new Date());
+    setNumberText(timeEl, formatTimeLabel(timeLabel, getCurrentLanguage()));
+  }
+
+  const items = getHotToday(stocks, 6);
+  grid.innerHTML = '';
+
+  if (!items.length) {
+    const empty = document.createElement('p');
+    empty.className = 'home-muted';
+    empty.textContent = 'No market data available.';
+    grid.appendChild(empty);
+    return;
+  }
+
+  items.forEach(stock => {
+    const symbol = stock?.symbol || stock?.companySymbol || '—';
+    const name = stock?.securityName || stock?.companyName || stock?.name || symbol;
+    const ltpRaw = stock?.lastTradedPrice ?? stock?.ltp ?? stock?.price;
+    const ltp = ltpRaw === null || ltpRaw === undefined || ltpRaw === '' ? NaN : toNum(ltpRaw);
+    const pct = toNum(stock?.percentageChange ?? stock?.changePercent ?? stock?.percentage_change ?? stock?.change ?? 0);
+    const volume = stock?.totalTradeQuantity ?? stock?.totalTradedQuantity ?? 0;
+
+    const pctClass = Number.isFinite(pct)
+      ? (Math.abs(pct) < 0.05 ? 'neutral' : pct > 0 ? 'gain' : pct < 0 ? 'loss' : 'neutral')
+      : 'neutral';
+    const pctDisplay = Number.isFinite(pct)
+      ? formatPercent(pct, getCurrentLanguage(), { decimals: 2, showSign: true })
+      : '—';
+
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'hot-today-item';
+    card.title = 'Ranked by volume + movement today';
+    card.innerHTML = `
+      <div class="hot-today-top">
+        <span class="hot-today-symbol">${symbol}</span>
+        <span class="hot-today-chip">HOT</span>
+      </div>
+      <div class="hot-today-name">${name}</div>
+      <div class="hot-today-stats">
+        <div class="hot-today-stat">
+          <span class="hot-today-stat-label">LTP</span>
+          <span class="np-number">${Number.isFinite(ltp) ? formatPrice(ltp, getCurrentLanguage()) : '—'}</span>
+        </div>
+        <div class="hot-today-stat hot-today-change ${pctClass}">
+          <span class="np-number">${pctDisplay}</span>
+        </div>
+        <div class="hot-today-stat">
+          <span class="hot-today-stat-label">Vol</span>
+          <span class="np-number">${formatCompactNumber(volume)}</span>
+        </div>
+      </div>
+    `;
+
+    if (symbol && typeof openTradeModal === 'function') {
+      card.addEventListener('click', () => openTradeModal(symbol));
+    } else if (symbol) {
+      card.addEventListener('click', () => {
+        if (typeof showSection === 'function') {
+          showSection('market');
+          if (typeof updateActiveSection === 'function') {
+            updateActiveSection('market');
+          }
+        } else {
+          window.location.hash = '#market';
+        }
+      });
+    }
+
+    grid.appendChild(card);
+  });
 }
 
 function getTopSectorLabel(sectorMetrics) {

@@ -308,6 +308,173 @@ section {
   font-size: 1.05rem;
 }
 
+.hot-today-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.hot-today-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hot-today-header h2 {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+.hot-today-subtitle {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.hot-today-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.hot-today-link {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.hot-today-link:hover,
+.hot-today-link:focus-visible {
+  color: var(--primary-color);
+}
+
+.hot-today-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+}
+
+.hot-today-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.hot-today-item {
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background: var(--card-background);
+  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  font-family: inherit;
+  appearance: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hot-today-item:hover,
+.hot-today-item:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.hot-today-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.hot-today-symbol {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.hot-today-chip {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: transparent;
+}
+
+.hot-today-name {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hot-today-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  font-size: 0.78rem;
+  color: var(--text-color);
+  gap: 0.5rem;
+}
+
+.hot-today-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.hot-today-change {
+  justify-content: center;
+}
+
+.hot-today-stat:last-child {
+  justify-content: flex-end;
+}
+
+.hot-today-stat-label {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.hot-today-change.neutral {
+  color: var(--text-muted);
+}
+
+@media (max-width: 780px) {
+  .hot-today-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hot-today-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hot-today-actions {
+    justify-content: flex-start;
+  }
+}
+
 /* Stats Cards */
 .stats-cards {
   display: grid;
