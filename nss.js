@@ -1860,7 +1860,7 @@ async function updatePortfolio() {
       <td class="portfolio-align-right ${profitLossClass}">
         <div class="portfolio-pl">
           <span>${wrapNumberDisplay(profitLossAmountDisplay)} ${profitLossSymbol}</span>
-          <span>${wrapNumberDisplay(profitLossPercentDisplay)}</span>
+          <span>(${wrapNumberDisplay(profitLossPercentDisplay)})</span>
         </div>
       </td>
       <td><button onclick="sellInvestment('${holding.symbol}', this)" class="sell-btn">${sellLabel}</button></td>
@@ -1873,7 +1873,7 @@ async function updatePortfolio() {
   const totalValueElement = document.getElementById("portfolioTotalValue");
   const totalInvestedElement = document.getElementById("portfolioTotalInvested");
   const overallPlElement = document.getElementById("portfolioOverallPl");
-  const todayPlElement = document.getElementById("portfolioTodayPl");
+  const positionsElement = document.getElementById("portfolioPositionsCount");
 
   if (totalValueElement) {
     setNumberText(totalValueElement, formatNumber(totalCurrentValue, { decimals: 2, useCommas: true }, currentLanguage));
@@ -1894,12 +1894,12 @@ async function updatePortfolio() {
     overallPlElement.classList.remove('gain', 'loss', 'neutral');
     overallPlElement.classList.add(overallPl > 0 ? 'gain' : overallPl < 0 ? 'loss' : 'neutral');
   }
-  if (todayPlElement) {
-    const todayPl = 0;
-    const todayPlDisplay = formatNumber(todayPl, { decimals: 2, useCommas: true }, currentLanguage);
-    setNumberText(todayPlElement, todayPlDisplay);
-    todayPlElement.classList.remove('gain', 'loss', 'neutral');
-    todayPlElement.classList.add('neutral');
+  if (positionsElement) {
+    const positionsCount = holdingsWithPrices.length;
+    const positionsDisplay = formatNumber(positionsCount, { decimals: 0, useCommas: true }, currentLanguage);
+    setNumberText(positionsElement, positionsDisplay);
+    positionsElement.classList.remove('gain', 'loss', 'neutral');
+    positionsElement.classList.add('neutral');
   }
 
   // Update summary stats in the home section
@@ -1926,7 +1926,7 @@ async function updatePortfolio() {
     if (recentTransactions.length === 0) {
       const emptyItem = document.createElement("div");
       emptyItem.className = "portfolio-transaction-item";
-      emptyItem.innerHTML = `<span class="portfolio-transaction-meta">${getTranslationValue('portfolioNoTransactions', 'No recent transactions yet.')}</span>`;
+      emptyItem.innerHTML = `<span class="portfolio-transaction-secondary">${getTranslationValue('portfolioNoTransactions', 'No recent transactions yet.')}</span>`;
       transactionsContainer.appendChild(emptyItem);
     } else {
       recentTransactions.forEach((transaction) => {
@@ -1952,10 +1952,10 @@ async function updatePortfolio() {
           <div class="portfolio-transaction-left">
             <span class="portfolio-transaction-badge ${badgeClass}">${transaction.type}</span>
             <div>
-              <div class="portfolio-transaction-meta">
+              <div class="portfolio-transaction-primary">
                 ${transaction.symbol} · ${wrapNumberDisplay(quantityDisplay)} @ ${wrapNumberDisplay(priceDisplay)}
               </div>
-              <div class="portfolio-transaction-meta">
+              <div class="portfolio-transaction-secondary">
                 Total: ${wrapNumberDisplay(totalDisplay)} ${creditsDisplay ? `· ${creditsDisplay}` : ''}
               </div>
             </div>
@@ -2166,7 +2166,7 @@ const translations = {
         portfolioTotalValue: 'Total Value',
         portfolioTotalInvested: 'Total Invested',
         portfolioOverallPl: 'Overall P/L',
-        portfolioTodayPlEst: 'Today P/L (est.)',
+        portfolioPositions: 'Positions',
         portfolioSortBy: 'Sort by',
         portfolioSortPl: 'P/L',
         portfolioSortValue: 'Value',
@@ -2398,7 +2398,7 @@ const translations = {
         portfolioTotalValue: 'कुल मूल्य',
         portfolioTotalInvested: 'कुल लगानी',
         portfolioOverallPl: 'समग्र नाफा/नोक्सान',
-        portfolioTodayPlEst: 'आजको नाफा/नोक्सान (अनुमानित)',
+        portfolioPositions: 'होल्डिङ्स',
         portfolioSortBy: 'क्रमबद्ध गर्नुहोस्',
         portfolioSortPl: 'नाफा/नोक्सान',
         portfolioSortValue: 'मूल्य',
@@ -3357,11 +3357,11 @@ function updateTableHeaders(language) {
     if (investmentHistory) {
         const headers = investmentHistory.querySelectorAll('th');
         if (headers.length > 0) {
-            headers[0].textContent = texts.symbol + ' 🏢';
-            headers[1].textContent = texts.portfolioAvgBuy + ' 💰';
-            headers[2].textContent = texts.portfolioLtp + ' 📈';
-            headers[3].textContent = texts.portfolioQty + ' 📊';
-            headers[4].textContent = texts.portfolioValue + ' 💸';
+            headers[0].textContent = texts.symbol;
+            headers[1].textContent = texts.portfolioAvgBuy;
+            headers[2].textContent = texts.portfolioLtp;
+            headers[3].textContent = texts.portfolioQty;
+            headers[4].textContent = texts.portfolioValue;
             headers[5].textContent = texts.portfolioPl + ' 📊';
             headers[6].textContent = texts.action + ' ⚡';
         }
