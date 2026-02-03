@@ -128,30 +128,6 @@ h1, h2, h3, h4, h5, h6 {
   height: 40px;
 }
 
-.add-credits-btn {
-  background-color: var(--white);
-  color: var(--text-color);
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 1.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.add-credits-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
-}
-
-.add-credits-btn:focus-visible {
-  outline: 3px solid rgba(52, 152, 219, 0.5);
-  outline-offset: 3px;
-}
 
 /* Main Content */
 main {
@@ -2978,11 +2954,6 @@ section {
   color: var(--text-color);
 }
 
-[data-theme="dark"] .add-credits-btn {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: var(--text-color);
-}
-
 [data-theme="dark"] .rankings-list,
 [data-theme="dark"] .table-container,
 [data-theme="dark"] .market-content table,
@@ -3277,210 +3248,6 @@ section {
   }
 }
 
-/* Bonus Modal Styles */
-.bonus-modal {
-    display: flex;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 2000;
-    backdrop-filter: blur(4px);
-    justify-content: center;
-    align-items: center;
-}
-
-.bonus-modal-content {
-    background: var(--card-background);
-    border-radius: var(--border-radius);
-    padding: 2rem;
-    width: 90%;
-    max-width: 800px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    position: relative;
-    animation: modalSlideIn 0.3s ease;
-}
-
-@keyframes modalSlideIn {
-    from {
-        transform: translateY(-20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.bonus-section {
-    background: rgba(0, 180, 216, 0.1);
-    padding: 2rem;
-    border-radius: var(--border-radius);
-    text-align: center;
-}
-
-.bonus-section h2 {
-    color: var(--primary-color);
-    margin-bottom: 1.5rem;
-    font-size: 1.8rem;
-}
-
-.bonus-btn, .spin-btn {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 1rem 2rem;
-    border-radius: 50px;
-    font-size: 1.1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin: 1rem 0;
-}
-
-.bonus-btn:hover, .spin-btn:hover {
-    background: var(--secondary-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.bonus-btn:disabled, .spin-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.timer {
-    color: var(--text-color);
-    font-size: 0.9rem;
-    margin-top: 1rem;
-}
-
-.wheel-container {
-    position: relative;
-    width: 300px;
-    height: 300px;
-    margin: 20px auto;
-}
-
-.wheel-pointer {
-    position: absolute;
-    top: -18px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-top: 25px solid #FF0000;
-    z-index: 2;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-}
-
-/* Spin result overlay */
-.spin-wheel {
-    position: relative;
-}
-
-.spin-wheel.blur .wheel-container,
-.spin-wheel.blur .spin-btn {
-    filter: blur(4px);
-}
-
-.spin-result {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(5px);
-    border-radius: var(--border-radius);
-    font-weight: bold;
-    font-size: 1.2rem;
-    color: var(--text-color);
-    z-index: 3;
-}
-
-.spin-result.hidden {
-    display: none;
-}
-
-/* Confetti animation */
-.confetti {
-    position: fixed;
-    top: -10px;
-    width: 8px;
-    height: 8px;
-    opacity: 0.9;
-    pointer-events: none;
-    animation: confetti-fall 3s linear forwards;
-}
-
-@keyframes confetti-fall {
-    0% { transform: translateY(0) rotate(0deg); }
-    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-}
-
-#wheelCanvas {
-    border-radius: 50%;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-    background-color: #fff;
-}
-
-.close-modal {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    color: var(--text-color);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    transition: transform 0.3s ease;
-}
-
-.close-modal:hover {
-    transform: scale(1.1);
-}
-
-/* Dark Mode Adjustments */
-[data-theme="dark"] .bonus-modal-content {
-    background: var(--card-background);
-}
-
-[data-theme="dark"] .bonus-section {
-    background: rgba(100, 181, 246, 0.1);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .bonus-modal-content {
-        grid-template-columns: 1fr;
-        max-width: 90%;
-        gap: 1rem;
-    }
-
-    .wheel-container {
-        width: 250px;
-        height: 250px;
-    }
-
-    .bonus-section {
-        padding: 1rem;
-    }
-
-    .bonus-section h2 {
-        font-size: 1.5rem;
-    }
-}
-
 /* Loading Screen */
 .loading-screen {
   position: fixed;
@@ -3734,10 +3501,6 @@ section {
   color: #bdc3c7;
 }
 
-[data-theme="dark"] #wheelCanvas {
-    background-color: #2a2a2a;
-}
-
 /* Responsive breakpoints */
 @media (max-width: 1200px) {
   .stats-cards {
@@ -3824,15 +3587,7 @@ section {
     grid-template-columns: 1fr;
   }
   
-  .bonus-modal-content {
-    width: 90%;
-    padding: 1rem;
-  }
   
-  .wheel-container {
-    width: 250px;
-    height: 250px;
-  }
 }
 
 @media (max-width: 576px) {
@@ -3846,12 +3601,6 @@ section {
   }
   
   .credits-display {
-    font-size: 0.8rem;
-  }
-  
-  .add-credits-btn {
-    width: 20px;
-    height: 20px;
     font-size: 0.8rem;
   }
   
@@ -3938,7 +3687,6 @@ section {
 /* Print styles */
 @media print {
   .top-nav,
-  .add-credits-btn,
   .trade-btn,
   .sell-btn {
     display: none;
@@ -4672,5 +4420,405 @@ section {
     border-color: rgba(148, 197, 255, 0.55);
     box-shadow: 0 12px 26px rgba(2, 6, 23, 0.5), 0 0 0 6px rgba(96, 165, 250, 0.2);
     background: rgba(15, 23, 42, 0.9);
+  }
+}
+
+/* === Polish Pass === */
+:root {
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --shadow-sm: 0 8px 20px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 16px 34px rgba(15, 23, 42, 0.16);
+  --transition-fast: 180ms ease;
+  --gain-color: #1f9b5f;
+  --loss-color: #d24d4d;
+  --card-border: rgba(148, 163, 184, 0.2);
+  --table-head-text: #3b4a5c;
+}
+
+[data-theme="dark"] {
+  --card-border: rgba(148, 163, 184, 0.18);
+  --table-head-text: rgba(226, 232, 240, 0.85);
+}
+
+.home-card,
+.market-overview,
+.sector-categories,
+.market-sort,
+.gainers-table,
+.losers-table,
+.all-stocks,
+.table-container,
+.portfolio-summary-card,
+.portfolio-transactions,
+.portfolio-graph-card,
+.about-card,
+.team-card,
+.playground-card,
+.settings-card,
+.tutorial-content,
+.chart-game-shell,
+.chart-game-results-card,
+.chart-game-scoreboard .score-item,
+.search-results,
+.no-investments,
+.trade-modal-content {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--card-border);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.table-container,
+.all-stocks {
+  position: relative;
+}
+
+.table-container.scroll-hint::after,
+.all-stocks.scroll-hint::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 42px;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(270deg, rgba(245, 245, 245, 0.95), rgba(245, 245, 245, 0));
+}
+
+[data-theme="dark"] .table-container.scroll-hint::after,
+[data-theme="dark"] .all-stocks.scroll-hint::after {
+  background: linear-gradient(270deg, rgba(18, 18, 18, 0.92), rgba(18, 18, 18, 0));
+}
+
+.nav-icon,
+.trade-btn,
+.sell-btn,
+.buy-more-btn,
+.login-btn,
+.register-btn,
+.modal-btn,
+.sort-btn,
+.sector-chip,
+.portfolio-sort,
+.portfolio-sort-btn,
+.start-investing-btn,
+.chart-game-btn,
+.playground-primary-btn,
+.quiz-primary-btn,
+.quiz-secondary-btn,
+.tutorial-btn {
+  border-radius: var(--radius-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+  min-height: 44px;
+}
+
+.nav-icon.active {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: var(--shadow-md);
+}
+
+.credits-display {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--card-border);
+}
+
+.nav-icon:active,
+.trade-btn:active,
+.sell-btn:active,
+.buy-more-btn:active,
+.login-btn:active,
+.register-btn:active,
+.modal-btn:active,
+.sort-btn:active,
+.sector-chip:active,
+.portfolio-sort-btn:active,
+.start-investing-btn:active,
+.chart-game-btn:active,
+.playground-primary-btn:active,
+.quiz-primary-btn:active,
+.quiz-secondary-btn:active,
+.tutorial-btn:active {
+  transform: scale(0.99);
+}
+
+@media (hover: hover) {
+  .nav-icon:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: var(--shadow-md);
+    background-color: rgba(255, 255, 255, 0.16);
+  }
+
+  .home-card:hover,
+  .market-overview:hover,
+  .sector-categories:hover,
+  .market-sort:hover,
+  .gainers-table:hover,
+  .losers-table:hover,
+  .all-stocks:hover,
+  .table-container:hover,
+  .portfolio-summary-card:hover,
+  .portfolio-transactions:hover,
+  .portfolio-graph-card:hover,
+  .about-card:hover,
+  .team-card:hover,
+  .playground-card:hover,
+  .settings-card:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: var(--shadow-md);
+  }
+
+  .sort-btn:hover,
+  .sector-chip:hover,
+  .portfolio-sort-btn:hover,
+  .trade-btn:hover,
+  .sell-btn:hover,
+  .buy-more-btn:hover,
+  .login-btn:hover,
+  .register-btn:hover,
+  .modal-btn:hover,
+  .start-investing-btn:hover,
+  .chart-game-btn:hover,
+  .playground-primary-btn:hover,
+  .quiz-primary-btn:hover,
+  .quiz-secondary-btn:hover,
+  .tutorial-btn:hover {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+body.polish-enter .home-card,
+body.polish-enter .market-overview,
+body.polish-enter .sector-categories,
+body.polish-enter .market-sort,
+body.polish-enter .gainers-table,
+body.polish-enter .losers-table,
+body.polish-enter .all-stocks,
+body.polish-enter .table-container,
+body.polish-enter .portfolio-summary-card,
+body.polish-enter .portfolio-transactions,
+body.polish-enter .portfolio-graph-card,
+body.polish-enter .about-card,
+body.polish-enter .team-card,
+body.polish-enter .playground-card,
+body.polish-enter .settings-card {
+  animation: polishFade 0.45s ease both;
+}
+
+@keyframes polishFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gain {
+  color: var(--gain-color);
+}
+
+.loss {
+  color: var(--loss-color);
+}
+
+#investmentHistory .gain,
+#investmentHistory .loss,
+.portfolio-summary-value.gain,
+.portfolio-summary-value.loss {
+  color: inherit;
+}
+
+#investmentHistory .gain,
+.portfolio-summary-value.gain,
+.portfolio-transaction-badge.buy {
+  color: var(--gain-color);
+}
+
+#investmentHistory .loss,
+.portfolio-summary-value.loss,
+.portfolio-transaction-badge.sell {
+  color: var(--loss-color);
+}
+
+#investmentHistory .portfolio-neutral,
+.portfolio-summary-value.neutral {
+  color: #64748b;
+}
+
+#investmentHistory {
+  font-size: 0.95rem;
+}
+
+#investmentHistory th {
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  color: var(--table-head-text);
+}
+
+.portfolio-note,
+.portfolio-graph-helper,
+.portfolio-transaction-secondary,
+.portfolio-transaction-time,
+.home-muted,
+.home-updated,
+.hot-today-subtitle,
+.sector-empty,
+.selected-sector,
+.playground-card-header p,
+.playground-card-description {
+  color: color-mix(in srgb, var(--text-muted) 92%, #111827);
+}
+
+.portfolio-sort {
+  border: 1px solid var(--card-border);
+}
+
+.portfolio-sort-label {
+  color: var(--text-muted);
+}
+
+.toast {
+  max-width: min(420px, calc(100% - 2rem));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.toast.visible {
+  bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 768px) {
+  .nav-content {
+    gap: 0.75rem;
+  }
+
+  .portfolio-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #investmentHistory {
+    min-width: 640px;
+  }
+
+  .portfolio-controls {
+    justify-content: center;
+  }
+
+  .portfolio-sort {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 430px) {
+  .top-nav {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .nav-content {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-left {
+    width: 100%;
+    justify-content: space-around;
+    flex-wrap: wrap;
+  }
+
+  .nav-right {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .credits-display {
+    width: min(100%, 340px);
+    justify-content: center;
+  }
+
+  .portfolio-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 360px) {
+  .portfolio-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .credits-display {
+    padding: 0.4rem 0.6rem;
+    gap: 0.35rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  section,
+  .hot-today-card::after,
+  .hot-today-chip,
+  .card-icon,
+  .feature-icon,
+  .loading-logo,
+  .loading-ellipsis::after,
+  .tutorial-step {
+    animation: none !important;
+  }
+
+  body.polish-enter .home-card,
+  body.polish-enter .market-overview,
+  body.polish-enter .sector-categories,
+  body.polish-enter .market-sort,
+  body.polish-enter .gainers-table,
+  body.polish-enter .losers-table,
+  body.polish-enter .all-stocks,
+  body.polish-enter .table-container,
+  body.polish-enter .portfolio-summary-card,
+  body.polish-enter .portfolio-transactions,
+  body.polish-enter .portfolio-graph-card,
+  body.polish-enter .about-card,
+  body.polish-enter .team-card,
+  body.polish-enter .playground-card,
+  body.polish-enter .settings-card {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .nav-icon,
+  .home-card,
+  .market-overview,
+  .sector-categories,
+  .market-sort,
+  .gainers-table,
+  .losers-table,
+  .all-stocks,
+  .table-container,
+  .portfolio-summary-card,
+  .portfolio-transactions,
+  .portfolio-graph-card,
+  .about-card,
+  .team-card,
+  .playground-card,
+  .settings-card,
+  .trade-btn,
+  .sell-btn,
+  .buy-more-btn,
+  .login-btn,
+  .register-btn,
+  .modal-btn,
+  .sort-btn,
+  .sector-chip,
+  .portfolio-sort-btn,
+  .start-investing-btn,
+  .chart-game-btn,
+  .playground-primary-btn,
+  .quiz-primary-btn,
+  .quiz-secondary-btn,
+  .tutorial-btn {
+    transition: none !important;
   }
 }
