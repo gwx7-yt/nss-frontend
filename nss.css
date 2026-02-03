@@ -2189,6 +2189,83 @@ section {
   box-shadow: var(--shadow);
 }
 
+.portfolio-graph-card {
+  margin-top: 1.25rem;
+  background: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.portfolio-graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.portfolio-graph-title {
+  font-size: 1.1rem;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.portfolio-graph-legend {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.portfolio-graph-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.portfolio-graph-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.portfolio-graph-legend-swatch.value {
+  background: rgba(0, 180, 216, 0.9);
+}
+
+.portfolio-graph-legend-swatch.invested {
+  background: rgba(156, 163, 175, 0.9);
+}
+
+.portfolio-graph-body {
+  min-height: 180px;
+  position: relative;
+}
+
+.portfolio-graph-svg {
+  width: 100%;
+  height: 200px;
+  display: block;
+}
+
+.portfolio-graph-empty {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.portfolio-graph-label {
+  font-size: 0.75rem;
+  fill: #6b7280;
+}
+
 .portfolio-transactions-title {
   font-size: 1.1rem;
   margin-bottom: 0.75rem;
