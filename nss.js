@@ -9,6 +9,7 @@ let currentSortOption = 'name-asc';
 let currentSearchTerm = '';
 let navigationInitialized = false;
 let currentPortfolioSort = 'pl';
+let portfolioRenderToken = 0;
 
 
 // Default credits given to new users (10 lakh)
@@ -1855,6 +1856,7 @@ function initPortfolioSortControls() {
 }
 
 async function updatePortfolio() {
+  const renderToken = ++portfolioRenderToken;
   const investments = JSON.parse(localStorage.getItem("investments")) || [];
   const transactions = getStoredTransactions();
   const holdings = computeHoldings(investments, transactions);
@@ -1940,6 +1942,9 @@ async function updatePortfolio() {
         console.error("Error fetching price for", holding.symbol, ":", data.error);
         continue;
       }
+      if (renderToken !== portfolioRenderToken) {
+        return;
+      }
 
       const currentPrice = parseFloat(data.price);
       const quantity = holding.netQuantity;
@@ -1966,6 +1971,10 @@ async function updatePortfolio() {
     }
   }
 
+  if (renderToken !== portfolioRenderToken) {
+    return;
+  }
+
   holdingsWithPrices.sort((a, b) => {
     switch (currentPortfolioSort) {
       case 'value':
@@ -1981,6 +1990,9 @@ async function updatePortfolio() {
   });
 
   holdingsWithPrices.forEach((holding) => {
+    if (renderToken !== portfolioRenderToken) {
+      return;
+    }
     const row = document.createElement("tr");
     const profitLossClass = holding.profitLossAmount > 0 ? 'gain' : holding.profitLossAmount < 0 ? 'loss' : 'portfolio-neutral';
     const profitLossSymbol = holding.profitLossAmount > 0 ? '📈' : holding.profitLossAmount < 0 ? '📉' : '➖';
@@ -2012,6 +2024,10 @@ async function updatePortfolio() {
     `;
     tableBody.appendChild(row);
   });
+
+  if (renderToken !== portfolioRenderToken) {
+    return;
+  }
 
   updatePortfolioSortControls();
 
