@@ -8,6 +8,7 @@ let allStocksData = [];
 let currentSortOption = 'name-asc';
 let currentSearchTerm = '';
 let navigationInitialized = false;
+let currentPortfolioSort = 'pl';
 
 
 // Default credits given to new users (10 lakh)
@@ -105,6 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initCredits();
   upgradeOldUsers();
   updatePortfolio();
+  initPortfolioSortControls();
   initNavigation();
   initSortControls();
   initDigitNormalizationObserver();
@@ -187,7 +189,7 @@ function fetchTopLosers() {
 }
 
 function initCredits() {
-  const credits = parseInt(localStorage.getItem('credits') || DEFAULT_CREDITS.toString());
+  const credits = parseFloat(localStorage.getItem('credits') || DEFAULT_CREDITS.toString());
   localStorage.setItem('credits', credits.toString());
 
   // Ensure a user object exists
@@ -208,8 +210,8 @@ function initCredits() {
 function updateCreditDisplay() {
   const creditBalance = document.getElementById('creditBalance');
   if (creditBalance) {
-    const credits = localStorage.getItem('credits') || DEFAULT_CREDITS.toString();
-    setNumberText(creditBalance, formatNumber(credits, { useCommas: true }, getCurrentLanguage()));
+    const credits = parseFloat(localStorage.getItem('credits') || DEFAULT_CREDITS.toString());
+    setNumberText(creditBalance, formatNumber(credits, { decimals: 2, useCommas: true }, getCurrentLanguage()));
   }
 }
 
@@ -269,7 +271,7 @@ function upgradeOldUsers() {
     localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('credits', user.credits.toString());
     const currentLanguage = getCurrentLanguage();
-    const creditsDisplay = formatNumber(DEFAULT_CREDITS, { decimals: 0, useCommas: true }, currentLanguage);
+    const creditsDisplay = formatNumber(DEFAULT_CREDITS, { decimals: 2, useCommas: true }, currentLanguage);
     showToast(`🎉 You've been upgraded to ${wrapNumberDisplay(creditsDisplay)} credits!`);
   }
 }
@@ -393,6 +395,7 @@ function confirmTrade() {
   }
 
   // Update credits
+  const creditsBefore = credits;
   credits -= total;
   localStorage.setItem("credits", credits.toString());
   updateCreditDisplay();
@@ -409,6 +412,17 @@ function confirmTrade() {
       const investments = JSON.parse(localStorage.getItem("investments")) || [];
       investments.push(investment);
       localStorage.setItem("investments", JSON.stringify(investments));
+
+  recordTransaction({
+    type: "BUY",
+    symbol,
+    quantity: shares.toString(),
+    price: price.toString(),
+    total: total.toString(),
+    timestampISO: new Date().toISOString(),
+    creditsBefore: creditsBefore.toString(),
+    creditsAfter: credits.toString()
+  });
 
   // Update UI
   updatePortfolio();
@@ -1581,19 +1595,162 @@ function showSection(sectionId) {
   }
 }
 
+function getStoredTransactions() {
+  const stored = localStorage.getItem("transactions");
+  if (!stored) {
+    const emptyList = [];
+    localStorage.setItem("transactions", JSON.stringify(emptyList));
+    return emptyList;
+  }
+  try {
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error("⚠️ Error parsing transactions:", error);
+    const emptyList = [];
+    localStorage.setItem("transactions", JSON.stringify(emptyList));
+    return emptyList;
+  }
+}
+
+function recordTransaction(transaction) {
+  const transactions = getStoredTransactions();
+  transactions.push(transaction);
+  localStorage.setItem("transactions", JSON.stringify(transactions));
+}
+
+function computeHoldings(investments, transactions) {
+  const bySymbol = new Map();
+
+  investments.forEach((investment) => {
+    if (!investment || !investment.symbol) {
+      return;
+    }
+    const quantity = parseFloat(investment.quantity) || 0;
+    const amount = parseFloat(investment.amount) || 0;
+    if (quantity <= 0) {
+      return;
+    }
+    if (!bySymbol.has(investment.symbol)) {
+      bySymbol.set(investment.symbol, { totalBoughtQty: 0, totalBoughtValue: 0, totalSoldQty: 0 });
+    }
+    const entry = bySymbol.get(investment.symbol);
+    entry.totalBoughtQty += quantity;
+    entry.totalBoughtValue += amount;
+  });
+
+  transactions.forEach((transaction) => {
+    if (!transaction || transaction.type !== "SELL") {
+      return;
+    }
+    const symbol = transaction.symbol;
+    if (!symbol) {
+      return;
+    }
+    const quantity = parseFloat(transaction.quantity) || 0;
+    if (quantity <= 0) {
+      return;
+    }
+    if (!bySymbol.has(symbol)) {
+      bySymbol.set(symbol, { totalBoughtQty: 0, totalBoughtValue: 0, totalSoldQty: 0 });
+    }
+    const entry = bySymbol.get(symbol);
+    entry.totalSoldQty += quantity;
+  });
+
+  const holdings = [];
+  bySymbol.forEach((data, symbol) => {
+    const netQuantity = Math.max(0, data.totalBoughtQty - data.totalSoldQty);
+    if (netQuantity <= 0) {
+      return;
+    }
+    const avgBuyPrice = data.totalBoughtQty > 0 ? data.totalBoughtValue / data.totalBoughtQty : 0;
+    const investedValue = avgBuyPrice * netQuantity;
+    holdings.push({
+      symbol,
+      netQuantity,
+      avgBuyPrice,
+      investedValue,
+      totalBoughtQty: data.totalBoughtQty
+    });
+  });
+
+  return holdings;
+}
+
+function formatPortfolioQuantity(quantity, language) {
+  const decimals = Number.isInteger(quantity) ? 0 : 4;
+  return formatNumber(quantity, { decimals, useCommas: true }, language);
+}
+
+function updatePortfolioSortControls() {
+  document.querySelectorAll('.portfolio-sort-btn').forEach((button) => {
+    const sortKey = button.getAttribute('data-sort');
+    button.classList.toggle('is-active', sortKey === currentPortfolioSort);
+  });
+}
+
+function initPortfolioSortControls() {
+  const buttons = document.querySelectorAll('.portfolio-sort-btn');
+  if (!buttons.length) {
+    return;
+  }
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const sortKey = button.getAttribute('data-sort');
+      if (sortKey) {
+        currentPortfolioSort = sortKey;
+        updatePortfolioSortControls();
+        updatePortfolio();
+      }
+    });
+  });
+  updatePortfolioSortControls();
+}
+
 async function updatePortfolio() {
   const investments = JSON.parse(localStorage.getItem("investments")) || [];
+  const transactions = getStoredTransactions();
+  const holdings = computeHoldings(investments, transactions);
   const tableBody = document.getElementById("investmentHistory");
   const tableContainer = document.querySelector(".table-container");
+  const summaryContainer = document.querySelector(".portfolio-summary");
+  const controlsContainer = document.querySelector(".portfolio-controls");
+  const actionsContainer = document.querySelector(".portfolio-actions");
+  const noteElement = document.querySelector(".portfolio-note");
+  const emptyState = document.querySelector(".portfolio-empty-state");
+  const transactionsContainer = document.getElementById("portfolioTransactions");
+  const transactionsWrapper = document.querySelector(".portfolio-transactions");
   
   if (!tableBody) return;
   
   const tbody = tableBody.getElementsByTagName('tbody')[0];
   tbody.innerHTML = "";
 
-  if (investments.length === 0) {
+  if (holdings.length === 0) {
     if (tableContainer) {
       tableContainer.style.display = "none";
+    }
+    if (summaryContainer) {
+      summaryContainer.style.display = "none";
+    }
+    if (controlsContainer) {
+      controlsContainer.style.display = "none";
+    }
+    if (actionsContainer) {
+      actionsContainer.style.display = "none";
+    }
+    if (noteElement) {
+      noteElement.style.display = "none";
+    }
+    if (transactionsContainer) {
+      transactionsContainer.innerHTML = "";
+    }
+    if (transactionsWrapper) {
+      transactionsWrapper.style.display = "none";
+    }
+    if (emptyState) {
+      emptyState.style.display = "block";
     }
     return;
   }
@@ -1601,100 +1758,229 @@ async function updatePortfolio() {
   if (tableContainer) {
     tableContainer.style.display = "block";
   }
+  if (summaryContainer) {
+    summaryContainer.style.display = "grid";
+  }
+  if (controlsContainer) {
+    controlsContainer.style.display = "flex";
+  }
+  if (actionsContainer) {
+    actionsContainer.style.display = "flex";
+  }
+  if (noteElement) {
+    noteElement.style.display = "block";
+  }
+  if (transactionsWrapper) {
+    transactionsWrapper.style.display = "block";
+  }
+  if (emptyState) {
+    emptyState.style.display = "none";
+  }
 
   let totalInvested = 0;
   let totalCurrentValue = 0;
   const currentLanguage = getCurrentLanguage();
+  const holdingsWithPrices = [];
 
-  for (let i = 0; i < investments.length; i += 1) {
-    const investment = investments[i];
+  for (let i = 0; i < holdings.length; i += 1) {
+    const holding = holdings[i];
     try {
-      const response = await fetch(`https://nss-c26z.onrender.com/StockPrice?symbol=${investment.symbol}`);
+      const response = await fetch(`https://nss-c26z.onrender.com/StockPrice?symbol=${holding.symbol}`);
       if (!response.ok) {
         throw new Error(`Request failed: ${response.status}`);
       }
       const data = await response.json();
       
       if (data.error) {
-        console.error("Error fetching price for", investment.symbol, ":", data.error);
+        console.error("Error fetching price for", holding.symbol, ":", data.error);
         continue;
       }
 
-      const buyPrice = parseFloat(investment.price);
       const currentPrice = parseFloat(data.price);
-      const creditsInvested = parseFloat(investment.amount);
-      const quantity = parseFloat(investment.quantity);
-      const creditsNow = quantity * currentPrice;
-      const profitLossAmount = creditsNow - creditsInvested;
-      const profitLossPercent = creditsInvested > 0 ? (profitLossAmount / creditsInvested) * 100 : 0;
+      const quantity = holding.netQuantity;
+      const currentValue = quantity * currentPrice;
+      const investedValue = holding.investedValue;
+      const profitLossAmount = currentValue - investedValue;
+      const profitLossPercent = investedValue > 0 ? (profitLossAmount / investedValue) * 100 : 0;
 
-      totalInvested += creditsInvested;
-      totalCurrentValue += creditsNow;
+      totalInvested += investedValue;
+      totalCurrentValue += currentValue;
 
-        const row = document.createElement("tr");
-      const profitLossClass = profitLossAmount >= 0 ? 'gain' : 'loss';
-      const profitLossSymbol = profitLossAmount >= 0 ? '📈' : '📉';
-      const buyPriceDisplay = formatNumber(buyPrice, { decimals: 2, useCommas: true }, currentLanguage);
-      const currentPriceDisplay = formatNumber(currentPrice, { decimals: 2, useCommas: true }, currentLanguage);
-      const creditsInvestedDisplay = formatNumber(creditsInvested, { decimals: 2, useCommas: true }, currentLanguage);
-      const creditsNowDisplay = formatNumber(creditsNow, { decimals: 2, useCommas: true }, currentLanguage);
-      const quantityDisplay = formatNumber(quantity, { decimals: 4, useCommas: true }, currentLanguage);
-      const profitLossAmountDisplay = formatNumber(
+      holdingsWithPrices.push({
+        symbol: holding.symbol,
+        avgBuyPrice: holding.avgBuyPrice,
+        currentPrice,
+        quantity,
+        investedValue,
+        currentValue,
         profitLossAmount,
-        { decimals: 2, useCommas: true, prefix: profitLossAmount >= 0 ? '+' : '' },
-        currentLanguage
-      );
-      const profitLossPercentDisplay = formatPercent(profitLossPercent, currentLanguage, { decimals: 2, showSign: true });
-      const sellLabel = getTranslationValue('sell', 'Sell');
-
-      row.innerHTML = `
-        <td><strong>${investment.symbol}</strong></td>
-        <td>${wrapNumberDisplay(buyPriceDisplay)} 💰</td>
-        <td>${wrapNumberDisplay(currentPriceDisplay)} 📊</td>
-        <td>${wrapNumberDisplay(creditsInvestedDisplay)} 💵</td>
-        <td>${wrapNumberDisplay(creditsNowDisplay)} 💸</td>
-        <td>${wrapNumberDisplay(quantityDisplay)} 📊</td>
-        <td class="${profitLossClass}">${wrapNumberDisplay(profitLossAmountDisplay)} ${profitLossSymbol}</td>
-        <td class="${profitLossClass}">${wrapNumberDisplay(profitLossPercentDisplay)} ${profitLossSymbol}</td>
-        <td><button onclick="sellInvestment(${i}, this)" class="sell-btn">${sellLabel}</button></td>
-      `;
-      tbody.appendChild(row);
+        profitLossPercent
+      });
     } catch (error) {
       console.error("Error processing investment:", error);
     }
   }
 
+  holdingsWithPrices.sort((a, b) => {
+    switch (currentPortfolioSort) {
+      case 'value':
+        return b.currentValue - a.currentValue;
+      case 'qty':
+        return b.quantity - a.quantity;
+      case 'symbol':
+        return a.symbol.localeCompare(b.symbol);
+      case 'pl':
+      default:
+        return b.profitLossAmount - a.profitLossAmount;
+    }
+  });
+
+  holdingsWithPrices.forEach((holding) => {
+    const row = document.createElement("tr");
+    const profitLossClass = holding.profitLossAmount > 0 ? 'gain' : holding.profitLossAmount < 0 ? 'loss' : 'portfolio-neutral';
+    const profitLossSymbol = holding.profitLossAmount > 0 ? '📈' : holding.profitLossAmount < 0 ? '📉' : '➖';
+    const avgBuyDisplay = formatNumber(holding.avgBuyPrice, { decimals: 2, useCommas: true }, currentLanguage);
+    const currentPriceDisplay = formatNumber(holding.currentPrice, { decimals: 2, useCommas: true }, currentLanguage);
+    const valueDisplay = formatNumber(holding.currentValue, { decimals: 2, useCommas: true }, currentLanguage);
+    const quantityDisplay = formatPortfolioQuantity(holding.quantity, currentLanguage);
+    const profitLossAmountDisplay = formatNumber(
+      holding.profitLossAmount,
+      { decimals: 2, useCommas: true, prefix: holding.profitLossAmount >= 0 ? '+' : '' },
+      currentLanguage
+    );
+    const profitLossPercentDisplay = formatPercent(holding.profitLossPercent, currentLanguage, { decimals: 2, showSign: true });
+    const sellLabel = getTranslationValue('sell', 'Sell');
+
+    row.innerHTML = `
+      <td><strong>${holding.symbol}</strong></td>
+      <td class="portfolio-align-right">${wrapNumberDisplay(avgBuyDisplay)} 💰</td>
+      <td class="portfolio-align-right">${wrapNumberDisplay(currentPriceDisplay)} 📊</td>
+      <td class="portfolio-align-right">${wrapNumberDisplay(quantityDisplay)}</td>
+      <td class="portfolio-align-right">${wrapNumberDisplay(valueDisplay)} 💸</td>
+      <td class="portfolio-align-right ${profitLossClass}">
+        <div class="portfolio-pl">
+          <span>${wrapNumberDisplay(profitLossAmountDisplay)} ${profitLossSymbol}</span>
+          <span>${wrapNumberDisplay(profitLossPercentDisplay)}</span>
+        </div>
+      </td>
+      <td><button onclick="sellInvestment('${holding.symbol}', this)" class="sell-btn">${sellLabel}</button></td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  updatePortfolioSortControls();
+
+  const totalValueElement = document.getElementById("portfolioTotalValue");
+  const totalInvestedElement = document.getElementById("portfolioTotalInvested");
+  const overallPlElement = document.getElementById("portfolioOverallPl");
+  const todayPlElement = document.getElementById("portfolioTodayPl");
+
+  if (totalValueElement) {
+    setNumberText(totalValueElement, formatNumber(totalCurrentValue, { decimals: 2, useCommas: true }, currentLanguage));
+  }
+  if (totalInvestedElement) {
+    setNumberText(totalInvestedElement, formatNumber(totalInvested, { decimals: 2, useCommas: true }, currentLanguage));
+  }
+  if (overallPlElement) {
+    const overallPl = totalCurrentValue - totalInvested;
+    const overallPlPercent = totalInvested > 0 ? (overallPl / totalInvested) * 100 : 0;
+    const overallPlDisplay = formatNumber(
+      overallPl,
+      { decimals: 2, useCommas: true, prefix: overallPl >= 0 ? '+' : '' },
+      currentLanguage
+    );
+    const overallPlPercentDisplay = formatPercent(overallPlPercent, currentLanguage, { decimals: 2, showSign: true });
+    setNumberText(overallPlElement, `${overallPlDisplay} (${overallPlPercentDisplay})`);
+    overallPlElement.classList.remove('gain', 'loss', 'neutral');
+    overallPlElement.classList.add(overallPl > 0 ? 'gain' : overallPl < 0 ? 'loss' : 'neutral');
+  }
+  if (todayPlElement) {
+    const todayPl = 0;
+    const todayPlDisplay = formatNumber(todayPl, { decimals: 2, useCommas: true }, currentLanguage);
+    setNumberText(todayPlElement, todayPlDisplay);
+    todayPlElement.classList.remove('gain', 'loss', 'neutral');
+    todayPlElement.classList.add('neutral');
+  }
+
   // Update summary stats in the home section
   const netWorth = document.getElementById("netWorth");
-  const totalInvestedElement = document.getElementById("totalInvested");
+  const totalInvestedHomeElement = document.getElementById("totalInvested");
   const totalProfit = document.getElementById("totalProfit");
 
   if (netWorth) {
     const netWorthValue = (parseFloat(localStorage.getItem("credits")) || 0) + totalCurrentValue;
     setNumberText(netWorth, formatNumber(netWorthValue, { decimals: 2, useCommas: true }, currentLanguage));
   }
-  if (totalInvestedElement) {
-    setNumberText(totalInvestedElement, formatNumber(totalInvested, { decimals: 2, useCommas: true }, currentLanguage));
+  if (totalInvestedHomeElement) {
+    setNumberText(totalInvestedHomeElement, formatNumber(totalInvested, { decimals: 2, useCommas: true }, currentLanguage));
   }
   if (totalProfit) {
     const profitValue = totalCurrentValue - totalInvested;
     setNumberText(totalProfit, formatNumber(profitValue, { decimals: 2, useCommas: true, prefix: profitValue >= 0 ? '+' : '' }, currentLanguage));
     totalProfit.className = profitValue >= 0 ? 'stat-value gain' : 'stat-value loss';
   }
+
+  if (transactionsContainer) {
+    const recentTransactions = [...transactions].slice(-5).reverse();
+    transactionsContainer.innerHTML = "";
+    if (recentTransactions.length === 0) {
+      const emptyItem = document.createElement("div");
+      emptyItem.className = "portfolio-transaction-item";
+      emptyItem.innerHTML = `<span class="portfolio-transaction-meta">${getTranslationValue('portfolioNoTransactions', 'No recent transactions yet.')}</span>`;
+      transactionsContainer.appendChild(emptyItem);
+    } else {
+      recentTransactions.forEach((transaction) => {
+        const item = document.createElement("div");
+        item.className = "portfolio-transaction-item";
+        const badgeClass = transaction.type === 'SELL' ? 'sell' : 'buy';
+        const quantity = parseFloat(transaction.quantity) || 0;
+        const price = parseFloat(transaction.price) || 0;
+        const total = parseFloat(transaction.total) || 0;
+        const creditsBefore = parseFloat(transaction.creditsBefore);
+        const creditsAfter = parseFloat(transaction.creditsAfter);
+        const quantityDisplay = formatPortfolioQuantity(quantity, currentLanguage);
+        const priceDisplay = formatNumber(price, { decimals: 2, useCommas: true }, currentLanguage);
+        const totalDisplay = formatNumber(total, { decimals: 2, useCommas: true }, currentLanguage);
+        const timeDisplay = transaction.timestampISO
+          ? new Date(transaction.timestampISO).toLocaleString()
+          : '';
+        const creditsDisplay = Number.isFinite(creditsBefore) && Number.isFinite(creditsAfter)
+          ? `${wrapNumberDisplay(formatNumber(creditsBefore, { decimals: 2, useCommas: true }, currentLanguage))} → ${wrapNumberDisplay(formatNumber(creditsAfter, { decimals: 2, useCommas: true }, currentLanguage))}`
+          : '';
+
+        item.innerHTML = `
+          <div class="portfolio-transaction-left">
+            <span class="portfolio-transaction-badge ${badgeClass}">${transaction.type}</span>
+            <div>
+              <div class="portfolio-transaction-meta">
+                ${transaction.symbol} · ${wrapNumberDisplay(quantityDisplay)} @ ${wrapNumberDisplay(priceDisplay)}
+              </div>
+              <div class="portfolio-transaction-meta">
+                Total: ${wrapNumberDisplay(totalDisplay)} ${creditsDisplay ? `· ${creditsDisplay}` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="portfolio-transaction-time">${timeDisplay}</div>
+        `;
+        transactionsContainer.appendChild(item);
+      });
+    }
+  }
 }
 
-function sellInvestment(index, buttonElement) {
-  // Get investments from localStorage
+function sellInvestment(symbol, buttonElement) {
   const investments = JSON.parse(localStorage.getItem("investments") || "[]");
-  const inv = investments[index];
+  const transactions = getStoredTransactions();
+  const holdings = computeHoldings(investments, transactions);
+  const holding = holdings.find((item) => item.symbol === symbol);
 
-  if (!inv || !inv.symbol || !inv.quantity) {
-    console.error("❌ Invalid investment data:", inv);
+  if (!holding || !holding.netQuantity) {
+    console.error("❌ Invalid holding data:", holding);
     showToast("❌ Investment or quantity missing. Please check your portfolio.");
     return;
   }
 
-  const saleKey = `${inv.symbol}-${inv.quantity}-${inv.price}-${index}`;
+  const saleKey = `${symbol}-${holding.netQuantity}`;
   if (activeSellRequests.has(saleKey)) {
     return;
   }
@@ -1705,7 +1991,7 @@ function sellInvestment(index, buttonElement) {
   }
 
   // Fetch current stock price
-  fetch(`https://nss-c26z.onrender.com/StockPrice?symbol=${inv.symbol}`)
+  fetch(`https://nss-c26z.onrender.com/StockPrice?symbol=${symbol}`)
     .then(res => res.json())
     .then(data => {
       if (data.error) {
@@ -1713,23 +1999,31 @@ function sellInvestment(index, buttonElement) {
       }
 
       const currentPrice = parseFloat(data.price);
-      const quantity = parseFloat(inv.quantity);
+      const quantity = holding.netQuantity;
       const sellAmount = quantity * currentPrice;
 
       // Add sell amount to credits
-      let credits = parseFloat(localStorage.getItem("credits")) || 0;
+      const creditsBefore = parseFloat(localStorage.getItem("credits")) || 0;
+      let credits = creditsBefore;
       credits += sellAmount;
       localStorage.setItem("credits", credits.toString());
       updateCreditDisplay();
 
-      // Remove the sold investment
-      investments.splice(index, 1);
-      localStorage.setItem("investments", JSON.stringify(investments));
+      recordTransaction({
+        type: "SELL",
+        symbol,
+        quantity: quantity.toString(),
+        price: currentPrice.toString(),
+        total: sellAmount.toString(),
+        timestampISO: new Date().toISOString(),
+        creditsBefore: creditsBefore.toString(),
+        creditsAfter: credits.toString()
+      });
 
       updatePortfolio();
       const currentLanguage = getCurrentLanguage();
       const sellAmountDisplay = formatNumber(sellAmount, { decimals: 2, useCommas: true }, currentLanguage);
-      showToast(`✅ Sold ${inv.symbol} for ${wrapNumberDisplay(sellAmountDisplay)} credits!`);
+      showToast(`✅ Sold ${symbol} for ${wrapNumberDisplay(sellAmountDisplay)} credits!`);
     })
     .catch((error) => {
       if (error && error.message === "PRICE_FETCH_ERROR") {
@@ -1869,6 +2163,22 @@ const translations = {
         portfolioTitle: 'My Investment Portfolio',
         portfolioDesc: 'Track your investments and their performance',
         portfolioBrokerFeeNote: '🔍 Note: Portfolio shows slight initial loss due to broker fees',
+        portfolioTotalValue: 'Total Value',
+        portfolioTotalInvested: 'Total Invested',
+        portfolioOverallPl: 'Overall P/L',
+        portfolioTodayPlEst: 'Today P/L (est.)',
+        portfolioSortBy: 'Sort by',
+        portfolioSortPl: 'P/L',
+        portfolioSortValue: 'Value',
+        portfolioSortQty: 'Qty',
+        portfolioSortSymbol: 'Symbol',
+        portfolioAvgBuy: 'Avg Buy',
+        portfolioLtp: 'LTP',
+        portfolioQty: 'Qty',
+        portfolioValue: 'Value',
+        portfolioPl: 'P/L',
+        portfolioRecentTransactions: 'Recent Transactions',
+        portfolioNoTransactions: 'No recent transactions yet.',
         portfolioEmpty: 'No investments yet!',
         portfolioEmptyDesc: 'Start your investment journey by trading stocks in the market section.',
         portfolioStats: 'Portfolio Statistics',
@@ -2085,6 +2395,22 @@ const translations = {
         portfolioTitle: 'मेरो लगानी पोर्टफोलियो',
         portfolioDesc: 'आफ्नो लगानी र तिनीहरूको प्रदर्शन ट्र्याक गर्नुहोस्',
         portfolioBrokerFeeNote: 'ब्रोकर शुल्कका कारण सुरुआतमा पोर्टफोलियोमा सानो घाटा देखिन सक्छ।',
+        portfolioTotalValue: 'कुल मूल्य',
+        portfolioTotalInvested: 'कुल लगानी',
+        portfolioOverallPl: 'समग्र नाफा/नोक्सान',
+        portfolioTodayPlEst: 'आजको नाफा/नोक्सान (अनुमानित)',
+        portfolioSortBy: 'क्रमबद्ध गर्नुहोस्',
+        portfolioSortPl: 'नाफा/नोक्सान',
+        portfolioSortValue: 'मूल्य',
+        portfolioSortQty: 'परिमाण',
+        portfolioSortSymbol: 'सिम्बल',
+        portfolioAvgBuy: 'औसत खरिद',
+        portfolioLtp: 'एलटीपी',
+        portfolioQty: 'परिमाण',
+        portfolioValue: 'मूल्य',
+        portfolioPl: 'नाफा/नोक्सान',
+        portfolioRecentTransactions: 'हालका कारोबार',
+        portfolioNoTransactions: 'हाल कुनै कारोबार छैन।',
         portfolioEmpty: 'अहिलेसम्म कुनै लगानी छैन!',
         portfolioEmptyDesc: 'बजार सेक्सनमा स्टक व्यापार गरेर आफ्नो लगानी यात्रा सुरु गर्नुहोस्।',
         portfolioStats: 'पोर्टफोलियो तथ्याङ्क',
@@ -3032,14 +3358,12 @@ function updateTableHeaders(language) {
         const headers = investmentHistory.querySelectorAll('th');
         if (headers.length > 0) {
             headers[0].textContent = texts.symbol + ' 🏢';
-            headers[1].textContent = texts.buyPrice + ' 💰';
-            headers[2].textContent = texts.currentPrice + ' 📈';
-            headers[3].textContent = texts.creditsInvested + ' 💵';
-            headers[4].textContent = texts.creditsNow + ' 💸';
-            headers[5].textContent = texts.quantity + ' 📊';
-            headers[6].textContent = texts.plAmount + ' 📊';
-            headers[7].textContent = texts.plPercent + ' 📈';
-            headers[8].textContent = texts.action + ' ⚡';
+            headers[1].textContent = texts.portfolioAvgBuy + ' 💰';
+            headers[2].textContent = texts.portfolioLtp + ' 📈';
+            headers[3].textContent = texts.portfolioQty + ' 📊';
+            headers[4].textContent = texts.portfolioValue + ' 💸';
+            headers[5].textContent = texts.portfolioPl + ' 📊';
+            headers[6].textContent = texts.action + ' ⚡';
         }
     }
 }
@@ -3066,7 +3390,7 @@ if (addCreditsButton) {
 function showBonusModal() {
     const currentLanguage = localStorage.getItem('language') || 'english';
     const texts = translations[currentLanguage];
-    const bonusAmountDisplay = formatNumber(DAILY_BONUS, { decimals: 0, useCommas: true }, currentLanguage);
+    const bonusAmountDisplay = formatNumber(DAILY_BONUS, { decimals: 2, useCommas: true }, currentLanguage);
     
     const modalHTML = `
         <div id="bonusModal" class="bonus-modal">
@@ -3177,7 +3501,7 @@ function updateWeeklyTimer(remainingTime) {
 }
 
 function claimDailyBonus() {
-    const currentCredits = parseInt(localStorage.getItem('credits') || '0');
+    const currentCredits = parseFloat(localStorage.getItem('credits') || '0');
     localStorage.setItem('credits', (currentCredits + DAILY_BONUS).toString());
     localStorage.setItem('lastDailyBonus', new Date().getTime().toString());
     
@@ -3186,7 +3510,7 @@ function claimDailyBonus() {
     
     // Show success message
     const currentLanguage = localStorage.getItem('language') || 'english';
-    const bonusAmount = formatNumber(DAILY_BONUS, { decimals: 0, useCommas: true }, currentLanguage);
+    const bonusAmount = formatNumber(DAILY_BONUS, { decimals: 2, useCommas: true }, currentLanguage);
     const message = isNepaliLanguage(currentLanguage)
         ? `दैनिक बोनस ${wrapNumberDisplay(bonusAmount)} क्रेडिट प्राप्त भयो!`
         : `Daily bonus of ${wrapNumberDisplay(bonusAmount)} credits claimed!`;
@@ -3287,7 +3611,7 @@ function startSpinWheel() {
     
     // Update credits after spin animation
     setTimeout(() => {
-        const currentCredits = parseInt(localStorage.getItem('credits') || '0');
+        const currentCredits = parseFloat(localStorage.getItem('credits') || '0');
         localStorage.setItem('credits', (currentCredits + winAmount).toString());
         localStorage.setItem('lastWeeklySpin', new Date().getTime().toString());
         
@@ -3297,7 +3621,7 @@ function startSpinWheel() {
         // Show success message
         const currentLanguage = localStorage.getItem('language') || 'english';
         const texts = translations[currentLanguage];
-        const winAmountDisplay = formatNumber(winAmount, { decimals: 0, useCommas: true }, currentLanguage);
+        const winAmountDisplay = formatNumber(winAmount, { decimals: 2, useCommas: true }, currentLanguage);
         showSpinResult(`${texts.spinResult} ${wrapNumberDisplay(winAmountDisplay)} ${texts.credits}!`);
     }, 4000);
 }

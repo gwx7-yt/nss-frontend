@@ -303,18 +303,45 @@
       <div class="portfolio-content">
         <h2 class="section-title" data-translate="portfolio">My Investment Portfolio 📊</h2>
 
+        <div class="portfolio-summary">
+          <div class="portfolio-summary-card">
+            <span class="portfolio-summary-label" data-translate="portfolioTotalValue">Total Value</span>
+            <span id="portfolioTotalValue" class="portfolio-summary-value"></span>
+          </div>
+          <div class="portfolio-summary-card">
+            <span class="portfolio-summary-label" data-translate="portfolioTotalInvested">Total Invested</span>
+            <span id="portfolioTotalInvested" class="portfolio-summary-value"></span>
+          </div>
+          <div class="portfolio-summary-card">
+            <span class="portfolio-summary-label" data-translate="portfolioOverallPl">Overall P/L</span>
+            <span id="portfolioOverallPl" class="portfolio-summary-value"></span>
+          </div>
+          <div class="portfolio-summary-card">
+            <span class="portfolio-summary-label" data-translate="portfolioTodayPlEst">Today P/L (est.)</span>
+            <span id="portfolioTodayPl" class="portfolio-summary-value"></span>
+          </div>
+        </div>
+
+        <div class="portfolio-controls">
+          <div class="portfolio-sort">
+            <span class="portfolio-sort-label" data-translate="portfolioSortBy">Sort by</span>
+            <button class="portfolio-sort-btn is-active" type="button" data-sort="pl" data-translate="portfolioSortPl">P/L</button>
+            <button class="portfolio-sort-btn" type="button" data-sort="value" data-translate="portfolioSortValue">Value</button>
+            <button class="portfolio-sort-btn" type="button" data-sort="qty" data-translate="portfolioSortQty">Qty</button>
+            <button class="portfolio-sort-btn" type="button" data-sort="symbol" data-translate="portfolioSortSymbol">Symbol</button>
+          </div>
+        </div>
+
         <div class="table-container">
           <table id="investmentHistory">
             <thead>
               <tr>
                 <th data-translate="symbol">Symbol 🏢</th>
-                <th data-translate="buyPrice">Buy Price 💰</th>
-                <th data-translate="currentPrice">Current Price 📈</th>
-                <th data-translate="creditsInvested">Credits Invested 💵</th>
-                <th data-translate="creditsNow">Credits Now 💸</th>
-                <th data-translate="quantity">Quantity 📊</th>
-                <th data-translate="plAmount">P/L Amount 📊</th>
-                <th data-translate="plPercent">P/L % 📈</th>
+                <th class="portfolio-align-right" data-translate="portfolioAvgBuy">Avg Buy 💰</th>
+                <th class="portfolio-align-right" data-translate="portfolioLtp">LTP 📈</th>
+                <th class="portfolio-align-right" data-translate="portfolioQty">Qty 📊</th>
+                <th class="portfolio-align-right" data-translate="portfolioValue">Value 💸</th>
+                <th class="portfolio-align-right" data-translate="portfolioPl">P/L 📊</th>
                 <th data-translate="action">Action ⚡</th>
               </tr>
             </thead>
@@ -330,6 +357,19 @@
           <button onclick="showSection('market')" class="buy-more-btn" data-translate="buyMore">
             Buy More Stocks 🚀
           </button>
+        </div>
+
+        <div class="portfolio-transactions">
+          <h3 class="portfolio-transactions-title" data-translate="portfolioRecentTransactions">Recent Transactions</h3>
+          <div id="portfolioTransactions" class="portfolio-transactions-list"></div>
+        </div>
+
+        <div class="no-investments portfolio-empty-state">
+          <div class="message">
+            <h3 data-translate="portfolioEmpty">No investments yet!</h3>
+            <p data-translate="portfolioEmptyDesc">Start your investment journey by trading stocks in the market section.</p>
+            <button onclick="showSection('market')" class="start-investing-btn" data-translate="buyMore">Buy More Stocks</button>
+          </div>
         </div>
       </div>
     </section>
