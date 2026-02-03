@@ -1967,6 +1967,11 @@ section {
   transition: background-color 0.3s ease;
 }
 
+#investmentHistory th.portfolio-align-right,
+#investmentHistory td.portfolio-align-right {
+  text-align: right;
+}
+
 #investmentHistory th:hover {
   background: rgba(0, 180, 216, 0.2);
 }
