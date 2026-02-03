@@ -4049,11 +4049,15 @@ function initTableScrollHints() {
     return;
   }
 
+  const updateHintState = (container) => {
+    const maxScrollLeft = container.scrollWidth - container.clientWidth;
+    const hasOverflow = maxScrollLeft > 2;
+    const atEnd = container.scrollLeft >= maxScrollLeft - 2;
+    container.classList.toggle('scroll-hint', hasOverflow && !atEnd);
+  };
+
   const updateHints = () => {
-    containers.forEach((container) => {
-      const hasOverflow = container.scrollWidth - container.clientWidth > 2;
-      container.classList.toggle('scroll-hint', hasOverflow);
-    });
+    containers.forEach(updateHintState);
   };
 
   updateHints();
@@ -4065,4 +4069,13 @@ function initTableScrollHints() {
     },
     { passive: true }
   );
+  containers.forEach((container) => {
+    container.addEventListener(
+      'scroll',
+      () => {
+        window.requestAnimationFrame(() => updateHintState(container));
+      },
+      { passive: true }
+    );
+  });
 }
