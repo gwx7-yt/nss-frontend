@@ -1924,6 +1924,10 @@ section {
   padding: 2rem;
 }
 
+.portfolio-content .section-title {
+  margin-bottom: 1.25rem;
+}
+
 .section-title {
   font-size: 2.5rem;
   color: var(--primary-color);
@@ -1961,6 +1965,11 @@ section {
   position: relative;
   cursor: help;
   transition: background-color 0.3s ease;
+}
+
+#investmentHistory th.portfolio-align-right,
+#investmentHistory td.portfolio-align-right {
+  text-align: right;
 }
 
 #investmentHistory th:hover {
@@ -2005,6 +2014,11 @@ section {
 
 #investmentHistory .loss {
   color: #ff0000;
+  font-weight: 600;
+}
+
+#investmentHistory .portfolio-neutral {
+  color: #9ca3af;
   font-weight: 600;
 }
 
@@ -2076,6 +2090,263 @@ section {
   background: var(--secondary-color);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.portfolio-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.portfolio-summary-card {
+  background: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.portfolio-summary-label {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.portfolio-summary-value {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.portfolio-summary-value.gain {
+  color: #00ff00;
+}
+
+.portfolio-summary-value.loss {
+  color: #ff0000;
+}
+
+.portfolio-summary-value.neutral {
+  color: #9ca3af;
+}
+
+.portfolio-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.portfolio-sort {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  background: var(--card-background);
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+
+.portfolio-sort-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-right: 0.35rem;
+}
+
+.portfolio-sort-btn {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-color);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.portfolio-sort-btn.is-active,
+.portfolio-sort-btn:hover {
+  background: rgba(0, 180, 216, 0.35);
+  color: #fff;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.portfolio-align-right {
+  text-align: right;
+}
+
+.portfolio-pl {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.portfolio-transactions {
+  margin-top: 1.5rem;
+  background: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.portfolio-graph-card {
+  margin-top: 1.25rem;
+  background: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.portfolio-graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.portfolio-graph-title {
+  font-size: 1.1rem;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.portfolio-graph-legend {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.portfolio-graph-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.portfolio-graph-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.portfolio-graph-legend-swatch.value {
+  background: rgba(0, 180, 216, 0.9);
+}
+
+.portfolio-graph-legend-swatch.invested {
+  background: rgba(156, 163, 175, 0.9);
+}
+
+.portfolio-graph-body {
+  min-height: 180px;
+  position: relative;
+}
+
+.portfolio-graph-svg {
+  width: 100%;
+  height: 200px;
+  display: block;
+}
+
+.portfolio-graph-empty {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.portfolio-graph-helper {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+.portfolio-graph-label {
+  font-size: 0.75rem;
+  fill: #6b7280;
+}
+
+.portfolio-transactions-title {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  color: var(--primary-color);
+}
+
+.portfolio-transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.portfolio-transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.portfolio-transaction-item + .portfolio-transaction-item {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.portfolio-transaction-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.portfolio-transaction-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.portfolio-transaction-badge.buy {
+  background: rgba(0, 255, 0, 0.15);
+  color: #00ff00;
+}
+
+.portfolio-transaction-badge.sell {
+  background: rgba(255, 0, 0, 0.15);
+  color: #ff5a5a;
+}
+
+.portfolio-transaction-primary {
+  font-size: 0.9rem;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.portfolio-transaction-secondary {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.portfolio-transaction-time {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-align: right;
+}
+
+.portfolio-empty-state {
+  margin-top: 1.5rem;
 }
 
 /* Responsive adjustments for portfolio */
