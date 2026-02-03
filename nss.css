@@ -2261,6 +2261,13 @@ section {
   padding: 0 1rem;
 }
 
+.portfolio-graph-helper {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-align: center;
+}
+
 .portfolio-graph-label {
   font-size: 0.75rem;
   fill: #6b7280;

@@ -1726,14 +1726,16 @@ function renderPortfolioGraph(history) {
   container.innerHTML = "";
 
   if (!Array.isArray(history) || history.length < 2) {
-    const empty = document.createElement("div");
-    empty.className = "portfolio-graph-empty";
-    empty.textContent = getTranslationValue(
-      'portfolioPerformanceEmpty',
-      'Performance graph will appear after you use the simulator for at least a day.'
-    );
-    container.appendChild(empty);
-    return;
+    if (!history || history.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "portfolio-graph-empty";
+      empty.textContent = getTranslationValue(
+        'portfolioPerformanceEmpty',
+        'Performance graph will appear after you use the simulator for at least a day.'
+      );
+      container.appendChild(empty);
+      return;
+    }
   }
 
   const currentLanguage = getCurrentLanguage();
@@ -1747,7 +1749,12 @@ function renderPortfolioGraph(history) {
   const maxValue = Math.max(...values, ...invested);
   const range = maxValue - minValue || 1;
 
-  const scaleX = (index) => padding + (index / (history.length - 1)) * (width - padding * 2);
+  const scaleX = (index) => {
+    if (history.length === 1) {
+      return width / 2;
+    }
+    return padding + (index / (history.length - 1)) * (width - padding * 2);
+  };
   const scaleY = (value) => height - padding - ((value - minValue) / range) * (height - padding * 2);
 
   const buildPath = (series) =>
@@ -1789,6 +1796,31 @@ function renderPortfolioGraph(history) {
   svg.appendChild(valueLine);
   svg.appendChild(latestText);
   container.appendChild(svg);
+
+  if (history.length === 1) {
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("cx", scaleX(0));
+    dot.setAttribute("cy", scaleY(values[0]));
+    dot.setAttribute("r", "4");
+    dot.setAttribute("fill", "rgba(0, 180, 216, 0.9)");
+    svg.appendChild(dot);
+
+    const dateLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    dateLabel.setAttribute("x", scaleX(0));
+    dateLabel.setAttribute("y", height - 6);
+    dateLabel.setAttribute("text-anchor", "middle");
+    dateLabel.setAttribute("class", "portfolio-graph-label");
+    dateLabel.textContent = history[0].date;
+    svg.appendChild(dateLabel);
+
+    const helper = document.createElement("div");
+    helper.className = "portfolio-graph-helper";
+    helper.textContent = getTranslationValue(
+      'portfolioPerformanceHelper',
+      'Tracking portfolio value from today. History will build over time.'
+    );
+    container.appendChild(helper);
+  }
 }
 
 function updatePortfolioSortControls() {
@@ -2292,6 +2324,7 @@ const translations = {
         portfolioPerformanceValue: 'Value',
         portfolioPerformanceInvested: 'Invested',
         portfolioPerformanceEmpty: 'Performance graph will appear after you use the simulator for at least a day.',
+        portfolioPerformanceHelper: 'Tracking portfolio value from today. History will build over time.',
         portfolioRecentTransactions: 'Recent Transactions',
         portfolioNoTransactions: 'No recent transactions yet.',
         portfolioEmpty: 'No investments yet!',
@@ -2528,6 +2561,7 @@ const translations = {
         portfolioPerformanceValue: 'मूल्य',
         portfolioPerformanceInvested: 'लगानी',
         portfolioPerformanceEmpty: 'कम्तीमा एक दिन सिमुलेटर प्रयोग गरेपछि प्रदर्शन ग्राफ देखिनेछ।',
+        portfolioPerformanceHelper: 'आजदेखि पोर्टफोलियो मूल्य ट्र्याक गर्दैछौं। समयसँगै इतिहास थपिनेछ।',
         portfolioRecentTransactions: 'हालका कारोबार',
         portfolioNoTransactions: 'हाल कुनै कारोबार छैन।',
         portfolioEmpty: 'अहिलेसम्म कुनै लगानी छैन!',
