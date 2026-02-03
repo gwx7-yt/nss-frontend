@@ -16,8 +16,6 @@ let tableHintInitialized = false;
 
 // Default credits given to new users (10 lakh)
 const DEFAULT_CREDITS = 1000000;
-// Daily bonus amount
-const DAILY_BONUS = 1000;
 
 
 function getCurrentLanguage() {
@@ -58,7 +56,7 @@ function getLocalizedSectorName(sectorName, language = getCurrentLanguage()) {
 
 // Loading and Tutorial Management
 let currentStep = 1;
-const totalSteps = 6;
+const totalSteps = 5;
 
 // Check if this is the first visit
 function isFirstVisit() {
@@ -230,34 +228,6 @@ function showToast(message) {
     toast.classList.remove('visible');
     toast.addEventListener('transitionend', () => toast.remove());
   }, 3000);
-}
-
-// Confetti animation
-function launchConfetti() {
-    for (let i = 0; i < 30; i++) {
-        const piece = document.createElement('div');
-        piece.className = 'confetti';
-        piece.style.left = Math.random() * 100 + 'vw';
-        piece.style.backgroundColor = `hsl(${Math.random() * 360},70%,50%)`;
-        piece.style.animationDelay = Math.random() + 's';
-        document.body.appendChild(piece);
-        piece.addEventListener('animationend', () => piece.remove());
-    }
-}
-
-// Display spin result overlay
-function showSpinResult(message) {
-    const result = document.getElementById('spinResult');
-    const container = result?.closest('.spin-wheel');
-    if (!result || !container) return;
-    result.innerHTML = message;
-    result.classList.remove('hidden');
-    container.classList.add('blur');
-    launchConfetti();
-    setTimeout(() => {
-        result.classList.add('hidden');
-        container.classList.remove('blur');
-    }, 3000);
 }
 
 // Upgrade legacy users to new starter pack
@@ -2274,6 +2244,9 @@ const translations = {
         bullish: 'Bullish',
         bearish: 'Bearish',
         mixed: 'Mixed',
+        hotTodayTitle: 'Hot Today',
+        hotTodaySubtitle: 'Active and moving stocks',
+        hotTodayView: 'View Market',
         sectorPerformance: 'Sector Performance',
         updated: 'Updated',
         market: 'Market',
@@ -2478,16 +2451,7 @@ const translations = {
         contentRole: "Chief Communication Officer",
         contentName: "Sanskar Sharma",
         communicationsVpRole: "VP of Communications",
-        communicationsVpName: "Aarav Dahal",
-        dailyBonus: "Daily Bonus",
-        weeklySpinTitle: "Weekly Spin",
-        spinButton: "Spin Now!",
-        claim: "Claim",
-        claimed: "Claimed",
-        nextAvailable: "Next available in:",
-        bonusAmount: "Bonus Amount:",
-        spinResult: "Spin Result:",
-        closeButton: "Close"
+        communicationsVpName: "Aarav Dahal"
     },
     nepali: {
         welcome: 'स्वागत छ, {name}!',
@@ -2511,6 +2475,9 @@ const translations = {
         bullish: 'बुलिश',
         bearish: 'बेयरिश',
         mixed: 'मिश्रित',
+        hotTodayTitle: 'आज सक्रिय',
+        hotTodaySubtitle: 'आजका सक्रिय र चलायमान स्टकहरू',
+        hotTodayView: 'बजार हेर्नुहोस्',
         sectorPerformance: 'क्षेत्रगत प्रदर्शन',
         updated: 'अपडेट',
         market: 'बजार',
@@ -2715,16 +2682,7 @@ const translations = {
         contentRole: "प्रमुख सञ्चार अधिकृत",
         contentName: "संस्कार शर्मा",
         communicationsVpRole: "सञ्चार उपाध्यक्ष",
-        communicationsVpName: "आरव दाहाल",
-        dailyBonus: "दैनिक बोनस",
-        weeklySpinTitle: "साप्ताहिक स्पिन",
-        spinButton: "स्पिन गर्नुहोस्!",
-        claim: "प्राप्त गर्नुहोस्",
-        claimed: "प्राप्त गरियो",
-        nextAvailable: "अर्को उपलब्ध:",
-        bonusAmount: "बोनस रकम:",
-        spinResult: "स्पिन नतिजा:",
-        closeButton: "बन्द गर्नुहोस्"
+        communicationsVpName: "आरव दाहाल"
     }
 };
 
@@ -3554,254 +3512,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentLanguage = localStorage.getItem('language') || 'english';
     updateLanguage(currentLanguage);
 });
-
-// Add click handler for the add credits button
-const addCreditsButton = document.querySelector('.add-credits-btn');
-if (addCreditsButton) {
-    addCreditsButton.addEventListener('click', () => {
-        showBonusModal();
-    });
-}
-
-// Create and show the bonus modal
-function showBonusModal() {
-    const currentLanguage = localStorage.getItem('language') || 'english';
-    const texts = translations[currentLanguage];
-    const bonusAmountDisplay = formatNumber(DAILY_BONUS, { decimals: 2, useCommas: true }, currentLanguage);
-    
-    const modalHTML = `
-        <div id="bonusModal" class="bonus-modal">
-            <div class="bonus-modal-content">
-                <div class="bonus-section daily-bonus">
-                    <h2>${texts.dailyBonus}</h2>
-                    <p>${texts.bonusAmount} ${wrapNumberDisplay(bonusAmountDisplay)} ${texts.credits}</p>
-                    <button id="claimDailyBonus" class="bonus-btn">${texts.claim}</button>
-                    <p id="dailyTimer" class="timer"></p>
-                </div>
-                
-                <div class="bonus-section weekly-spin">
-                    <h2>${texts.weeklySpinTitle}</h2>
-                    <div class="spin-wheel">
-                        <div class="wheel-container">
-                        <div class="wheel-pointer"></div>
-                        <canvas id="wheelCanvas" width="300" height="300"></canvas>
-                    </div>
-                    <button id="spinWheel" class="spin-btn">${texts.spinButton}</button>
-                    <div id="spinResult" class="spin-result hidden"></div>
-                </div>
-                <p id="weeklyTimer" class="timer"></p>
-                </div>
-                
-                <button class="close-modal" onclick="closeBonusModal()">${texts.closeButton}</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    initWheel();
-    checkBonusAvailability();
-    
-    document.getElementById('claimDailyBonus').addEventListener('click', claimDailyBonus);
-    document.getElementById('spinWheel').addEventListener('click', startSpinWheel);
-}
-
-function closeBonusModal() {
-    const modal = document.getElementById('bonusModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-function checkBonusAvailability() {
-    // Check daily bonus
-    const lastDailyBonus = localStorage.getItem('lastDailyBonus');
-    const now = new Date().getTime();
-    
-    if (lastDailyBonus) {
-        const timeElapsed = now - parseInt(lastDailyBonus);
-        if (timeElapsed < 24 * 60 * 60 * 1000) { // 24 hours
-            const remainingTime = 24 * 60 * 60 * 1000 - timeElapsed;
-            updateDailyTimer(remainingTime);
-            document.getElementById('claimDailyBonus').disabled = true;
-        }
-    }
-    
-    // Check weekly spin
-    const spinBtn = document.getElementById('spinWheel');
-    const lastWeeklySpin = localStorage.getItem('lastWeeklySpin');
-    if (lastWeeklySpin) {
-        const timeElapsed = now - parseInt(lastWeeklySpin, 10);
-        if (timeElapsed < 7 * 24 * 60 * 60 * 1000) { // 7 days
-            const remainingTime = 7 * 24 * 60 * 60 * 1000 - timeElapsed;
-            updateWeeklyTimer(remainingTime);
-            if (spinBtn) spinBtn.disabled = true;
-        } else {
-            if (spinBtn) spinBtn.disabled = false;
-            updateWeeklyTimer(0);
-        }
-    } else if (spinBtn) {
-        spinBtn.disabled = false;
-    }
-}
-
-function updateDailyTimer(remainingTime) {
-    const timer = document.getElementById('dailyTimer');
-    if (!timer) return;
-    
-    const hours = Math.floor(remainingTime / (60 * 60 * 1000));
-    const minutes = Math.floor((remainingTime % (60 * 60 * 1000)) / (60 * 1000));
-    
-    const currentLanguage = localStorage.getItem('language') || 'english';
-    const texts = translations[currentLanguage];
-    const hoursDisplay = formatNumber(hours, { decimals: 0, useCommas: true }, currentLanguage);
-    const minutesDisplay = formatNumber(minutes, { decimals: 0, useCommas: true }, currentLanguage);
-    timer.innerHTML = `${texts.nextAvailable} ${wrapNumberDisplay(hoursDisplay)}h ${wrapNumberDisplay(minutesDisplay)}m`;
-}
-
-function updateWeeklyTimer(remainingTime) {
-    const timer = document.getElementById('weeklyTimer');
-    if (!timer) return;
-
-    if (remainingTime <= 0) {
-        timer.textContent = '';
-        return;
-    }
-
-    const days = Math.floor(remainingTime / (24 * 60 * 60 * 1000));
-    const hours = Math.floor((remainingTime % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-
-    const currentLanguage = localStorage.getItem('language') || 'english';
-    const texts = translations[currentLanguage];
-    const daysDisplay = formatNumber(days, { decimals: 0, useCommas: true }, currentLanguage);
-    const hoursDisplay = formatNumber(hours, { decimals: 0, useCommas: true }, currentLanguage);
-    timer.innerHTML = `${texts.nextAvailable} ${wrapNumberDisplay(daysDisplay)}d ${wrapNumberDisplay(hoursDisplay)}h`;
-}
-
-function claimDailyBonus() {
-    const currentCredits = parseFloat(localStorage.getItem('credits') || '0');
-    localStorage.setItem('credits', (currentCredits + DAILY_BONUS).toString());
-    localStorage.setItem('lastDailyBonus', new Date().getTime().toString());
-    
-    updateCreditDisplay();
-    checkBonusAvailability();
-    
-    // Show success message
-    const currentLanguage = localStorage.getItem('language') || 'english';
-    const bonusAmount = formatNumber(DAILY_BONUS, { decimals: 2, useCommas: true }, currentLanguage);
-    const message = isNepaliLanguage(currentLanguage)
-        ? `दैनिक बोनस ${wrapNumberDisplay(bonusAmount)} क्रेडिट प्राप्त भयो!`
-        : `Daily bonus of ${wrapNumberDisplay(bonusAmount)} credits claimed!`;
-    showToast(message);
-}
-
-function initWheel() {
-    const canvas = document.getElementById('wheelCanvas');
-    const ctx = canvas.getContext('2d');
-    const values = [0, 1000, 2000, 3000, 4000, 5000];
-    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD', '#D4A5A5'];
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, 300, 300);
-    
-    // Draw wheel segments
-    const anglePerSegment = (2 * Math.PI) / values.length;
-    
-    for (let i = 0; i < values.length; i++) {
-        ctx.beginPath();
-        ctx.fillStyle = colors[i];
-        ctx.moveTo(150, 150);
-        ctx.arc(150, 150, 140, i * anglePerSegment, (i + 1) * anglePerSegment);
-        ctx.lineTo(150, 150);
-        ctx.fill();
-        ctx.stroke();
-        
-        // Add text
-        ctx.save();
-        ctx.translate(150, 150);
-        ctx.rotate(i * anglePerSegment + anglePerSegment / 2);
-        ctx.textAlign = 'right';
-        ctx.fillStyle = '#000';
-        ctx.font = `bold 24px ${getNumberFontFamily(currentLanguage)}`;
-        const currentLanguage = getCurrentLanguage();
-        const valueLabel = formatNumber(values[i], { decimals: 0, useCommas: true }, currentLanguage);
-        ctx.fillText(valueLabel, 120, 0);
-        ctx.restore();
-    }
-
-    // Draw center circle
-    ctx.beginPath();
-    ctx.fillStyle = '#FFFFFF';
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2;
-    ctx.arc(150, 150, 20, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.stroke();
-
-
-    // Add pointer only if it doesn't already exist
-    const container = document.querySelector('.wheel-container');
-    if (container && !container.querySelector('.wheel-pointer')) {
-        const pointer = document.createElement('div');
-        pointer.className = 'wheel-pointer';
-        pointer.style.position = 'absolute';
-        pointer.style.top = '-18px';
-        pointer.style.left = '50%';
-        pointer.style.transform = 'translateX(-50%)';
-        pointer.style.width = '0';
-        pointer.style.height = '0';
-        pointer.style.borderLeft = '15px solid transparent';
-        pointer.style.borderRight = '15px solid transparent';
-        pointer.style.borderTop = '25px solid #FF0000';
-        pointer.style.zIndex = '1';
-        pointer.style.filter = 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))';
-        container.appendChild(pointer);
-    }
-
-}
-
-function startSpinWheel() {
-    const spinButton = document.getElementById('spinWheel');
-    spinButton.disabled = true;
-
-    const canvas = document.getElementById('wheelCanvas');
-    // Reset any previous rotation
-    canvas.style.transition = 'none';
-    canvas.style.transform = 'rotate(0deg)';
-    // Force reflow so the reset takes effect before spinning
-    void canvas.offsetWidth;
-
-    const values = [0, 1000, 2000, 3000, 4000, 5000];
-    const randomIndex = Math.floor(Math.random() * values.length);
-    const winAmount = values[randomIndex];
-    
-    // Calculate rotation
-    const baseRotations = 5; // Number of full rotations
-    const segmentAngle = 360 / values.length;
-    const targetAngle = randomIndex * segmentAngle + segmentAngle / 2;
-    const pointerOffset = 270; // pointer position at top
-    const extraRotation = (pointerOffset - targetAngle + 360) % 360;
-    const totalRotation = (baseRotations * 360) + extraRotation;
-    
-    // Apply rotation with easing
-    canvas.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
-    canvas.style.transform = `rotate(${totalRotation}deg)`;
-    
-    // Update credits after spin animation
-    setTimeout(() => {
-        const currentCredits = parseFloat(localStorage.getItem('credits') || '0');
-        localStorage.setItem('credits', (currentCredits + winAmount).toString());
-        localStorage.setItem('lastWeeklySpin', new Date().getTime().toString());
-        
-        updateCreditDisplay();
-        checkBonusAvailability();
-        
-        // Show success message
-        const currentLanguage = localStorage.getItem('language') || 'english';
-        const texts = translations[currentLanguage];
-        const winAmountDisplay = formatNumber(winAmount, { decimals: 2, useCommas: true }, currentLanguage);
-        showSpinResult(`${texts.spinResult} ${wrapNumberDisplay(winAmountDisplay)} ${texts.credits}!`);
-    }, 4000);
-}
 
 // Tutorial Navigation
 function showTutorialStep(step) {

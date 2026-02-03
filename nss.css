@@ -128,30 +128,6 @@ h1, h2, h3, h4, h5, h6 {
   height: 40px;
 }
 
-.add-credits-btn {
-  background-color: var(--white);
-  color: var(--text-color);
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 1.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.add-credits-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
-}
-
-.add-credits-btn:focus-visible {
-  outline: 3px solid rgba(52, 152, 219, 0.5);
-  outline-offset: 3px;
-}
 
 /* Main Content */
 main {
@@ -2978,11 +2954,6 @@ section {
   color: var(--text-color);
 }
 
-[data-theme="dark"] .add-credits-btn {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: var(--text-color);
-}
-
 [data-theme="dark"] .rankings-list,
 [data-theme="dark"] .table-container,
 [data-theme="dark"] .market-content table,
@@ -3277,210 +3248,6 @@ section {
   }
 }
 
-/* Bonus Modal Styles */
-.bonus-modal {
-    display: flex;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 2000;
-    backdrop-filter: blur(4px);
-    justify-content: center;
-    align-items: center;
-}
-
-.bonus-modal-content {
-    background: var(--card-background);
-    border-radius: var(--border-radius);
-    padding: 2rem;
-    width: 90%;
-    max-width: 800px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    position: relative;
-    animation: modalSlideIn 0.3s ease;
-}
-
-@keyframes modalSlideIn {
-    from {
-        transform: translateY(-20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.bonus-section {
-    background: rgba(0, 180, 216, 0.1);
-    padding: 2rem;
-    border-radius: var(--border-radius);
-    text-align: center;
-}
-
-.bonus-section h2 {
-    color: var(--primary-color);
-    margin-bottom: 1.5rem;
-    font-size: 1.8rem;
-}
-
-.bonus-btn, .spin-btn {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 1rem 2rem;
-    border-radius: 50px;
-    font-size: 1.1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin: 1rem 0;
-}
-
-.bonus-btn:hover, .spin-btn:hover {
-    background: var(--secondary-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.bonus-btn:disabled, .spin-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.timer {
-    color: var(--text-color);
-    font-size: 0.9rem;
-    margin-top: 1rem;
-}
-
-.wheel-container {
-    position: relative;
-    width: 300px;
-    height: 300px;
-    margin: 20px auto;
-}
-
-.wheel-pointer {
-    position: absolute;
-    top: -18px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-top: 25px solid #FF0000;
-    z-index: 2;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-}
-
-/* Spin result overlay */
-.spin-wheel {
-    position: relative;
-}
-
-.spin-wheel.blur .wheel-container,
-.spin-wheel.blur .spin-btn {
-    filter: blur(4px);
-}
-
-.spin-result {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(5px);
-    border-radius: var(--border-radius);
-    font-weight: bold;
-    font-size: 1.2rem;
-    color: var(--text-color);
-    z-index: 3;
-}
-
-.spin-result.hidden {
-    display: none;
-}
-
-/* Confetti animation */
-.confetti {
-    position: fixed;
-    top: -10px;
-    width: 8px;
-    height: 8px;
-    opacity: 0.9;
-    pointer-events: none;
-    animation: confetti-fall 3s linear forwards;
-}
-
-@keyframes confetti-fall {
-    0% { transform: translateY(0) rotate(0deg); }
-    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-}
-
-#wheelCanvas {
-    border-radius: 50%;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-    background-color: #fff;
-}
-
-.close-modal {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    color: var(--text-color);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    transition: transform 0.3s ease;
-}
-
-.close-modal:hover {
-    transform: scale(1.1);
-}
-
-/* Dark Mode Adjustments */
-[data-theme="dark"] .bonus-modal-content {
-    background: var(--card-background);
-}
-
-[data-theme="dark"] .bonus-section {
-    background: rgba(100, 181, 246, 0.1);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .bonus-modal-content {
-        grid-template-columns: 1fr;
-        max-width: 90%;
-        gap: 1rem;
-    }
-
-    .wheel-container {
-        width: 250px;
-        height: 250px;
-    }
-
-    .bonus-section {
-        padding: 1rem;
-    }
-
-    .bonus-section h2 {
-        font-size: 1.5rem;
-    }
-}
-
 /* Loading Screen */
 .loading-screen {
   position: fixed;
@@ -3734,10 +3501,6 @@ section {
   color: #bdc3c7;
 }
 
-[data-theme="dark"] #wheelCanvas {
-    background-color: #2a2a2a;
-}
-
 /* Responsive breakpoints */
 @media (max-width: 1200px) {
   .stats-cards {
@@ -3824,15 +3587,7 @@ section {
     grid-template-columns: 1fr;
   }
   
-  .bonus-modal-content {
-    width: 90%;
-    padding: 1rem;
-  }
   
-  .wheel-container {
-    width: 250px;
-    height: 250px;
-  }
 }
 
 @media (max-width: 576px) {
@@ -3846,12 +3601,6 @@ section {
   }
   
   .credits-display {
-    font-size: 0.8rem;
-  }
-  
-  .add-credits-btn {
-    width: 20px;
-    height: 20px;
     font-size: 0.8rem;
   }
   
@@ -3938,7 +3687,6 @@ section {
 /* Print styles */
 @media print {
   .top-nav,
-  .add-credits-btn,
   .trade-btn,
   .sell-btn {
     display: none;
@@ -4708,7 +4456,6 @@ section {
 .team-card,
 .playground-card,
 .settings-card,
-.bonus-modal-content,
 .tutorial-content,
 .chart-game-shell,
 .chart-game-results-card,
@@ -4756,8 +4503,6 @@ section {
 .portfolio-sort,
 .portfolio-sort-btn,
 .start-investing-btn,
-.bonus-btn,
-.spin-btn,
 .chart-game-btn,
 .playground-primary-btn,
 .quiz-primary-btn,
@@ -4790,8 +4535,6 @@ section {
 .sector-chip:active,
 .portfolio-sort-btn:active,
 .start-investing-btn:active,
-.bonus-btn:active,
-.spin-btn:active,
 .chart-game-btn:active,
 .playground-primary-btn:active,
 .quiz-primary-btn:active,
@@ -4836,8 +4579,6 @@ section {
   .register-btn:hover,
   .modal-btn:hover,
   .start-investing-btn:hover,
-  .bonus-btn:hover,
-  .spin-btn:hover,
   .chart-game-btn:hover,
   .playground-primary-btn:hover,
   .quiz-primary-btn:hover,
@@ -5024,7 +4765,6 @@ body.polish-enter .settings-card {
   .feature-icon,
   .loading-logo,
   .loading-ellipsis::after,
-  .confetti,
   .tutorial-step {
     animation: none !important;
   }
@@ -5074,8 +4814,6 @@ body.polish-enter .settings-card {
   .sector-chip,
   .portfolio-sort-btn,
   .start-investing-btn,
-  .bonus-btn,
-  .spin-btn,
   .chart-game-btn,
   .playground-primary-btn,
   .quiz-primary-btn,
