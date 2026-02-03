@@ -1831,6 +1831,12 @@ function updatePortfolioSortControls() {
 }
 
 function initPortfolioSortControls() {
+  if (typeof window !== 'undefined' && window.__portfolioSortInitDone) {
+    return;
+  }
+  if (typeof window !== 'undefined') {
+    window.__portfolioSortInitDone = true;
+  }
   const buttons = document.querySelectorAll('.portfolio-sort-btn');
   if (!buttons.length) {
     return;
@@ -1852,7 +1858,7 @@ async function updatePortfolio() {
   const investments = JSON.parse(localStorage.getItem("investments")) || [];
   const transactions = getStoredTransactions();
   const holdings = computeHoldings(investments, transactions);
-  const tableBody = document.getElementById("investmentHistory");
+  const tableBody = document.getElementById("investmentHistory")?.getElementsByTagName('tbody')[0];
   const tableContainer = document.querySelector(".table-container");
   const summaryContainer = document.querySelector(".portfolio-summary");
   const controlsContainer = document.querySelector(".portfolio-controls");
@@ -1864,8 +1870,7 @@ async function updatePortfolio() {
   
   if (!tableBody) return;
   
-  const tbody = tableBody.getElementsByTagName('tbody')[0];
-  tbody.innerHTML = "";
+  tableBody.innerHTML = "";
 
   if (holdings.length === 0) {
     if (tableContainer) {
@@ -2005,7 +2010,7 @@ async function updatePortfolio() {
       </td>
       <td><button onclick="sellInvestment('${holding.symbol}', this)" class="sell-btn">${sellLabel}</button></td>
     `;
-    tbody.appendChild(row);
+    tableBody.appendChild(row);
   });
 
   updatePortfolioSortControls();
