@@ -10,6 +10,8 @@ let currentSearchTerm = '';
 let navigationInitialized = false;
 let currentPortfolioSort = 'pl';
 let portfolioRenderToken = 0;
+let polishIntroInitialized = false;
+let tableHintInitialized = false;
 
 
 // Default credits given to new users (10 lakh)
@@ -111,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initNavigation();
   initSortControls();
   initDigitNormalizationObserver();
+  initPolishEnhancements();
 
 });
 
@@ -4306,3 +4309,50 @@ const initAboutReveal = () => {
 document.addEventListener('DOMContentLoaded', () => {
   initAboutReveal();
 });
+
+function initPolishEnhancements() {
+  if (polishIntroInitialized) {
+    return;
+  }
+  polishIntroInitialized = true;
+
+  const body = document.body;
+  if (body && !sessionStorage.getItem('polishIntroDone')) {
+    body.classList.add('polish-enter');
+    sessionStorage.setItem('polishIntroDone', 'true');
+    window.setTimeout(() => {
+      body.classList.remove('polish-enter');
+    }, 900);
+  }
+
+  initTableScrollHints();
+}
+
+function initTableScrollHints() {
+  if (tableHintInitialized) {
+    return;
+  }
+  tableHintInitialized = true;
+
+  const containers = Array.from(document.querySelectorAll('.table-container, .all-stocks'));
+  if (!containers.length) {
+    return;
+  }
+
+  const updateHints = () => {
+    containers.forEach((container) => {
+      const hasOverflow = container.scrollWidth - container.clientWidth > 2;
+      container.classList.toggle('scroll-hint', hasOverflow);
+    });
+  };
+
+  updateHints();
+  window.setTimeout(updateHints, 800);
+  window.addEventListener(
+    'resize',
+    () => {
+      window.requestAnimationFrame(updateHints);
+    },
+    { passive: true }
+  );
+}
