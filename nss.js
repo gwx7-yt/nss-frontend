@@ -112,6 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSortControls();
   initDigitNormalizationObserver();
   initPolishEnhancements();
+  initModalShortcuts();
 
 });
 
@@ -316,7 +317,11 @@ function closeTradeModal() {
 }
 
 function updateCostPreview() {
-  const shares = parseFloat(document.getElementById("modalTradeShares").value) || 0;
+  const sharesInput = document.getElementById("modalTradeShares");
+  if (!sharesInput) {
+    return;
+  }
+  const shares = parseFloat(sharesInput.value) || 0;
   const price = currentStockData ? parseFloat(currentStockData.price) : 0;
   const base = shares * price;
   const brokerFee = base * 0.006;
@@ -339,7 +344,16 @@ function updateCostPreview() {
 }
 
 function confirmTrade() {
-  const shares = parseFloat(document.getElementById("modalTradeShares").value);
+  if (!currentStockData) {
+    showToast("❌ Please select a stock to trade.");
+    return;
+  }
+  const sharesInput = document.getElementById("modalTradeShares");
+  if (!sharesInput) {
+    showToast("❌ Trade form is unavailable. Please refresh and try again.");
+    return;
+  }
+  const shares = parseFloat(sharesInput.value);
   let credits = parseFloat(localStorage.getItem("credits")) || DEFAULT_CREDITS;
 
   if (!shares || shares <= 0) {
@@ -1529,8 +1543,9 @@ function initNavigation() {
     return;
   }
   navigationInitialized = true;
-  // Set home as active by default
-  updateActiveSection('home');
+  const initialSection = getSectionFromHash();
+  showSection(initialSection, { updateHash: false, scroll: false });
+  updateActiveSection(initialSection);
 
   // Add click handlers to navigation links
   document.querySelectorAll('.nav-icon').forEach(link => {
@@ -1540,6 +1555,12 @@ function initNavigation() {
       showSection(section);
       updateActiveSection(section);
     });
+  });
+
+  window.addEventListener('hashchange', () => {
+    const section = getSectionFromHash();
+    showSection(section, { updateHash: false });
+    updateActiveSection(section);
   });
 }
 
@@ -1556,17 +1577,54 @@ function updateActiveSection(sectionId) {
   }
 }
 
-function showSection(sectionId) {
-  // Hide all sections
+function showSection(sectionId, options = {}) {
+  const { updateHash = true, scroll = true } = options;
+  const targetSection = document.getElementById(sectionId) || document.getElementById('home');
+  const targetId = targetSection ? targetSection.id : null;
+
   document.querySelectorAll('main > section').forEach(section => {
-    section.style.display = 'none';
+    const isActive = targetId && section.id === targetId;
+    section.style.display = isActive ? 'block' : 'none';
+    section.setAttribute('aria-hidden', (!isActive).toString());
   });
-  
-  // Show selected section
-  const selectedSection = document.getElementById(sectionId);
-  if (selectedSection) {
-    selectedSection.style.display = 'block';
+
+  if (targetId && updateHash) {
+    history.replaceState(null, '', `#${targetId}`);
   }
+
+  if (scroll) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function getSectionFromHash() {
+  const rawHash = window.location.hash ? window.location.hash.substring(1) : '';
+  if (rawHash && document.getElementById(rawHash)) {
+    return rawHash;
+  }
+  return 'home';
+}
+
+function initModalShortcuts() {
+  const tradeModal = document.getElementById('tradeModal');
+  if (!tradeModal) {
+    return;
+  }
+
+  tradeModal.addEventListener('click', (event) => {
+    if (event.target === tradeModal) {
+      closeTradeModal();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') {
+      return;
+    }
+    if (tradeModal.getAttribute('aria-hidden') === 'false') {
+      closeTradeModal();
+    }
+  });
 }
 
 function getStoredTransactions() {
