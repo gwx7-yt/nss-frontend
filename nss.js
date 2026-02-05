@@ -104,6 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchCompanyDetails();
   fetchTopGainers();
   fetchTopLosers();
+  fetchHomeNepseIndex();
   initCredits();
   upgradeOldUsers();
   updatePortfolio();
@@ -751,7 +752,9 @@ const homeDashboardState = {
   lastBreadth: null,
   lastSectorMetrics: null,
   lastTimeLabel: null,
-  marketOpen: null
+  marketOpen: null,
+  lastNepseIndex: null,
+  lastNepseChange: null
 };
 
 function initializeHomeDashboard() {
@@ -808,6 +811,88 @@ async function tickHomeDashboard() {
   });
 
   renderHotToday(priceVolume);
+  fetchHomeNepseIndex();
+}
+
+async function fetchHomeNepseIndex() {
+  try {
+    const data = await fetchHomeData(`${API_BASE}/api/nots/nepse-index`);
+    const parsed = extractNepseIndexData(data);
+    if (!parsed) {
+      return;
+    }
+
+    homeDashboardState.lastNepseIndex = parsed.index;
+    homeDashboardState.lastNepseChange = parsed.change;
+    renderHomeNepseIndex(parsed.index, parsed.change);
+  } catch (error) {
+    console.error('⚠️ Error fetching NEPSE index:', error);
+  }
+}
+
+function extractNepseIndexData(payload) {
+  if (!payload) {
+    return null;
+  }
+
+  const sources = Array.isArray(payload) ? payload : [payload];
+  const indexKeys = ['index', 'nepseIndex', 'currentIndex', 'value', 'ltp'];
+  const changeKeys = ['change', 'difference', 'pointChange', 'indexChange'];
+
+  for (const item of sources) {
+    if (!item || typeof item !== 'object') {
+      continue;
+    }
+
+    const index = firstFiniteFromKeys(item, indexKeys);
+    if (!Number.isFinite(index)) {
+      continue;
+    }
+
+    const change = firstFiniteFromKeys(item, changeKeys);
+    return {
+      index,
+      change: Number.isFinite(change) ? change : 0
+    };
+  }
+
+  return null;
+}
+
+function firstFiniteFromKeys(obj, keys) {
+  for (const key of keys) {
+    const value = Number.parseFloat(obj[key]);
+    if (Number.isFinite(value)) {
+      return value;
+    }
+  }
+  return null;
+}
+
+function renderHomeNepseIndex(indexValue, changeValue = 0) {
+  const el = document.getElementById('homeNepseIndex');
+  if (!el || !Number.isFinite(indexValue)) {
+    return;
+  }
+
+  const language = getCurrentLanguage();
+  const formattedIndex = formatPrice(indexValue, language, { decimals: 2, useCommas: true });
+  const formattedChange = formatPrice(Math.abs(changeValue), language, { decimals: 2, useCommas: true });
+
+  let directionClass = 'neutral';
+  let arrow = '→';
+
+  if (changeValue > 0) {
+    directionClass = 'positive';
+    arrow = '▲';
+  } else if (changeValue < 0) {
+    directionClass = 'negative';
+    arrow = '▼';
+  }
+
+  el.classList.remove('positive', 'negative', 'neutral');
+  el.classList.add(directionClass);
+  el.textContent = `NEPSE ${formattedIndex} ${arrow} ${formattedChange}`;
 }
 
 function refreshHomeDashboardLocale() {
@@ -832,6 +917,10 @@ function refreshHomeDashboardLocale() {
       sectorMetrics: homeDashboardState.lastSectorMetrics,
       indexChange: null
     });
+  }
+
+  if (Number.isFinite(homeDashboardState.lastNepseIndex)) {
+    renderHomeNepseIndex(homeDashboardState.lastNepseIndex, homeDashboardState.lastNepseChange || 0);
   }
 
   if (homeDashboardState.latestPriceVolume) {
