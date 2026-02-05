@@ -152,6 +152,39 @@ section {
   color: var(--text-color);
 }
 
+.welcome-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.home-nepse-index {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(10, 17, 40, 0.06);
+  color: var(--text-muted);
+}
+
+.home-nepse-index.positive {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.14);
+}
+
+.home-nepse-index.negative {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.12);
+}
+
+.home-nepse-index.neutral {
+  color: var(--text-muted);
+}
+
 /* Home Dashboard */
 .home-dashboard {
   display: grid;
