@@ -4301,8 +4301,14 @@ section {
   bottom: 40px;
 }
 
+#about {
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
 .nss-about {
   position: relative;
+  width: 100%;
   padding: 4rem 1.5rem;
   background: linear-gradient(180deg, #f7fafc 0%, #eef4fb 55%, #f8fbff 100%);
   background-color: #f3f7fc;
