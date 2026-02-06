@@ -16,6 +16,198 @@ let tableHintInitialized = false;
 
 // Default credits given to new users (10 lakh)
 const DEFAULT_CREDITS = 1000000;
+const NEPSE_INDEX_ENDPOINT = `${API_BASE}/api/nepse-index`;
+const NEPSE_INDEX_CACHE_KEY = 'nepseIndexCache';
+const NEPSE_REFRESH_INTERVAL = 60000;
+let nepseRefreshId = null;
+
+function renderTableSkeleton(tbody, rows = 4, columns = 3) {
+  if (!tbody) {
+    return;
+  }
+  const rowCount = Math.max(1, rows);
+  const colCount = Math.max(1, columns);
+  const rowsMarkup = Array.from({ length: rowCount }).map(() => {
+    const cells = Array.from({ length: colCount })
+      .map(() => '<td><span class="skeleton-block"></span></td>')
+      .join('');
+    return `<tr class="skeleton-row">${cells}</tr>`;
+  });
+  tbody.innerHTML = rowsMarkup.join('');
+}
+
+function setLoadingState(element, isLoading) {
+  if (!element) {
+    return;
+  }
+  element.classList.toggle('is-loading', isLoading);
+}
+
+function extractNepseIndex(payload) {
+  if (!Array.isArray(payload)) {
+    return null;
+  }
+  return payload.find(item => {
+    if (!item) {
+      return false;
+    }
+    const idMatch = Number(item.id) === 58;
+    const nameMatch = item.index === 'NEPSE Index';
+    return idMatch || nameMatch;
+  }) || null;
+}
+
+function getCachedNepseIndex() {
+  try {
+    const raw = localStorage.getItem(NEPSE_INDEX_CACHE_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.data) {
+      return null;
+    }
+    return parsed;
+  } catch (error) {
+    return null;
+  }
+}
+
+function cacheNepseIndex(data) {
+  if (!data) {
+    return;
+  }
+  const payload = {
+    timestamp: Date.now(),
+    data
+  };
+  localStorage.setItem(NEPSE_INDEX_CACHE_KEY, JSON.stringify(payload));
+}
+
+function renderNepseIndexWidget(data, state = {}) {
+  const widget = document.getElementById('nepseIndexWidget');
+  if (!widget) {
+    return;
+  }
+  const status = state.status || 'live';
+  const valueElement = document.getElementById('nepseIndexValue');
+  const changeElement = document.getElementById('nepseIndexChange');
+  const percentElement = document.getElementById('nepseIndexPercent');
+  const metaElement = document.getElementById('nepseIndexMeta');
+
+  widget.classList.toggle('is-loading', status === 'loading');
+
+  if (status === 'loading') {
+    if (metaElement) {
+      metaElement.textContent = '';
+    }
+    return;
+  }
+
+  if (!data) {
+    if (valueElement) {
+      valueElement.textContent = '--';
+    }
+    if (changeElement) {
+      changeElement.textContent = '--';
+    }
+    if (percentElement) {
+      percentElement.textContent = '--';
+    }
+    if (metaElement) {
+      metaElement.textContent = '';
+    }
+    return;
+  }
+
+  const currentLanguage = getCurrentLanguage();
+  const currentValue = Number.parseFloat(data.currentValue);
+  const changeValue = Number.parseFloat(data.change);
+  const percentValue = Number.parseFloat(data.perChange);
+  const safeCurrent = Number.isFinite(currentValue) ? currentValue : 0;
+  const safeChange = Number.isFinite(changeValue) ? changeValue : 0;
+  const safePercent = Number.isFinite(percentValue) ? percentValue : 0;
+  const changeDirection = safeChange > 0 ? 'positive' : safeChange < 0 ? 'negative' : 'neutral';
+  const arrow = safeChange > 0 ? '▲' : safeChange < 0 ? '▼' : '—';
+
+  widget.classList.toggle('is-positive', changeDirection === 'positive');
+  widget.classList.toggle('is-negative', changeDirection === 'negative');
+  widget.classList.toggle('is-neutral', changeDirection === 'neutral');
+
+  if (valueElement) {
+    valueElement.textContent = formatNumber(safeCurrent, { decimals: 2, useCommas: true }, currentLanguage);
+    valueElement.classList.add('np-number');
+  }
+  if (changeElement) {
+    const changeDisplay = formatNumber(Math.abs(safeChange), { decimals: 2, useCommas: true }, currentLanguage);
+    changeElement.textContent = `${arrow} ${changeDisplay}`;
+    changeElement.classList.add('np-number');
+  }
+  if (percentElement) {
+    const percentDisplay = formatNumber(Math.abs(safePercent), { decimals: 2, useCommas: true }, currentLanguage);
+    percentElement.textContent = `${percentDisplay}%`;
+    percentElement.classList.add('np-number');
+  }
+
+  if (metaElement) {
+    metaElement.textContent = status === 'cached' ? 'cached' : '';
+  }
+
+  widget.classList.add('is-updating');
+  window.setTimeout(() => {
+    widget.classList.remove('is-updating');
+  }, 500);
+}
+
+function fetchNepseIndex() {
+  renderNepseIndexWidget(null, { status: 'loading' });
+  return fetch(NEPSE_INDEX_ENDPOINT)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(payload => {
+      const nepseData = extractNepseIndex(payload);
+      if (!nepseData) {
+        throw new Error('NEPSE index not found');
+      }
+      cacheNepseIndex(nepseData);
+      renderNepseIndexWidget(nepseData, { status: 'live' });
+      return nepseData;
+    })
+    .catch(() => {
+      const cached = getCachedNepseIndex();
+      if (cached && cached.data) {
+        renderNepseIndexWidget(cached.data, { status: 'cached' });
+      } else {
+        renderNepseIndexWidget(null, { status: 'empty' });
+      }
+    });
+}
+
+function startNepseIndexAutoRefresh() {
+  fetchNepseIndex();
+
+  if (nepseRefreshId) {
+    clearInterval(nepseRefreshId);
+  }
+  nepseRefreshId = window.setInterval(() => {
+    if (!document.hidden) {
+      fetchNepseIndex();
+    }
+  }, NEPSE_REFRESH_INTERVAL);
+
+  if (!document.__nepseVisibilityBound) {
+    document.__nepseVisibilityBound = true;
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        fetchNepseIndex();
+      }
+    });
+  }
+}
 
 
 function getCurrentLanguage() {
@@ -112,10 +304,15 @@ document.addEventListener("DOMContentLoaded", () => {
   initSortControls();
   initDigitNormalizationObserver();
   initPolishEnhancements();
+  startNepseIndexAutoRefresh();
 
 });
 
 function fetchTopGainers() {
+  const gainersBody = document.querySelector("#gainersTable tbody");
+  const gainersContainer = document.querySelector(".gainers-table");
+  renderTableSkeleton(gainersBody, 5, 3);
+  setLoadingState(gainersContainer, true);
   fetch("https://nss-c26z.onrender.com/TopGainers")
     .then(res => {
       if (!res.ok) {
@@ -125,6 +322,7 @@ function fetchTopGainers() {
     })
     .then(data => {
       const tbody = document.querySelector("#gainersTable tbody");
+      const container = document.querySelector(".gainers-table");
       if (tbody) {
         tbody.innerHTML = "";
       data.slice(0, 10).forEach(item => {
@@ -146,13 +344,19 @@ function fetchTopGainers() {
           tbody.appendChild(row);
         });
       }
+      setLoadingState(container, false);
     })
     .catch(() => {
       console.error("⚠️ Error fetching top gainers");
+      setLoadingState(gainersContainer, false);
     });
 }
 
 function fetchTopLosers() {
+  const losersBody = document.querySelector("#losersTable tbody");
+  const losersContainer = document.querySelector(".losers-table");
+  renderTableSkeleton(losersBody, 5, 3);
+  setLoadingState(losersContainer, true);
   fetch("https://nss-c26z.onrender.com/TopLosers")
     .then(res => {
       if (!res.ok) {
@@ -162,6 +366,7 @@ function fetchTopLosers() {
     })
     .then(data => {
       const tbody = document.querySelector("#losersTable tbody");
+      const container = document.querySelector(".losers-table");
       if (tbody) {
         tbody.innerHTML = "";
       data.slice(0, 10).forEach(item => {
@@ -184,9 +389,11 @@ function fetchTopLosers() {
           tbody.appendChild(row);
         });
       }
+      setLoadingState(container, false);
     })
     .catch(() => {
       console.error("⚠️ Error fetching top losers");
+      setLoadingState(losersContainer, false);
     });
 }
 
@@ -316,7 +523,8 @@ function closeTradeModal() {
 }
 
 function updateCostPreview() {
-  const shares = parseFloat(document.getElementById("modalTradeShares").value) || 0;
+  const tradeSharesInput = document.getElementById("modalTradeShares");
+  const shares = parseFloat(tradeSharesInput?.value) || 0;
   const price = currentStockData ? parseFloat(currentStockData.price) : 0;
   const base = shares * price;
   const brokerFee = base * 0.006;
@@ -336,6 +544,20 @@ function updateCostPreview() {
   setNumberText(sebonFeePreview, formatPrice(sebonFee, currentLanguage));
   setNumberText(dpFeePreview, formatPrice(dpFee, currentLanguage));
   setNumberText(costPreview, formatPrice(total, currentLanguage));
+
+  const confirmButton = document.querySelector(".modal-btn.confirm");
+  const isValidShares = Number.isFinite(shares) && shares >= 10;
+  if (confirmButton) {
+    confirmButton.disabled = !isValidShares;
+  }
+  if (tradeSharesInput) {
+    tradeSharesInput.classList.toggle('is-invalid', !isValidShares);
+    tradeSharesInput.setAttribute('aria-invalid', (!isValidShares).toString());
+    const inputGroup = tradeSharesInput.closest('.trade-input-group');
+    if (inputGroup) {
+      inputGroup.classList.toggle('is-invalid', !isValidShares);
+    }
+  }
 }
 
 function confirmTrade() {
@@ -646,6 +868,10 @@ function initSortControls() {
 
 // Update loadAllStocks function to add data attributes and new trade button
 function loadAllStocks() {
+  const allStocksBody = document.querySelector("#allStocksTable tbody");
+  const allStocksContainer = document.querySelector(".all-stocks");
+  renderTableSkeleton(allStocksBody, 6, 7);
+  setLoadingState(allStocksContainer, true);
   fetch("https://nss-c26z.onrender.com/AllStocks")
     .then(res => {
       if (!res.ok) {
@@ -692,9 +918,11 @@ function loadAllStocks() {
         renderSectorFilters(latestSectorCounts);
         renderAllStocksTable();
       }
+      setLoadingState(allStocksContainer, false);
     })
     .catch(() => {
       console.error("⚠️ Error loading all stocks");
+      setLoadingState(allStocksContainer, false);
     });
 }
 
@@ -1877,6 +2105,7 @@ async function updatePortfolio() {
 
   if (tableContainer) {
     tableContainer.style.display = "block";
+    setLoadingState(tableContainer, true);
   }
   if (summaryContainer) {
     summaryContainer.style.display = "grid";
@@ -1896,6 +2125,8 @@ async function updatePortfolio() {
   if (emptyState) {
     emptyState.style.display = "none";
   }
+
+  renderTableSkeleton(tableBody, Math.min(Math.max(holdings.length, 3), 6), 7);
 
   let totalInvested = 0;
   let totalCurrentValue = 0;
@@ -1947,6 +2178,11 @@ async function updatePortfolio() {
   if (renderToken !== portfolioRenderToken) {
     return;
   }
+
+  if (tableContainer) {
+    setLoadingState(tableContainer, false);
+  }
+  tableBody.innerHTML = "";
 
   holdingsWithPrices.sort((a, b) => {
     switch (currentPortfolioSort) {
@@ -2224,6 +2460,7 @@ function addSampleUsers() {
 const translations = {
     english: {
         welcome: 'Welcome, {name}!',
+        nepseIndex: 'NEPSE Index',
         netWorth: 'Net Worth',
         netWorthDesc: 'The total value of all your stocks and leftover credits combined.',
         totalProfit: 'Total Profit',
@@ -2290,8 +2527,17 @@ const translations = {
         english: 'English',
         nepali: 'Nepali',
         tradeStock: 'Trade Stock',
+        tradeSharesLabel: 'Shares to Buy',
+        tradeSharesPlaceholder: 'Enter number of shares',
+        tradeMinLabel: 'Min 10',
+        tradeSharesHelper: 'Minimum trade size is 10 shares.',
+        tradeFeeSharePrice: 'Share price',
+        tradeFeeBroker: 'broker fee',
+        tradeFeeSebon: 'SEBON fee',
+        tradeFeeDp: 'DP fee',
         back: 'Back',
         confirm: 'Confirm Trade',
+        confirmTrade: 'Confirm Trade',
         settingsSaved: 'Settings saved automatically',
         settingsInfo: 'Your preferences will be saved and applied across all sessions',
         motivation: 'Doing good so far investor!',
@@ -2455,6 +2701,7 @@ const translations = {
     },
     nepali: {
         welcome: 'स्वागत छ, {name}!',
+        nepseIndex: 'नेप्से सूचकांक',
         netWorth: 'कुल सम्पत्ति',
         netWorthDesc: 'तपाईंको सबै स्टक र बाँकी क्रेडिटको कुल मूल्य।',
         totalProfit: 'कुल नाफा',
@@ -2521,8 +2768,17 @@ const translations = {
         english: 'अंग्रेजी',
         nepali: 'नेपाली',
         tradeStock: 'शेयर व्यापार',
+        tradeSharesLabel: 'किन्ने शेयर',
+        tradeSharesPlaceholder: 'शेयर संख्या लेख्नुहोस्',
+        tradeMinLabel: 'न्यूनतम १०',
+        tradeSharesHelper: 'न्यूनतम व्यापार १० शेयर हो।',
+        tradeFeeSharePrice: 'शेयर मूल्य',
+        tradeFeeBroker: 'ब्रोकर शुल्क',
+        tradeFeeSebon: 'सेबोन शुल्क',
+        tradeFeeDp: 'डीपी शुल्क',
         back: 'पछाडि',
         confirm: 'व्यापार पुष्टि गर्नुहोस्',
+        confirmTrade: 'व्यापार पुष्टि गर्नुहोस्',
         settingsSaved: 'सेटिङ  सेभ भयो',
         settingsInfo: 'तपाईंको प्राथमिकताहरू सेभ हुनेछ र सबै सत्रहरूमा लागू हुनेछ',
         motivation: 'राम्रो गर्दै हुनुहुन्छ लगानीकर्ता!',
