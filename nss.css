@@ -2732,6 +2732,10 @@ section {
   font-weight: 600;
 }
 
+.quiz-card .playground-card-header h3 {
+  display: none;
+}
+
 .playground-card-header p {
   margin: 0.4rem 0 0;
   opacity: 0.6;
@@ -3065,6 +3069,13 @@ section {
   color: var(--text-color);
   border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
   box-shadow: 0 10px 20px rgba(15, 24, 44, 0.08);
+}
+
+[data-theme="dark"] .quiz-secondary-btn {
+  background: color-mix(in srgb, var(--card-background) 78%, rgba(15, 23, 42, 0.4));
+  color: #f8fafc;
+  border-color: color-mix(in srgb, var(--border-color) 50%, transparent);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.35);
 }
 
 @media (hover: hover) {
