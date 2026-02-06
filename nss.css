@@ -3638,6 +3638,34 @@ section {
   }
 }
 
+@media (max-width: 640px) {
+  .trade-modal-content {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    border-radius: 24px 24px 0 0;
+    padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+
+  .chart-game-modal {
+    align-items: flex-end;
+    padding: 0.75rem;
+  }
+
+  .chart-game-shell {
+    width: 100%;
+    height: 92vh;
+    border-radius: 24px 24px 0 0;
+    padding: 1.5rem 1.25rem;
+  }
+}
+
 /* Landscape mode for mobile devices */
 @media (max-height: 500px) and (orientation: landscape) {
   .top-nav {
@@ -4434,11 +4462,17 @@ section {
   --loss-color: #d24d4d;
   --card-border: rgba(148, 163, 184, 0.2);
   --table-head-text: #3b4a5c;
+  --table-row-border: rgba(148, 163, 184, 0.2);
+  --skeleton-base: rgba(226, 232, 240, 0.75);
+  --skeleton-highlight: rgba(248, 250, 252, 0.95);
 }
 
 [data-theme="dark"] {
   --card-border: rgba(148, 163, 184, 0.18);
   --table-head-text: rgba(226, 232, 240, 0.85);
+  --table-row-border: rgba(148, 163, 184, 0.12);
+  --skeleton-base: rgba(51, 65, 85, 0.6);
+  --skeleton-highlight: rgba(71, 85, 105, 0.85);
 }
 
 .home-card,
@@ -4472,6 +4506,124 @@ section {
 .table-container,
 .all-stocks {
   position: relative;
+}
+
+.gainers-table,
+.losers-table,
+.all-stocks,
+.table-container {
+  overflow-x: auto;
+  scrollbar-gutter: stable both-edges;
+}
+
+.gainers-table table,
+.losers-table table,
+.all-stocks table,
+.table-container table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.gainers-table th,
+.gainers-table td,
+.losers-table th,
+.losers-table td,
+.all-stocks th,
+.all-stocks td,
+#investmentHistory th,
+#investmentHistory td {
+  padding: 0.85rem 1rem;
+  vertical-align: middle;
+  line-height: 1.35;
+}
+
+.gainers-table th,
+.losers-table th,
+.all-stocks th,
+#investmentHistory th {
+  font-size: 0.88rem;
+  letter-spacing: 0.02em;
+}
+
+.gainers-table td,
+.losers-table td,
+.all-stocks td,
+#investmentHistory td {
+  border-bottom: 1px solid var(--table-row-border);
+}
+
+.gainers-table tbody tr:last-child td,
+.losers-table tbody tr:last-child td,
+.all-stocks tbody tr:last-child td,
+#investmentHistory tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.all-stocks table {
+  min-width: 760px;
+}
+
+.gainers-table table,
+.losers-table table {
+  min-width: 360px;
+}
+
+.search-result,
+.stock-detail-item {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.search-result:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.stock-detail-item {
+  border: 1px solid var(--card-border);
+}
+
+.stock-detail-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.table-container.is-loading tbody tr:hover td,
+.all-stocks.is-loading tbody tr:hover td,
+.gainers-table.is-loading tbody tr:hover td,
+.losers-table.is-loading tbody tr:hover td {
+  background: transparent;
+}
+
+.skeleton-row td {
+  padding: 0.9rem 1rem;
+}
+
+.skeleton-block {
+  display: block;
+  height: 0.75rem;
+  width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--skeleton-base), var(--skeleton-highlight), var(--skeleton-base));
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (hover: hover) {
+  .gainers-table tbody tr:hover td,
+  .losers-table tbody tr:hover td,
+  .all-stocks tbody tr:hover td {
+    background: rgba(56, 189, 248, 0.08);
+  }
 }
 
 .table-container.scroll-hint::after,
@@ -4702,6 +4854,10 @@ body.polish-enter .settings-card {
 
   #investmentHistory {
     min-width: 640px;
+  }
+
+  .all-stocks table {
+    min-width: 680px;
   }
 
   .portfolio-controls {

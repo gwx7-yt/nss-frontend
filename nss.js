@@ -17,6 +17,28 @@ let tableHintInitialized = false;
 // Default credits given to new users (10 lakh)
 const DEFAULT_CREDITS = 1000000;
 
+function renderTableSkeleton(tbody, rows = 4, columns = 3) {
+  if (!tbody) {
+    return;
+  }
+  const rowCount = Math.max(1, rows);
+  const colCount = Math.max(1, columns);
+  const rowsMarkup = Array.from({ length: rowCount }).map(() => {
+    const cells = Array.from({ length: colCount })
+      .map(() => '<td><span class="skeleton-block"></span></td>')
+      .join('');
+    return `<tr class="skeleton-row">${cells}</tr>`;
+  });
+  tbody.innerHTML = rowsMarkup.join('');
+}
+
+function setLoadingState(element, isLoading) {
+  if (!element) {
+    return;
+  }
+  element.classList.toggle('is-loading', isLoading);
+}
+
 
 function getCurrentLanguage() {
   return localStorage.getItem('language') || 'english';
@@ -116,6 +138,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function fetchTopGainers() {
+  const gainersBody = document.querySelector("#gainersTable tbody");
+  const gainersContainer = document.querySelector(".gainers-table");
+  renderTableSkeleton(gainersBody, 5, 3);
+  setLoadingState(gainersContainer, true);
   fetch("https://nss-c26z.onrender.com/TopGainers")
     .then(res => {
       if (!res.ok) {
@@ -125,6 +151,7 @@ function fetchTopGainers() {
     })
     .then(data => {
       const tbody = document.querySelector("#gainersTable tbody");
+      const container = document.querySelector(".gainers-table");
       if (tbody) {
         tbody.innerHTML = "";
       data.slice(0, 10).forEach(item => {
@@ -146,13 +173,19 @@ function fetchTopGainers() {
           tbody.appendChild(row);
         });
       }
+      setLoadingState(container, false);
     })
     .catch(() => {
       console.error("⚠️ Error fetching top gainers");
+      setLoadingState(gainersContainer, false);
     });
 }
 
 function fetchTopLosers() {
+  const losersBody = document.querySelector("#losersTable tbody");
+  const losersContainer = document.querySelector(".losers-table");
+  renderTableSkeleton(losersBody, 5, 3);
+  setLoadingState(losersContainer, true);
   fetch("https://nss-c26z.onrender.com/TopLosers")
     .then(res => {
       if (!res.ok) {
@@ -162,6 +195,7 @@ function fetchTopLosers() {
     })
     .then(data => {
       const tbody = document.querySelector("#losersTable tbody");
+      const container = document.querySelector(".losers-table");
       if (tbody) {
         tbody.innerHTML = "";
       data.slice(0, 10).forEach(item => {
@@ -184,9 +218,11 @@ function fetchTopLosers() {
           tbody.appendChild(row);
         });
       }
+      setLoadingState(container, false);
     })
     .catch(() => {
       console.error("⚠️ Error fetching top losers");
+      setLoadingState(losersContainer, false);
     });
 }
 
@@ -646,6 +682,10 @@ function initSortControls() {
 
 // Update loadAllStocks function to add data attributes and new trade button
 function loadAllStocks() {
+  const allStocksBody = document.querySelector("#allStocksTable tbody");
+  const allStocksContainer = document.querySelector(".all-stocks");
+  renderTableSkeleton(allStocksBody, 6, 7);
+  setLoadingState(allStocksContainer, true);
   fetch("https://nss-c26z.onrender.com/AllStocks")
     .then(res => {
       if (!res.ok) {
@@ -692,9 +732,11 @@ function loadAllStocks() {
         renderSectorFilters(latestSectorCounts);
         renderAllStocksTable();
       }
+      setLoadingState(allStocksContainer, false);
     })
     .catch(() => {
       console.error("⚠️ Error loading all stocks");
+      setLoadingState(allStocksContainer, false);
     });
 }
 
@@ -1877,6 +1919,7 @@ async function updatePortfolio() {
 
   if (tableContainer) {
     tableContainer.style.display = "block";
+    setLoadingState(tableContainer, true);
   }
   if (summaryContainer) {
     summaryContainer.style.display = "grid";
@@ -1896,6 +1939,8 @@ async function updatePortfolio() {
   if (emptyState) {
     emptyState.style.display = "none";
   }
+
+  renderTableSkeleton(tableBody, Math.min(Math.max(holdings.length, 3), 6), 7);
 
   let totalInvested = 0;
   let totalCurrentValue = 0;
@@ -1947,6 +1992,11 @@ async function updatePortfolio() {
   if (renderToken !== portfolioRenderToken) {
     return;
   }
+
+  if (tableContainer) {
+    setLoadingState(tableContainer, false);
+  }
+  tableBody.innerHTML = "";
 
   holdingsWithPrices.sort((a, b) => {
     switch (currentPortfolioSort) {
