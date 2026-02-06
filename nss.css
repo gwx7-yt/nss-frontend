@@ -47,6 +47,88 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 500;
 }
 
+.info-hint-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.info-hint {
+  border: 1px solid rgba(96, 110, 128, 0.35);
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.75rem;
+  line-height: 1;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  opacity: 0.7;
+}
+
+.info-hint:hover {
+  opacity: 0.95;
+  color: #4b5563;
+  border-color: rgba(96, 110, 128, 0.5);
+}
+
+.info-hint:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  opacity: 1;
+}
+
+.info-tooltip {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translate(-50%, 4px);
+  max-width: 280px;
+  min-width: 180px;
+  padding: 0.55rem 0.7rem;
+  background: #f7f9fc;
+  color: #1f2937;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  z-index: 1000;
+}
+
+.info-tooltip[data-placement="bottom"] {
+  top: calc(100% + 0.5rem);
+  bottom: auto;
+  transform: translate(-50%, -4px);
+}
+
+.info-hint-wrapper:hover .info-tooltip,
+.info-hint-wrapper:focus-within .info-tooltip,
+.info-hint-wrapper.is-open .info-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+
+.nepse-index-label-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
 /* Top Navigation Bar */
 .top-nav {
   background: var(--nav-bg);
@@ -319,6 +401,13 @@ section {
 .home-card-header h2 {
   margin: 0;
   color: var(--primary-color);
+}
+
+.home-badge-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
 }
 
 .home-chart {

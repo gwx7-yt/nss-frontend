@@ -122,7 +122,14 @@
       <div class="nav-right">
         <div class="credits-display">
           <img src="coins-stack.png" alt="Credits" class="credits-icon">
-          <span><span data-translate="credits">Credits</span>: <span id="creditBalance" class="np-number">(number of credits)</span></span>
+          <span>
+            <span data-translate="credits">Credits</span>
+            <span class="info-hint-wrapper">
+              <button type="button" class="info-hint" aria-label="Credits info" aria-describedby="info-credits">ⓘ</button>
+              <span id="info-credits" class="info-tooltip" role="tooltip" data-en="Credits are virtual money used only for practice. They have no real value and help you learn without risk." data-np="क्रेडिट अभ्यासका लागि मात्र प्रयोग हुने भर्चुअल पैसा हो। यसको वास्तविक मूल्य हुँदैन र जोखिम बिना सिक्न मद्दत गर्छ।"></span>
+            </span>
+            : <span id="creditBalance" class="np-number">(number of credits)</span>
+          </span>
         </div>
       </div>
     </div>
@@ -136,7 +143,13 @@
           <h1 data-translate="welcome">Welcome</h1>
           <div id="nepseIndexWidget" class="nepse-index-widget is-loading" role="status" aria-live="polite">
             <div class="nepse-index-header">
-              <span class="nepse-index-label" data-translate="nepseIndex">NEPSE Index</span>
+              <span class="nepse-index-label-group">
+                <span class="nepse-index-label" data-translate="nepseIndex">NEPSE Index</span>
+                <span class="info-hint-wrapper">
+                  <button type="button" class="info-hint" aria-label="NEPSE Index info" aria-describedby="info-nepse-index">ⓘ</button>
+                  <span id="info-nepse-index" class="info-tooltip" role="tooltip" data-en="The index shows the overall movement of the market, not profits or losses of a single stock." data-np="इन्डेक्सले समग्र बजारको चाल देखाउँछ, कुनै एक स्टकको नाफा वा घाटा होइन।"></span>
+                </span>
+              </span>
               <span id="nepseIndexMeta" class="nepse-index-meta" aria-hidden="true"></span>
             </div>
             <div class="nepse-index-values">
@@ -186,7 +199,13 @@
           <div id="hot-today" class="home-card hot-today-card">
             <div class="hot-today-header">
               <div>
-                <h2 data-translate="hotTodayTitle">Hot Today</h2>
+                <h2 data-translate="hotTodayTitle">
+                  <span class="info-hint-text">Hot Today</span>
+                  <span class="info-hint-wrapper">
+                    <button type="button" class="info-hint" aria-label="Hot Today info" aria-describedby="info-hot-today">ⓘ</button>
+                    <span id="info-hot-today" class="info-tooltip" role="tooltip" data-en="“Hot Today” highlights stocks with unusually high trading activity or price movement for the day. It does not mean guaranteed returns." data-np="“हट टुडे” ले आज असामान्य रूपमा धेरै कारोबार भएका वा मूल्यमा धेरै घटबढ भएका स्टकहरु देखाउँछ। यसको अर्थ निश्चित नाफा हुन्छ भन्ने होइन।"></span>
+                  </span>
+                </h2>
                 <p class="hot-today-subtitle" data-translate="hotTodaySubtitle">Active and moving stocks</p>
               </div>
               <div class="hot-today-actions">
@@ -199,7 +218,13 @@
           <div class="home-card home-today-card">
             <div class="home-card-header">
               <h2 data-translate="todayInMarket">Today in the Market</h2>
-              <span id="homeTodayBadge" class="home-badge">Bullish</span>
+              <span class="home-badge-group">
+                <span id="homeTodayBadge" class="home-badge">Bullish</span>
+                <span class="info-hint-wrapper">
+                  <button type="button" class="info-hint" aria-label="Market sentiment info" aria-describedby="info-market-sentiment">ⓘ</button>
+                  <span id="info-market-sentiment" class="info-tooltip" role="tooltip" data-en="Bullish means expecting prices to go up." data-np="बुलिशले मूल्य बढ्न्ने अपेक्षालाई जनाउँछ।"></span>
+                </span>
+              </span>
             </div>
             <p id="homeTodayCardText">-</p>
           </div>
@@ -297,7 +322,13 @@
                 <th data-translate="sector">Sector</th>
                 <th data-translate="ltp">LTP</th>
                 <th data-translate="change">Change</th>
-                <th data-translate="relativeStrength">RS</th>
+                <th data-translate="relativeStrength">
+                  <span class="info-hint-text">RS</span>
+                  <span class="info-hint-wrapper">
+                    <button type="button" class="info-hint" aria-label="Relative Strength info" aria-describedby="info-relative-strength">ⓘ</button>
+                    <span id="info-relative-strength" class="info-tooltip" role="tooltip" data-en="Relative Strength compares how a stock is performing compared to its sector." data-np="रिलेटिभ स्ट्रेन्थले कुनै स्टकको प्रदर्शनलाई त्यस स्टकको सेक्टरसँग तुलना गर्छ।"></span>
+                  </span>
+                </th>
                 <th data-translate="action">Action</th>
               </tr>
             </thead>
@@ -360,7 +391,13 @@
 
         <div class="portfolio-graph-card">
           <div class="portfolio-graph-header">
-            <h3 class="portfolio-graph-title" data-translate="portfolioPerformanceTitle">Performance</h3>
+            <h3 class="portfolio-graph-title" data-translate="portfolioPerformanceTitle">
+              <span class="info-hint-text">Performance</span>
+              <span class="info-hint-wrapper">
+                <button type="button" class="info-hint" aria-label="Portfolio performance chart info" aria-describedby="info-portfolio-performance">ⓘ</button>
+                <span id="info-portfolio-performance" class="info-tooltip" role="tooltip" data-en="This chart shows how your portfolio value has changed over time based on your simulated trades." data-np="यो चार्टले तपाईंका सिमुलेटेड कारोबारका आधारमा समयसँगै पोर्टफोलियोको मूल्य कसरी बदलियो भन्ने देखाउँछ।"></span>
+              </span>
+            </h3>
             <div class="portfolio-graph-legend">
               <span class="portfolio-graph-legend-item">
                 <span class="portfolio-graph-legend-swatch value"></span>
@@ -376,7 +413,7 @@
         </div>
 
         <p class="portfolio-note" title="Broker fees apply when purchasing stocks, so your portfolio might show a small loss at first." data-translate="portfolioBrokerFeeNote">
-          🔍 Note: Portfolio shows slight initial loss due to broker fees
+          Note: Portfolio shows slight initial loss due to broker fees
         </p>
 
         <div class="portfolio-actions">
@@ -772,15 +809,36 @@
             <span class="trade-fee-value"><span id="modalPricePreview" class="np-number">0</span> credits</span>
           </div>
           <div class="trade-fee-row" data-localize-numbers>
-            <span><span class="np-number">0.6%</span> <span data-translate="tradeFeeBroker">broker fee</span></span>
+            <span>
+              <span class="np-number">0.6%</span>
+              <span data-translate="tradeFeeBroker">broker fee</span>
+              <span class="info-hint-wrapper">
+                <button type="button" class="info-hint" aria-label="Broker fee info" aria-describedby="info-broker-fee">ⓘ</button>
+                <span id="info-broker-fee" class="info-tooltip" role="tooltip" data-en="Broker fees are charges taken by the broker for placing a trade." data-np="ब्रोकर शुल्क भनेको कारोबार गरिदिएबापत ब्रोकरले लिने शुल्क हो।"></span>
+              </span>
+            </span>
             <span class="trade-fee-value"><span id="modalBrokerFeePreview" class="np-number">0</span> credits</span>
           </div>
           <div class="trade-fee-row" data-localize-numbers>
-            <span><span class="np-number">0.015%</span> <span data-translate="tradeFeeSebon">SEBON fee</span></span>
+            <span>
+              <span class="np-number">0.015%</span>
+              <span data-translate="tradeFeeSebon">SEBON fee</span>
+              <span class="info-hint-wrapper">
+                <button type="button" class="info-hint" aria-label="SEBON fee info" aria-describedby="info-sebon-fee">ⓘ</button>
+                <span id="info-sebon-fee" class="info-tooltip" role="tooltip" data-en="SEBON fees are regulatory charges set by Nepal’s securities regulator." data-np="सेबोन शुल्क नेपालका धितोपत्र नियामक निकायले निर्धारण गर्ने नियामकीय शुल्क हो।"></span>
+              </span>
+            </span>
             <span class="trade-fee-value"><span id="modalSebonFeePreview" class="np-number">0</span> credits</span>
           </div>
           <div class="trade-fee-row" data-localize-numbers>
-            <span><span class="np-number">0.1%</span> <span data-translate="tradeFeeDp">DP fee</span></span>
+            <span>
+              <span class="np-number">0.1%</span>
+              <span data-translate="tradeFeeDp">DP fee</span>
+              <span class="info-hint-wrapper">
+                <button type="button" class="info-hint" aria-label="DP fee info" aria-describedby="info-dp-fee">ⓘ</button>
+                <span id="info-dp-fee" class="info-tooltip" role="tooltip" data-en="DP fees are charges for maintaining and transferring shares in your demat account." data-np="डीपी शुल्क डिम्याट खातामा सेयर राख्ने तथा स्थानान्तरण गर्ने सम्बन्धित शुल्क हो।"></span>
+              </span>
+            </span>
             <span class="trade-fee-value"><span id="modalDpFeePreview" class="np-number">0</span> credits</span>
           </div>
           <div class="trade-fee-divider"></div>
