@@ -402,68 +402,97 @@
 
     <section id="settings" style="display: none;">
       <div class="settings-content">
-        <h2 class="section-title" data-translate="settings">Settings</h2>
+        <div class="settings-panel">
+          <h2 class="section-title" data-translate="settings">Settings</h2>
 
-        <div class="settings-grid">
-          <!-- Theme Settings -->
-          <div class="settings-card">
-            <h3 data-translate="themeMode">Theme Mode</h3>
-            <div class="theme-toggle">
-              <button id="lightMode" class="theme-btn active">
-                <span class="icon">☀️</span>
-                <span class="label" data-translate="light">Light</span>
-              </button>
-              <button id="darkMode" class="theme-btn">
-                <span class="icon">🌙</span>
-                <span class="label" data-translate="dark">Dark</span>
-              </button>
+          <div class="settings-grid">
+            <!-- Theme Settings -->
+            <div class="settings-card">
+              <h3 data-translate="themeMode">Theme Mode</h3>
+              <div class="theme-toggle">
+                <button id="lightMode" class="theme-btn active">
+                  <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                      <circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6" />
+                      <path d="M12 3.5v2.2M12 18.3v2.2M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M3.5 12h2.2M18.3 12h2.2M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.6" />
+                    </svg>
+                  </span>
+                  <span class="label" data-translate="light">Light</span>
+                </button>
+                <button id="darkMode" class="theme-btn">
+                  <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                      <path d="M15.4 3.8a7.6 7.6 0 1 0 4.8 12.8A7.9 7.9 0 0 1 15.4 3.8Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" />
+                    </svg>
+                  </span>
+                  <span class="label" data-translate="dark">Dark</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Text Size Settings -->
+            <div class="settings-card">
+              <h3 data-translate="textSize">Text Size</h3>
+              <div class="text-size-controls">
+                <button id="smallText" class="size-btn">
+                  <span class="label" data-translate="small">Small</span>
+                  <span class="preview">Aa</span>
+                </button>
+                <button id="mediumText" class="size-btn active">
+                  <span class="label" data-translate="medium">Medium</span>
+                  <span class="preview">Aa</span>
+                </button>
+                <button id="largeText" class="size-btn">
+                  <span class="label" data-translate="large">Large</span>
+                  <span class="preview">Aa</span>
+                </button>
+              </div>
+              <p class="text-size-preview">Preview: Invest smart with clarity.</p>
+            </div>
+
+            <!-- Language Settings -->
+            <div class="settings-card">
+              <h3 data-translate="language">Language</h3>
+              <div class="language-toggle">
+                <button id="englishLang" class="lang-btn active">
+                  <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                      <path d="M12 3.5c4.7 0 8.5 3.8 8.5 8.5s-3.8 8.5-8.5 8.5-8.5-3.8-8.5-8.5S7.3 3.5 12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.6" />
+                      <path d="M3.8 12h16.4M12 3.6c2.1 2.2 3.3 5 3.3 8.4S14.1 18 12 20.4M12 3.6C9.9 5.8 8.7 8.6 8.7 12s1.2 6.2 3.3 8.4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.6" />
+                    </svg>
+                  </span>
+                  <span class="label-group">
+                    <span class="label" data-translate="english">English</span>
+                    <span class="region">(GB)</span>
+                  </span>
+                </button>
+                <button id="nepaliLang" class="lang-btn">
+                  <span class="icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                      <path d="M12 3.5c4.7 0 8.5 3.8 8.5 8.5s-3.8 8.5-8.5 8.5-8.5-3.8-8.5-8.5S7.3 3.5 12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.6" />
+                      <path d="M3.8 12h16.4M12 3.6c2.1 2.2 3.3 5 3.3 8.4S14.1 18 12 20.4M12 3.6C9.9 5.8 8.7 8.6 8.7 12s1.2 6.2 3.3 8.4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.6" />
+                    </svg>
+                  </span>
+                  <span class="label-group">
+                    <span class="label" data-translate="nepali">नेपाली</span>
+                    <span class="region">(NP)</span>
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- Text Size Settings -->
-          <div class="settings-card">
-            <h3 data-translate="textSize">Text Size</h3>
-            <div class="text-size-controls">
-              <button id="smallText" class="size-btn">
-                <span class="label" data-translate="small">Small</span>
-                <span class="preview">Aa</span>
-              </button>
-              <button id="mediumText" class="size-btn active">
-                <span class="label" data-translate="medium">Medium</span>
-                <span class="preview">Aa</span>
-              </button>
-              <button id="largeText" class="size-btn">
-                <span class="label" data-translate="large">Large</span>
-                <span class="preview">Aa</span>
-              </button>
-            </div>
-            <p class="text-size-preview">Preview: Invest smart with clarity.</p>
+          <div class="settings-info">
+            <p data-translate="settingsInfo">
+              <span class="settings-info-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
+                  <path d="M7.5 10.3V8.5a4.5 4.5 0 0 1 9 0v1.8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.6" />
+                  <rect x="5.3" y="10.3" width="13.4" height="9.4" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.6" />
+                </svg>
+              </span>
+              Changes are saved automatically and will persist across sessions.
+            </p>
           </div>
-
-          <!-- Language Settings -->
-          <div class="settings-card">
-            <h3 data-translate="language">Language</h3>
-            <div class="language-toggle">
-              <button id="englishLang" class="lang-btn active">
-                <span class="icon">🇬🇧</span>
-                <span class="label-group">
-                  <span class="label" data-translate="english">English</span>
-                  <span class="region">(GB)</span>
-                </span>
-              </button>
-              <button id="nepaliLang" class="lang-btn">
-                <span class="icon">🇳🇵</span>
-                <span class="label-group">
-                  <span class="label" data-translate="nepali">नेपाली</span>
-                  <span class="region">(NP)</span>
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="settings-info">
-          <p data-translate="settingsInfo">Changes are saved automatically and will persist across sessions.</p>
         </div>
       </div>
     </section>
