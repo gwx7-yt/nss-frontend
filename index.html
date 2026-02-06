@@ -705,42 +705,62 @@
 
   <!-- Trade Modal -->
 
-  <div id="tradeModal" class="trade-modal" role="dialog" aria-modal="true" aria-labelledby="tradeModalTitle" aria-hidden="true">
-    <div class="trade-modal-content">
-      <div class="trade-modal-header">
-        <h2 id="tradeModalTitle">Trade Stock</h2>
-      </div>
-      
-      <div class="stock-details">
-        <div class="stock-detail-item">
-          <label>Symbol</label>
-          <div class="value" id="modalStockSymbol">-</div>
+    <div id="tradeModal" class="trade-modal" role="dialog" aria-modal="true" aria-labelledby="tradeModalTitle" aria-hidden="true">
+      <div class="trade-modal-content">
+        <div class="trade-modal-header">
+          <h2 id="tradeModalTitle">Trade Stock</h2>
         </div>
-        <div class="stock-detail-item">
-          <label>Current Price</label>
-          <div class="value" id="modalStockPrice">-</div>
+        
+        <div class="trade-stat-chips">
+          <div class="trade-chip">
+            <span class="trade-chip-label">Symbol</span>
+            <span class="trade-chip-value" id="modalStockSymbol">-</span>
+          </div>
+          <div class="trade-chip">
+            <span class="trade-chip-label">Current Price</span>
+            <span class="trade-chip-value" id="modalStockPrice">-</span>
+          </div>
         </div>
-      </div>
 
-      <div class="trade-input-group">
-        <label for="modalTradeShares">Shares to Buy</label>
-        <input type="number" id="modalTradeShares" min="10" step="1" placeholder="Enter number of shares">
-      </div>
+        <div class="trade-input-group">
+          <label for="modalTradeShares">Shares to Buy</label>
+          <div class="trade-input-field">
+            <input type="number" id="modalTradeShares" min="10" step="1" placeholder="Enter number of shares" aria-describedby="tradeSharesHelp">
+            <span class="trade-input-suffix">Min 10</span>
+          </div>
+          <p id="tradeSharesHelp" class="trade-input-helper">Minimum trade size is 10 shares.</p>
+        </div>
 
-      <div class="quantity-preview">
-        <p>Share price: <span id="modalPricePreview" class="np-number">0</span> credits</p>
-        <p data-localize-numbers><span class="np-number">0.6%</span> broker fee: <span id="modalBrokerFeePreview" class="np-number">0</span> credits</p>
-        <p data-localize-numbers><span class="np-number">0.015%</span> SEBON fee: <span id="modalSebonFeePreview" class="np-number">0</span> credits</p>
-        <p data-localize-numbers><span class="np-number">0.1%</span> DP fee: <span id="modalDpFeePreview" class="np-number">0</span> credits</p>
-        <p>Total: <span class="quantity np-number" id="modalCostPreview">0</span> credits</p>
-      </div>
+        <div class="trade-fee-breakdown">
+          <div class="trade-fee-row">
+            <span>Share price</span>
+            <span class="trade-fee-value"><span id="modalPricePreview" class="np-number">0</span> credits</span>
+          </div>
+          <div class="trade-fee-row" data-localize-numbers>
+            <span><span class="np-number">0.6%</span> broker fee</span>
+            <span class="trade-fee-value"><span id="modalBrokerFeePreview" class="np-number">0</span> credits</span>
+          </div>
+          <div class="trade-fee-row" data-localize-numbers>
+            <span><span class="np-number">0.015%</span> SEBON fee</span>
+            <span class="trade-fee-value"><span id="modalSebonFeePreview" class="np-number">0</span> credits</span>
+          </div>
+          <div class="trade-fee-row" data-localize-numbers>
+            <span><span class="np-number">0.1%</span> DP fee</span>
+            <span class="trade-fee-value"><span id="modalDpFeePreview" class="np-number">0</span> credits</span>
+          </div>
+          <div class="trade-fee-divider"></div>
+          <div class="trade-fee-row total">
+            <span>Total</span>
+            <span class="trade-fee-value total"><span class="np-number" id="modalCostPreview">0</span> credits</span>
+          </div>
+        </div>
 
-      <div class="modal-buttons">
-        <button class="modal-btn back" onclick="closeTradeModal()">Back</button>
-        <button class="modal-btn confirm" onclick="confirmTrade()">Confirm Trade</button>
+        <div class="modal-buttons">
+          <button class="modal-btn back" onclick="closeTradeModal()">Back</button>
+          <button class="modal-btn confirm" onclick="confirmTrade()">Confirm Trade</button>
+        </div>
       </div>
     </div>
-  </div>
 
   <script src="nss.js"></script>
 </body>

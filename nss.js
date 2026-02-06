@@ -523,7 +523,8 @@ function closeTradeModal() {
 }
 
 function updateCostPreview() {
-  const shares = parseFloat(document.getElementById("modalTradeShares").value) || 0;
+  const tradeSharesInput = document.getElementById("modalTradeShares");
+  const shares = parseFloat(tradeSharesInput?.value) || 0;
   const price = currentStockData ? parseFloat(currentStockData.price) : 0;
   const base = shares * price;
   const brokerFee = base * 0.006;
@@ -543,6 +544,20 @@ function updateCostPreview() {
   setNumberText(sebonFeePreview, formatPrice(sebonFee, currentLanguage));
   setNumberText(dpFeePreview, formatPrice(dpFee, currentLanguage));
   setNumberText(costPreview, formatPrice(total, currentLanguage));
+
+  const confirmButton = document.querySelector(".modal-btn.confirm");
+  const isValidShares = Number.isFinite(shares) && shares >= 10;
+  if (confirmButton) {
+    confirmButton.disabled = !isValidShares;
+  }
+  if (tradeSharesInput) {
+    tradeSharesInput.classList.toggle('is-invalid', !isValidShares);
+    tradeSharesInput.setAttribute('aria-invalid', (!isValidShares).toString());
+    const inputGroup = tradeSharesInput.closest('.trade-input-group');
+    if (inputGroup) {
+      inputGroup.classList.toggle('is-invalid', !isValidShares);
+    }
+  }
 }
 
 function confirmTrade() {
