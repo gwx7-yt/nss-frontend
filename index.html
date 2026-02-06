@@ -708,56 +708,56 @@
     <div id="tradeModal" class="trade-modal" role="dialog" aria-modal="true" aria-labelledby="tradeModalTitle" aria-hidden="true">
       <div class="trade-modal-content">
         <div class="trade-modal-header">
-          <h2 id="tradeModalTitle">Trade Stock</h2>
+          <h2 id="tradeModalTitle" data-translate="tradeStock">Trade Stock</h2>
         </div>
         
         <div class="trade-stat-chips">
           <div class="trade-chip">
-            <span class="trade-chip-label">Symbol</span>
+            <span class="trade-chip-label" data-translate="symbol">Symbol</span>
             <span class="trade-chip-value" id="modalStockSymbol">-</span>
           </div>
           <div class="trade-chip">
-            <span class="trade-chip-label">Current Price</span>
+            <span class="trade-chip-label" data-translate="currentPrice">Current Price</span>
             <span class="trade-chip-value" id="modalStockPrice">-</span>
           </div>
         </div>
 
         <div class="trade-input-group">
-          <label for="modalTradeShares">Shares to Buy</label>
+          <label for="modalTradeShares" data-translate="tradeSharesLabel">Shares to Buy</label>
           <div class="trade-input-field">
-            <input type="number" id="modalTradeShares" min="10" step="1" placeholder="Enter number of shares" aria-describedby="tradeSharesHelp">
-            <span class="trade-input-suffix">Min 10</span>
+            <input type="number" id="modalTradeShares" min="10" step="1" placeholder="Enter number of shares" aria-describedby="tradeSharesHelp" data-translate-placeholder="tradeSharesPlaceholder">
+            <span class="trade-input-suffix" data-translate="tradeMinLabel">Min 10</span>
           </div>
-          <p id="tradeSharesHelp" class="trade-input-helper">Minimum trade size is 10 shares.</p>
+          <p id="tradeSharesHelp" class="trade-input-helper" data-translate="tradeSharesHelper">Minimum trade size is 10 shares.</p>
         </div>
 
         <div class="trade-fee-breakdown">
           <div class="trade-fee-row">
-            <span>Share price</span>
+            <span data-translate="tradeFeeSharePrice">Share price</span>
             <span class="trade-fee-value"><span id="modalPricePreview" class="np-number">0</span> credits</span>
           </div>
           <div class="trade-fee-row" data-localize-numbers>
-            <span><span class="np-number">0.6%</span> broker fee</span>
+            <span><span class="np-number">0.6%</span> <span data-translate="tradeFeeBroker">broker fee</span></span>
             <span class="trade-fee-value"><span id="modalBrokerFeePreview" class="np-number">0</span> credits</span>
           </div>
           <div class="trade-fee-row" data-localize-numbers>
-            <span><span class="np-number">0.015%</span> SEBON fee</span>
+            <span><span class="np-number">0.015%</span> <span data-translate="tradeFeeSebon">SEBON fee</span></span>
             <span class="trade-fee-value"><span id="modalSebonFeePreview" class="np-number">0</span> credits</span>
           </div>
           <div class="trade-fee-row" data-localize-numbers>
-            <span><span class="np-number">0.1%</span> DP fee</span>
+            <span><span class="np-number">0.1%</span> <span data-translate="tradeFeeDp">DP fee</span></span>
             <span class="trade-fee-value"><span id="modalDpFeePreview" class="np-number">0</span> credits</span>
           </div>
           <div class="trade-fee-divider"></div>
           <div class="trade-fee-row total">
-            <span>Total</span>
+            <span data-translate="total">Total</span>
             <span class="trade-fee-value total"><span class="np-number" id="modalCostPreview">0</span> credits</span>
           </div>
         </div>
 
         <div class="modal-buttons">
-          <button class="modal-btn back" onclick="closeTradeModal()">Back</button>
-          <button class="modal-btn confirm" onclick="confirmTrade()">Confirm Trade</button>
+          <button class="modal-btn back" onclick="closeTradeModal()" data-translate="back">Back</button>
+          <button class="modal-btn confirm" onclick="confirmTrade()" data-translate="confirmTrade">Confirm Trade</button>
         </div>
       </div>
     </div>
