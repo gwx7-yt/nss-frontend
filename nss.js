@@ -104,6 +104,7 @@ function renderNepseIndexWidget(data, state = {}) {
   }
 
   if (status === 'loading') {
+    widget.classList.remove('is-error');
     if (metaElement) {
       metaElement.textContent = '';
     }
@@ -183,14 +184,6 @@ function fetchNepseIndex() {
 }
 
 function startNepseIndexAutoRefresh() {
-  const retryButton = document.getElementById('nepseIndexRetry');
-  if (retryButton && !retryButton.dataset.bound) {
-    retryButton.dataset.bound = 'true';
-    retryButton.addEventListener('click', () => {
-      fetchNepseIndex();
-    });
-  }
-
   fetchNepseIndex();
 
   if (nepseRefreshId) {
@@ -2448,6 +2441,7 @@ function addSampleUsers() {
 const translations = {
     english: {
         welcome: 'Welcome, {name}!',
+        nepseIndex: 'NEPSE Index',
         netWorth: 'Net Worth',
         netWorthDesc: 'The total value of all your stocks and leftover credits combined.',
         totalProfit: 'Total Profit',
@@ -2679,6 +2673,7 @@ const translations = {
     },
     nepali: {
         welcome: 'स्वागत छ, {name}!',
+        nepseIndex: 'नेप्से सूचकांक',
         netWorth: 'कुल सम्पत्ति',
         netWorthDesc: 'तपाईंको सबै स्टक र बाँकी क्रेडिटको कुल मूल्य।',
         totalProfit: 'कुल नाफा',

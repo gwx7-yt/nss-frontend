@@ -165,16 +165,16 @@ section {
 }
 
 .nepse-index-widget {
-  background: var(--card-background);
-  border-radius: var(--border-radius);
-  padding: 0.85rem 1.1rem;
+  background: transparent;
+  border-radius: 0;
+  padding: 0.5rem 0;
   min-width: 220px;
-  box-shadow: var(--shadow);
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: none;
+  border: none;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  margin-top: 0.5rem;
+  margin: 0.5rem 0 1.25rem;
 }
 
 .nepse-index-header {
@@ -278,21 +278,6 @@ section {
   gap: 0.5rem;
   font-size: 0.85rem;
   color: var(--text-muted);
-}
-
-.nepse-index-retry {
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: transparent;
-  border-radius: 999px;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.nepse-index-retry:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
 }
 
 .nepse-index-widget.is-error .nepse-index-values,
