@@ -3141,16 +3141,27 @@ section {
 
 /* Settings Page Styles */
 #settings {
-  --bg: linear-gradient(180deg, color-mix(in srgb, var(--background-color) 90%, #0b0f17) 0%, color-mix(in srgb, var(--background-color) 75%, #0b0f17) 100%);
-  --surface: rgba(255, 255, 255, 0.08);
-  --surface-border: rgba(255, 255, 255, 0.1);
-  --text: color-mix(in srgb, var(--text-color) 92%, white);
-  --muted: color-mix(in srgb, var(--text-color) 55%, transparent);
+  --bg: linear-gradient(180deg, color-mix(in srgb, var(--background-color) 95%, #f5f9ff) 0%, color-mix(in srgb, var(--background-color) 88%, #e6edf7) 100%);
+  --panel-bg: color-mix(in srgb, #ffffff 86%, var(--background-color));
+  --panel-border: rgba(148, 163, 184, 0.22);
+  --panel-shadow: 0 24px 48px rgba(15, 23, 42, 0.12), 0 6px 14px rgba(15, 23, 42, 0.08);
+  --panel-highlight: rgba(255, 255, 255, 0.8);
+  --surface: color-mix(in srgb, #ffffff 94%, #eef3f9);
+  --surface-border: rgba(148, 163, 184, 0.25);
+  --text: color-mix(in srgb, var(--text-color) 92%, #0f172a);
+  --muted: color-mix(in srgb, var(--text-color) 60%, transparent);
   --accent: var(--primary-color);
-  --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-  --radius: 16px;
+  --shadow: 0 16px 28px rgba(15, 23, 42, 0.08), 0 4px 10px rgba(15, 23, 42, 0.07);
+  --shadow-hover: 0 22px 36px rgba(15, 23, 42, 0.12), 0 8px 16px rgba(15, 23, 42, 0.1);
+  --radius: 14px;
+  --seg-bg: rgba(15, 23, 42, 0.03);
+  --seg-border: rgba(148, 163, 184, 0.14);
+  --seg-active-bg: rgba(255, 255, 255, 0.75);
+  --seg-active-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.65);
+  --seg-muted: color-mix(in srgb, var(--text-color) 55%, transparent);
+  --transition: 160ms ease-out;
   background: var(--bg);
-  padding: 2.5rem 0 3.5rem;
+  padding: 2.25rem 0 3rem;
 }
 
 .settings-content {
@@ -3164,49 +3175,77 @@ section {
 .settings-content::before {
   content: "";
   position: absolute;
-  inset: -60px -20px 0;
-  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.1), transparent 60%);
-  opacity: 0.5;
+  inset: -40px -20px 0;
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.6), transparent 65%);
+  opacity: 0.4;
   z-index: -1;
+  pointer-events: none;
+}
+
+.settings-panel {
+  background: var(--panel-bg);
+  border-radius: 20px;
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  padding: 2.5rem 2.4rem 2.2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.settings-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  opacity: 0.35;
   pointer-events: none;
 }
 
 .settings-content .section-title {
   text-align: center;
-  font-size: 1.6rem;
-  font-weight: 600;
-  margin-bottom: 1.25rem;
+  font-size: 1.75rem;
+  font-weight: 650;
+  margin-bottom: 1.75rem;
   color: var(--text);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.05em;
+  position: relative;
+}
+
+.settings-content .section-title::after {
+  content: "";
+  display: block;
+  width: 92px;
+  height: 1px;
+  margin: 0.8rem auto 0;
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.35), transparent);
 }
 
 .settings-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.25rem;
-  margin: 1.75rem 0 2.25rem;
+  gap: 1.4rem;
+  margin: 0 0 2rem;
 }
 
 .settings-card {
   background: var(--surface);
   border-radius: var(--radius);
-  padding: 1.5rem;
+  padding: 1.6rem;
   border: 1px solid var(--surface-border);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.1rem;
 }
 
 .settings-card h3 {
   margin: 0;
   color: var(--text);
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  opacity: 0.85;
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
 }
 
 /* Segmented Controls */
@@ -3214,10 +3253,10 @@ section {
 .text-size-controls,
 .language-toggle {
   display: grid;
-  gap: 0.35rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
+  gap: 0.3rem;
+  background: var(--seg-bg);
+  border: 1px solid var(--seg-border);
+  border-radius: 999px;
   padding: 0.35rem;
 }
 
@@ -3235,18 +3274,19 @@ section {
 .lang-btn {
   position: relative;
   flex: 1;
-  padding: 0.65rem 0.75rem;
+  padding: 0.7rem 0.85rem;
   border: none;
-  border-radius: 10px;
+  border-radius: 999px;
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.18s ease, color 0.18s ease, transform 0.16s ease;
+  transition: background-color var(--transition), color var(--transition), transform var(--transition), box-shadow var(--transition);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  color: var(--muted);
-  font-size: 0.92rem;
+  color: var(--seg-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .size-btn {
@@ -3256,14 +3296,24 @@ section {
 
 .theme-btn .icon,
 .lang-btn .icon {
-  font-size: 1rem;
-  opacity: 0.6;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in srgb, var(--text-color) 70%, #64748b);
+}
+
+.theme-btn .icon svg,
+.lang-btn .icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .theme-btn:hover,
 .size-btn:hover,
 .lang-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.5);
   color: var(--text);
 }
 
@@ -3271,6 +3321,9 @@ section {
 .size-btn.active,
 .lang-btn.active {
   color: var(--text);
+  background: var(--seg-active-bg);
+  box-shadow: var(--seg-active-shadow);
+  backdrop-filter: blur(8px);
 }
 
 .theme-btn.active::after,
@@ -3278,16 +3331,16 @@ section {
 .lang-btn.active::after {
   content: "";
   position: absolute;
-  bottom: 6px;
-  width: 40%;
+  bottom: 5px;
+  width: 36%;
   height: 2px;
   border-radius: 999px;
-  background: var(--accent);
+  background: color-mix(in srgb, var(--accent) 70%, #a5b4fc);
 }
 
 .theme-btn.active .icon,
 .lang-btn.active .icon {
-  opacity: 0.9;
+  color: var(--text);
 }
 
 .theme-btn:active,
@@ -3300,13 +3353,13 @@ section {
 .size-btn:focus-visible,
 .lang-btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 1px var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, #bfdbfe);
 }
 
 /* Text Size Controls */
 .size-btn .preview {
   font-weight: 600;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
 .size-btn:nth-child(1) .preview { font-size: 0.8rem; }
@@ -3322,18 +3375,25 @@ section {
 }
 
 .lang-btn .region {
-  font-size: 0.75rem;
-  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text-color) 60%, #94a3b8);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.8);
 }
 
 .text-size-preview {
   margin: 0;
-  padding: 0.65rem 0.9rem;
+  padding: 0.7rem 0.9rem;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.25);
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  box-shadow: inset 0 1px 2px rgba(148, 163, 184, 0.15);
 }
 
 [data-text-size="small"] .text-size-preview { font-size: 0.85rem; }
@@ -3343,11 +3403,51 @@ section {
 /* Settings Info */
 .settings-info {
   text-align: center;
-  margin-top: 0.75rem;
-  padding: 0.5rem 1rem;
+  margin-top: 0.7rem;
+  padding: 0.4rem 1rem 0;
   color: var(--muted);
-  font-size: 0.8rem;
-  opacity: 0.75;
+  font-size: 0.74rem;
+  opacity: 0.85;
+}
+
+.settings-info p {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.settings-info-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in srgb, var(--text-color) 55%, #94a3b8);
+}
+
+.settings-info-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (hover: hover) {
+  #settings .settings-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+  }
+}
+
+[data-theme="dark"] #settings {
+  --bg: linear-gradient(180deg, rgba(7, 12, 20, 0.98) 0%, rgba(10, 15, 26, 0.98) 100%);
+  --panel-bg: rgba(13, 20, 32, 0.95);
+  --panel-border: rgba(148, 163, 184, 0.18);
+  --panel-highlight: rgba(255, 255, 255, 0.18);
+  --surface: rgba(15, 23, 42, 0.92);
+  --surface-border: rgba(148, 163, 184, 0.18);
+  --seg-bg: rgba(15, 23, 42, 0.6);
+  --seg-border: rgba(148, 163, 184, 0.18);
+  --seg-active-bg: rgba(30, 41, 59, 0.9);
 }
 
 /* Dark Mode Styles */
@@ -3401,6 +3501,26 @@ section {
 [data-theme="dark"] .size-btn.active,
 [data-theme="dark"] .lang-btn.active {
   color: var(--text);
+}
+
+[data-theme="dark"] #settings .theme-btn,
+[data-theme="dark"] #settings .size-btn,
+[data-theme="dark"] #settings .lang-btn {
+  color: var(--seg-muted);
+}
+
+[data-theme="dark"] #settings .theme-btn.active,
+[data-theme="dark"] #settings .size-btn.active,
+[data-theme="dark"] #settings .lang-btn.active {
+  background: var(--seg-active-bg);
+  box-shadow: var(--seg-active-shadow);
+  color: var(--text);
+}
+
+[data-theme="dark"] #settings .lang-btn .region {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(148, 163, 184, 0.25);
+  color: rgba(226, 232, 240, 0.7);
 }
 
 /* Text Size Classes */
@@ -3457,6 +3577,10 @@ section {
 @media (max-width: 768px) {
   .settings-grid {
     grid-template-columns: 1fr;
+  }
+
+  .settings-panel {
+    padding: 2rem 1.4rem 1.8rem;
   }
 
   .text-size-controls {
@@ -4347,8 +4471,14 @@ section {
   bottom: 40px;
 }
 
+#about {
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
 .nss-about {
   position: relative;
+  width: 100%;
   padding: 4rem 1.5rem;
   background: linear-gradient(180deg, #f7fafc 0%, #eef4fb 55%, #f8fbff 100%);
   background-color: #f3f7fc;
