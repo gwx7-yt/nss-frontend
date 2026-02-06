@@ -16,6 +16,10 @@ let tableHintInitialized = false;
 
 // Default credits given to new users (10 lakh)
 const DEFAULT_CREDITS = 1000000;
+const NEPSE_INDEX_ENDPOINT = `${API_BASE}/api/nepse-index`;
+const NEPSE_INDEX_CACHE_KEY = 'nepseIndexCache';
+const NEPSE_REFRESH_INTERVAL = 60000;
+let nepseRefreshId = null;
 
 function renderTableSkeleton(tbody, rows = 4, columns = 3) {
   if (!tbody) {
@@ -37,6 +41,175 @@ function setLoadingState(element, isLoading) {
     return;
   }
   element.classList.toggle('is-loading', isLoading);
+}
+
+function extractNepseIndex(payload) {
+  if (!Array.isArray(payload)) {
+    return null;
+  }
+  return payload.find(item => {
+    if (!item) {
+      return false;
+    }
+    const idMatch = Number(item.id) === 58;
+    const nameMatch = item.index === 'NEPSE Index';
+    return idMatch || nameMatch;
+  }) || null;
+}
+
+function getCachedNepseIndex() {
+  try {
+    const raw = localStorage.getItem(NEPSE_INDEX_CACHE_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.data) {
+      return null;
+    }
+    return parsed;
+  } catch (error) {
+    return null;
+  }
+}
+
+function cacheNepseIndex(data) {
+  if (!data) {
+    return;
+  }
+  const payload = {
+    timestamp: Date.now(),
+    data
+  };
+  localStorage.setItem(NEPSE_INDEX_CACHE_KEY, JSON.stringify(payload));
+}
+
+function renderNepseIndexWidget(data, state = {}) {
+  const widget = document.getElementById('nepseIndexWidget');
+  if (!widget) {
+    return;
+  }
+  const status = state.status || 'live';
+  const valueElement = document.getElementById('nepseIndexValue');
+  const changeElement = document.getElementById('nepseIndexChange');
+  const percentElement = document.getElementById('nepseIndexPercent');
+  const metaElement = document.getElementById('nepseIndexMeta');
+  const errorElement = document.getElementById('nepseIndexError');
+
+  widget.classList.toggle('is-loading', status === 'loading');
+  widget.classList.toggle('is-error', status === 'error');
+
+  if (errorElement) {
+    errorElement.hidden = status !== 'error';
+  }
+
+  if (status === 'loading') {
+    if (metaElement) {
+      metaElement.textContent = '';
+    }
+    return;
+  }
+
+  if (!data) {
+    widget.classList.add('is-error');
+    return;
+  }
+
+  const currentLanguage = getCurrentLanguage();
+  const currentValue = Number.parseFloat(data.currentValue);
+  const changeValue = Number.parseFloat(data.change);
+  const percentValue = Number.parseFloat(data.perChange);
+  const safeCurrent = Number.isFinite(currentValue) ? currentValue : 0;
+  const safeChange = Number.isFinite(changeValue) ? changeValue : 0;
+  const safePercent = Number.isFinite(percentValue) ? percentValue : 0;
+  const changeDirection = safeChange > 0 ? 'positive' : safeChange < 0 ? 'negative' : 'neutral';
+  const arrow = safeChange > 0 ? '▲' : safeChange < 0 ? '▼' : '—';
+
+  widget.classList.toggle('is-positive', changeDirection === 'positive');
+  widget.classList.toggle('is-negative', changeDirection === 'negative');
+  widget.classList.toggle('is-neutral', changeDirection === 'neutral');
+
+  if (valueElement) {
+    valueElement.textContent = formatNumber(safeCurrent, { decimals: 2, useCommas: true }, currentLanguage);
+    valueElement.classList.add('np-number');
+  }
+  if (changeElement) {
+    const changeDisplay = formatNumber(Math.abs(safeChange), { decimals: 2, useCommas: true }, currentLanguage);
+    changeElement.textContent = `${arrow} ${changeDisplay}`;
+    changeElement.classList.add('np-number');
+  }
+  if (percentElement) {
+    const percentDisplay = formatNumber(Math.abs(safePercent), { decimals: 2, useCommas: true }, currentLanguage);
+    percentElement.textContent = `${percentDisplay}%`;
+    percentElement.classList.add('np-number');
+  }
+
+  if (metaElement) {
+    metaElement.textContent = status === 'cached' ? 'cached' : '';
+  }
+
+  widget.classList.add('is-updating');
+  window.setTimeout(() => {
+    widget.classList.remove('is-updating');
+  }, 500);
+}
+
+function fetchNepseIndex() {
+  renderNepseIndexWidget(null, { status: 'loading' });
+  return fetch(NEPSE_INDEX_ENDPOINT)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(payload => {
+      const nepseData = extractNepseIndex(payload);
+      if (!nepseData) {
+        throw new Error('NEPSE index not found');
+      }
+      cacheNepseIndex(nepseData);
+      renderNepseIndexWidget(nepseData, { status: 'live' });
+      return nepseData;
+    })
+    .catch(() => {
+      const cached = getCachedNepseIndex();
+      if (cached && cached.data) {
+        renderNepseIndexWidget(cached.data, { status: 'cached' });
+      } else {
+        renderNepseIndexWidget(null, { status: 'error' });
+      }
+    });
+}
+
+function startNepseIndexAutoRefresh() {
+  const retryButton = document.getElementById('nepseIndexRetry');
+  if (retryButton && !retryButton.dataset.bound) {
+    retryButton.dataset.bound = 'true';
+    retryButton.addEventListener('click', () => {
+      fetchNepseIndex();
+    });
+  }
+
+  fetchNepseIndex();
+
+  if (nepseRefreshId) {
+    clearInterval(nepseRefreshId);
+  }
+  nepseRefreshId = window.setInterval(() => {
+    if (!document.hidden) {
+      fetchNepseIndex();
+    }
+  }, NEPSE_REFRESH_INTERVAL);
+
+  if (!document.__nepseVisibilityBound) {
+    document.__nepseVisibilityBound = true;
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        fetchNepseIndex();
+      }
+    });
+  }
 }
 
 
@@ -134,6 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSortControls();
   initDigitNormalizationObserver();
   initPolishEnhancements();
+  startNepseIndexAutoRefresh();
 
 });
 

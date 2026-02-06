@@ -132,7 +132,29 @@
     <!-- Home Section -->
     <section id="home">
       <div class="welcome-section">
-        <h1 data-translate="welcome">Welcome</h1>
+        <div class="welcome-header">
+          <h1 data-translate="welcome">Welcome</h1>
+          <div id="nepseIndexWidget" class="nepse-index-widget is-loading" role="status" aria-live="polite">
+            <div class="nepse-index-header">
+              <span class="nepse-index-label">NEPSE Index</span>
+              <span id="nepseIndexMeta" class="nepse-index-meta" aria-hidden="true"></span>
+            </div>
+            <div class="nepse-index-values">
+              <span id="nepseIndexValue" class="nepse-index-value">--</span>
+              <span id="nepseIndexChange" class="nepse-index-change">--</span>
+              <span id="nepseIndexPercent" class="nepse-index-percent">--</span>
+            </div>
+            <div class="nepse-index-skeleton" aria-hidden="true">
+              <span class="nepse-skeleton-block nepse-skeleton-lg"></span>
+              <span class="nepse-skeleton-block nepse-skeleton-sm"></span>
+              <span class="nepse-skeleton-block nepse-skeleton-xs"></span>
+            </div>
+            <div id="nepseIndexError" class="nepse-index-error" hidden>
+              <span>NEPSE Index unavailable</span>
+              <button type="button" id="nepseIndexRetry" class="nepse-index-retry">Retry</button>
+            </div>
+          </div>
+        </div>
         <div class="home-dashboard">
           <div class="home-card home-status-card">
             <div class="home-status-grid">

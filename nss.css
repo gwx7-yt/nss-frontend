@@ -145,11 +145,187 @@ section {
   margin: 0 auto;
 }
 
+.welcome-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
 .welcome-section h1 {
   font-size: 4rem;
   font-weight: 600;
   margin-bottom: 2rem;
   color: var(--text-color);
+}
+
+.welcome-header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.nepse-index-widget {
+  background: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 0.85rem 1.1rem;
+  min-width: 220px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.nepse-index-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nepse-index-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-color);
+}
+
+.nepse-index-meta {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.nepse-index-values {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.nepse-index-value {
+  font-size: clamp(1.25rem, 1.1rem + 1vw, 1.6rem);
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.nepse-index-change,
+.nepse-index-percent {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.nepse-index-widget.is-positive .nepse-index-change,
+.nepse-index-widget.is-positive .nepse-index-percent {
+  color: var(--success-color);
+}
+
+.nepse-index-widget.is-negative .nepse-index-change,
+.nepse-index-widget.is-negative .nepse-index-percent {
+  color: var(--error-color);
+}
+
+.nepse-index-widget.is-neutral .nepse-index-change,
+.nepse-index-widget.is-neutral .nepse-index-percent {
+  color: var(--text-muted);
+}
+
+.nepse-index-skeleton {
+  display: none;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.nepse-skeleton-block {
+  display: inline-block;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(226, 232, 240, 0.8), rgba(248, 250, 252, 0.95), rgba(226, 232, 240, 0.8));
+  background-size: 200% 100%;
+  animation: nepseShimmer 1.4s ease-in-out infinite;
+}
+
+[data-theme="dark"] .nepse-skeleton-block {
+  background: linear-gradient(90deg, rgba(51, 65, 85, 0.7), rgba(71, 85, 105, 0.9), rgba(51, 65, 85, 0.7));
+}
+
+.nepse-skeleton-lg {
+  width: 90px;
+}
+
+.nepse-skeleton-sm {
+  width: 58px;
+}
+
+.nepse-skeleton-xs {
+  width: 46px;
+}
+
+.nepse-index-widget.is-loading .nepse-index-values {
+  display: none;
+}
+
+.nepse-index-widget.is-loading .nepse-index-skeleton {
+  display: flex;
+}
+
+.nepse-index-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.nepse-index-retry {
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nepse-index-retry:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+}
+
+.nepse-index-widget.is-error .nepse-index-values,
+.nepse-index-widget.is-error .nepse-index-skeleton {
+  display: none;
+}
+
+.nepse-index-widget.is-error .nepse-index-error {
+  display: flex;
+}
+
+.nepse-index-widget.is-updating .nepse-index-values {
+  animation: nepseUpdate 0.45s ease;
+}
+
+@keyframes nepseUpdate {
+  from {
+    opacity: 0.4;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes nepseShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Home Dashboard */
@@ -3635,6 +3811,21 @@ section {
   
   .settings-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-header {
+    align-items: stretch;
+  }
+
+  .nepse-index-widget {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+  }
+
+  .nepse-index-values {
+    gap: 0.45rem;
   }
 }
 
