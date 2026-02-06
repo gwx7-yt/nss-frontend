@@ -271,24 +271,6 @@ section {
   display: flex;
 }
 
-.nepse-index-error {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.nepse-index-widget.is-error .nepse-index-values,
-.nepse-index-widget.is-error .nepse-index-skeleton {
-  display: none;
-}
-
-.nepse-index-widget.is-error .nepse-index-error {
-  display: flex;
-}
-
 .nepse-index-widget.is-updating .nepse-index-values {
   animation: nepseUpdate 0.45s ease;
 }

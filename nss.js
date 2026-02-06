@@ -94,17 +94,10 @@ function renderNepseIndexWidget(data, state = {}) {
   const changeElement = document.getElementById('nepseIndexChange');
   const percentElement = document.getElementById('nepseIndexPercent');
   const metaElement = document.getElementById('nepseIndexMeta');
-  const errorElement = document.getElementById('nepseIndexError');
 
   widget.classList.toggle('is-loading', status === 'loading');
-  widget.classList.toggle('is-error', status === 'error');
-
-  if (errorElement) {
-    errorElement.hidden = status !== 'error';
-  }
 
   if (status === 'loading') {
-    widget.classList.remove('is-error');
     if (metaElement) {
       metaElement.textContent = '';
     }
@@ -112,7 +105,18 @@ function renderNepseIndexWidget(data, state = {}) {
   }
 
   if (!data) {
-    widget.classList.add('is-error');
+    if (valueElement) {
+      valueElement.textContent = '--';
+    }
+    if (changeElement) {
+      changeElement.textContent = '--';
+    }
+    if (percentElement) {
+      percentElement.textContent = '--';
+    }
+    if (metaElement) {
+      metaElement.textContent = '';
+    }
     return;
   }
 
@@ -178,7 +182,7 @@ function fetchNepseIndex() {
       if (cached && cached.data) {
         renderNepseIndexWidget(cached.data, { status: 'cached' });
       } else {
-        renderNepseIndexWidget(null, { status: 'error' });
+        renderNepseIndexWidget(null, { status: 'empty' });
       }
     });
 }
