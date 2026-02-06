@@ -403,6 +403,13 @@ section {
   color: var(--primary-color);
 }
 
+.home-badge-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
 .home-chart {
   width: 100%;
 }
