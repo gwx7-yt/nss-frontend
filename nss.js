@@ -1424,6 +1424,7 @@ function updateTodayCard({ marketOpen, breadth, sectorMetrics, indexChange }) {
   badgeEl.textContent = getTranslationValue(sentiment, sentiment);
   badgeEl.classList.remove('bullish', 'bearish', 'mixed');
   badgeEl.classList.add(sentiment);
+  updateMarketSentimentTooltip(sentiment);
 }
 
 function computeHotScore(stock) {
@@ -2548,7 +2549,7 @@ const translations = {
         searchPlaceholder: '🔍 Search by company name or symbol...',
         portfolioTitle: 'My Investment Portfolio',
         portfolioDesc: 'Track your investments and their performance',
-        portfolioBrokerFeeNote: '🔍 Note: Portfolio shows slight initial loss due to broker fees',
+        portfolioBrokerFeeNote: 'Note: Portfolio shows slight initial loss due to broker fees',
         portfolioTotalValue: 'Total Value',
         portfolioTotalInvested: 'Total Invested',
         portfolioOverallPl: 'Overall P/L',
@@ -3558,17 +3559,17 @@ function updateLanguage(language) {
                 const investorName = localStorage.getItem('investorName');
                 if (investorName) {
                     if (language === 'english') {
-                        element.textContent = `Welcome, ${investorName}!`;
+                        setTranslatedText(element, `Welcome, ${investorName}!`);
                     } else {
-                        element.textContent = `स्वागत छ, ${investorName}!`;
+                        setTranslatedText(element, `स्वागत छ, ${investorName}!`);
                     }
                 } else {
-                    element.textContent = texts[key];
+                    setTranslatedText(element, texts[key]);
                 }
             } else if (element.tagName === 'INPUT') {
                 element.value = texts[key];
             } else {
-                element.textContent = texts[key];
+                setTranslatedText(element, texts[key]);
             }
         }
     });
@@ -3593,6 +3594,7 @@ function updateLanguage(language) {
     normalizeNumberNodes(language);
     normalizeAllTextDigits(language);
     refreshHomeDashboardLocale();
+    refreshInfoHintTooltips(language);
 }
 
 const localizedNumberNodes = new WeakMap();
@@ -3716,31 +3718,31 @@ function updateTableHeaders(language) {
     const gainersTable = document.getElementById('gainersTable');
     if (gainersTable) {
         const headers = gainersTable.querySelectorAll('th');
-        headers[0].textContent = texts.symbol || 'Symbol';
-        headers[1].textContent = texts.price || 'Price';
-        headers[2].textContent = texts.change || 'Change';
+        setTranslatedText(headers[0], texts.symbol || 'Symbol');
+        setTranslatedText(headers[1], texts.price || 'Price');
+        setTranslatedText(headers[2], texts.change || 'Change');
     }
 
     // Update losers table
     const losersTable = document.getElementById('losersTable');
     if (losersTable) {
         const headers = losersTable.querySelectorAll('th');
-        headers[0].textContent = texts.symbol || 'Symbol';
-        headers[1].textContent = texts.price || 'Price';
-        headers[2].textContent = texts.change || 'Change';
+        setTranslatedText(headers[0], texts.symbol || 'Symbol');
+        setTranslatedText(headers[1], texts.price || 'Price');
+        setTranslatedText(headers[2], texts.change || 'Change');
     }
 
     // Update all stocks table
     const allStocksTable = document.getElementById('allStocksTable');
     if (allStocksTable) {
         const headers = allStocksTable.querySelectorAll('th');
-        headers[0].textContent = texts.symbol || 'Symbol';
-        headers[1].textContent = texts.companyName || 'Company Name';
-        headers[2].textContent = texts.sector || 'Sector';
-        headers[3].textContent = texts.ltp || 'LTP';
-        headers[4].textContent = texts.change || 'Change';
-        headers[5].textContent = texts.relativeStrength || 'RS';
-        headers[6].textContent = texts.action || 'Action';
+        setTranslatedText(headers[0], texts.symbol || 'Symbol');
+        setTranslatedText(headers[1], texts.companyName || 'Company Name');
+        setTranslatedText(headers[2], texts.sector || 'Sector');
+        setTranslatedText(headers[3], texts.ltp || 'LTP');
+        setTranslatedText(headers[4], texts.change || 'Change');
+        setTranslatedText(headers[5], texts.relativeStrength || 'RS');
+        setTranslatedText(headers[6], texts.action || 'Action');
     }
 
     // Update investment history table
@@ -3748,16 +3750,165 @@ function updateTableHeaders(language) {
     if (investmentHistory) {
         const headers = investmentHistory.querySelectorAll('th');
         if (headers.length > 0) {
-            headers[0].textContent = texts.symbol;
-            headers[1].textContent = texts.portfolioAvgBuy;
-            headers[2].textContent = texts.portfolioLtp;
-            headers[3].textContent = texts.portfolioQty;
-            headers[4].textContent = texts.portfolioValue;
-            headers[5].textContent = texts.portfolioPl + ' 📊';
-            headers[6].textContent = texts.action + ' ⚡';
+            setTranslatedText(headers[0], texts.symbol);
+            setTranslatedText(headers[1], texts.portfolioAvgBuy);
+            setTranslatedText(headers[2], texts.portfolioLtp);
+            setTranslatedText(headers[3], texts.portfolioQty);
+            setTranslatedText(headers[4], texts.portfolioValue);
+            setTranslatedText(headers[5], texts.portfolioPl + ' 📊');
+            setTranslatedText(headers[6], texts.action + ' ⚡');
         }
     }
 }
+
+function setTranslatedText(element, text) {
+    if (!element) {
+        return;
+    }
+    const hintText = element.querySelector('.info-hint-text');
+    if (hintText) {
+        hintText.textContent = text;
+    } else {
+        element.textContent = text;
+    }
+}
+
+function getInfoHintLanguage() {
+    if (typeof getCurrentLanguage === 'function') {
+        return getCurrentLanguage();
+    }
+    return localStorage.getItem('language') || 'english';
+}
+
+function isInfoHintNepali(language) {
+    if (typeof isNepaliLanguage === 'function') {
+        return isNepaliLanguage(language);
+    }
+    return String(language || '').toLowerCase().startsWith('ne');
+}
+
+function updateInfoTooltipText(tooltip, language) {
+    if (!tooltip) {
+        return;
+    }
+    const useNepali = isInfoHintNepali(language);
+    const text = useNepali ? tooltip.dataset.np : tooltip.dataset.en;
+    if (text) {
+        tooltip.textContent = text;
+    }
+}
+
+function refreshInfoHintTooltips(language = getInfoHintLanguage()) {
+    document.querySelectorAll('.info-tooltip').forEach(tooltip => {
+        updateInfoTooltipText(tooltip, language);
+    });
+}
+
+function updateMarketSentimentTooltip(sentiment) {
+    const tooltip = document.getElementById('info-market-sentiment');
+    if (!tooltip) {
+        return;
+    }
+    const wrapper = tooltip.closest('.info-hint-wrapper');
+    if (sentiment === 'mixed') {
+        if (wrapper) {
+            wrapper.style.display = 'none';
+        }
+        return;
+    }
+    if (wrapper) {
+        wrapper.style.display = 'inline-flex';
+    }
+    if (sentiment === 'bearish') {
+        tooltip.dataset.en = 'Bearish means expecting prices to go down.';
+        tooltip.dataset.np = 'बेयरिशले मूल्य घट्न्ने अपेक्षालाई जनाउँछ।';
+    } else {
+        tooltip.dataset.en = 'Bullish means expecting prices to go up.';
+        tooltip.dataset.np = 'बुलिशले मूल्य बढ्न्ने अपेक्षालाई जनाउँछ।';
+    }
+    updateInfoTooltipText(tooltip, getInfoHintLanguage());
+}
+
+function positionInfoTooltip(wrapper) {
+    const tooltip = wrapper.querySelector('.info-tooltip');
+    if (!tooltip) {
+        return;
+    }
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const viewportPadding = 8;
+    tooltip.dataset.placement = wrapperRect.top < 120 ? 'bottom' : 'top';
+    tooltip.style.left = '50%';
+    requestAnimationFrame(() => {
+        const tooltipRect = tooltip.getBoundingClientRect();
+        let shiftX = 0;
+        if (tooltipRect.left < viewportPadding) {
+            shiftX = viewportPadding - tooltipRect.left;
+        } else if (tooltipRect.right > window.innerWidth - viewportPadding) {
+            shiftX = (window.innerWidth - viewportPadding) - tooltipRect.right;
+        }
+        if (shiftX !== 0) {
+            tooltip.style.left = `calc(50% + ${shiftX}px)`;
+        }
+    });
+}
+
+function closeAllInfoHints() {
+    document.querySelectorAll('.info-hint-wrapper.is-open').forEach(wrapper => {
+        wrapper.classList.remove('is-open');
+        const button = wrapper.querySelector('.info-hint');
+        if (button) {
+            button.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+document.addEventListener('click', event => {
+    const hintButton = event.target.closest('.info-hint');
+    if (hintButton) {
+        event.preventDefault();
+        const wrapper = hintButton.closest('.info-hint-wrapper');
+        if (!wrapper) {
+            return;
+        }
+        const isOpen = wrapper.classList.contains('is-open');
+        closeAllInfoHints();
+        if (!isOpen) {
+            updateInfoTooltipText(wrapper.querySelector('.info-tooltip'), getInfoHintLanguage());
+            wrapper.classList.add('is-open');
+            hintButton.setAttribute('aria-expanded', 'true');
+            positionInfoTooltip(wrapper);
+        }
+        return;
+    }
+
+    if (!event.target.closest('.info-hint-wrapper')) {
+        closeAllInfoHints();
+    }
+});
+
+document.addEventListener('focusin', event => {
+    const wrapper = event.target.closest('.info-hint-wrapper');
+    if (!wrapper) {
+        return;
+    }
+    updateInfoTooltipText(wrapper.querySelector('.info-tooltip'), getInfoHintLanguage());
+    positionInfoTooltip(wrapper);
+});
+
+document.addEventListener('mouseover', event => {
+    const wrapper = event.target.closest('.info-hint-wrapper');
+    if (!wrapper) {
+        return;
+    }
+    updateInfoTooltipText(wrapper.querySelector('.info-tooltip'), getInfoHintLanguage());
+    positionInfoTooltip(wrapper);
+});
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+        closeAllInfoHints();
+    }
+});
 
 // Add translation data attributes to HTML elements
 document.addEventListener('DOMContentLoaded', () => {
