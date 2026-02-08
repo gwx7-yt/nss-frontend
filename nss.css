@@ -5574,6 +5574,183 @@ body.polish-enter .settings-card {
   }
 }
 
+/* Mobile app-like layout upgrades */
+@media (max-width: 768px) {
+  body {
+    background: linear-gradient(180deg, #f4f7fb 0%, #ffffff 70%);
+  }
+
+  main {
+    margin-top: 92px;
+    padding: 1rem 1rem calc(6.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  section {
+    scroll-margin-top: 104px;
+  }
+
+  .top-nav {
+    top: auto;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    left: 0.75rem;
+    right: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 22px;
+    background: linear-gradient(90deg, rgba(44, 62, 80, 0.95), rgba(52, 152, 219, 0.95));
+    box-shadow: 0 16px 30px rgba(15, 23, 42, 0.18);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-content {
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .nav-left {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.35rem;
+  }
+
+  .nav-icon {
+    padding: 0.35rem 0.4rem;
+    border-radius: 14px;
+  }
+
+  .nav-img {
+    width: 26px;
+    height: 26px;
+  }
+
+  .nav-icon span {
+    font-size: 0.65rem;
+  }
+
+  .nav-right {
+    position: fixed;
+    top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    left: 0.75rem;
+    right: 0.75rem;
+    z-index: 1001;
+  }
+
+  .credits-display {
+    width: 100%;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.9rem;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+  }
+
+  .welcome-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .welcome-section h1 {
+    font-size: 2.2rem;
+  }
+
+  .home-card,
+  .market-overview,
+  .sector-categories,
+  .market-sort,
+  .gainers-table,
+  .losers-table,
+  .all-stocks,
+  .table-container,
+  .portfolio-summary-card,
+  .portfolio-transactions,
+  .portfolio-graph-card,
+  .about-card,
+  .team-card,
+  .playground-card,
+  .settings-card {
+    border-radius: 18px;
+    padding: 1.1rem;
+  }
+
+  .home-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .home-chart canvas {
+    height: 220px !important;
+  }
+
+  .market-content {
+    padding: 1rem 0.5rem;
+    gap: 1.25rem;
+  }
+
+  .market-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .market-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #stockSearch {
+    font-size: 1rem;
+    padding: 0.85rem 1rem;
+  }
+
+  .sector-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .portfolio-controls,
+  .portfolio-actions,
+  .form-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .trade-btn,
+  .sell-btn,
+  .buy-more-btn,
+  .login-btn,
+  .register-btn,
+  .modal-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-status-kpis,
+  .portfolio-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .home-status-left {
+    min-width: 0;
+  }
+
+  .market-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .nepse-index-values {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .credits-display {
+    font-size: 0.85rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   section,
   .hot-today-card::after,
