@@ -120,7 +120,7 @@
         </a>
       </div>
       <div class="nav-right">
-        <div class="credits-display">
+        <div class="credits-display credits-bar">
           <img src="coins-stack.png" alt="Credits" class="credits-icon">
           <span>
             <span data-translate="credits">Credits</span>
@@ -314,26 +314,28 @@
 
         <div class="all-stocks">
           <h3 data-translate="allStocks">All Stocks</h3>
-          <table id="allStocksTable">
-            <thead>
-              <tr>
-                <th data-translate="symbol">Symbol</th>
-                <th data-translate="companyName">Company Name</th>
-                <th data-translate="sector">Sector</th>
-                <th data-translate="ltp">LTP</th>
-                <th data-translate="change">Change</th>
-                <th data-translate="relativeStrength">
-                  <span class="info-hint-text">RS</span>
-                  <span class="info-hint-wrapper">
-                    <button type="button" class="info-hint" aria-label="Relative Strength info" aria-describedby="info-relative-strength">ⓘ</button>
-                    <span id="info-relative-strength" class="info-tooltip" role="tooltip" data-en="Relative Strength compares how a stock is performing compared to its sector." data-np="रिलेटिभ स्ट्रेन्थले कुनै स्टकको प्रदर्शनलाई त्यस स्टकको सेक्टरसँग तुलना गर्छ।"></span>
-                  </span>
-                </th>
-                <th data-translate="action">Action</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+          <div class="table-wrap">
+            <table id="allStocksTable">
+              <thead>
+                <tr>
+                  <th data-translate="symbol">Symbol</th>
+                  <th data-translate="companyName">Company Name</th>
+                  <th data-translate="sector">Sector</th>
+                  <th data-translate="ltp">LTP</th>
+                  <th data-translate="change">Change</th>
+                  <th data-translate="relativeStrength">
+                    <span class="info-hint-text">RS</span>
+                    <span class="info-hint-wrapper">
+                      <button type="button" class="info-hint" aria-label="Relative Strength info" aria-describedby="info-relative-strength">ⓘ</button>
+                      <span id="info-relative-strength" class="info-tooltip" role="tooltip" data-en="Relative Strength compares how a stock is performing compared to its sector." data-np="रिलेटिभ स्ट्रेन्थले कुनै स्टकको प्रदर्शनलाई त्यस स्टकको सेक्टरसँग तुलना गर्छ।"></span>
+                    </span>
+                  </th>
+                  <th data-translate="action">Action</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -409,7 +411,7 @@
               </span>
             </div>
           </div>
-          <div id="portfolioGraph" class="portfolio-graph-body"></div>
+          <div id="portfolioGraph" class="portfolio-graph-body performance-chart"></div>
         </div>
 
         <p class="portfolio-note" title="Broker fees apply when purchasing stocks, so your portfolio might show a small loss at first." data-translate="portfolioBrokerFeeNote">
