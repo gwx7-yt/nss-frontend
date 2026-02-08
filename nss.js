@@ -1796,6 +1796,13 @@ function showSection(sectionId) {
   if (selectedSection) {
     selectedSection.style.display = 'block';
   }
+
+  if (sectionId !== 'playground' && typeof quizState !== 'undefined' && quizState.isOpen) {
+    quizState.isOpen = false;
+    renderQuiz();
+  }
+
+  updatePlayMode();
 }
 
 function getStoredTransactions() {
@@ -3149,6 +3156,13 @@ const quizState = {
 let lastQuizView = null;
 let lastQuizQuestionIndex = null;
 
+function updatePlayMode() {
+    const chartModal = document.getElementById('chartGameModal');
+    const isChartOpen = chartModal ? chartModal.classList.contains('active') : false;
+    const isQuizOpen = typeof quizState !== 'undefined' && quizState.isOpen;
+    document.body.classList.toggle('play-mode', Boolean(isChartOpen || isQuizOpen));
+}
+
 function formatQuizNumber(value, language = getCurrentLanguage()) {
     return formatNumber(value, { decimals: 0, useCommas: true }, language);
 }
@@ -3173,6 +3187,7 @@ function revealQuiz() {
     resetQuizState();
     quizState.isOpen = true;
     quizState.isStarted = true;
+    updatePlayMode();
     renderQuiz();
 }
 
@@ -3180,6 +3195,7 @@ function startQuiz() {
     resetQuizState();
     quizState.isOpen = true;
     quizState.isStarted = true;
+    updatePlayMode();
     renderQuiz();
 }
 
@@ -3248,6 +3264,7 @@ function renderQuiz() {
         if (introPanel) {
             introPanel.classList.remove('is-hidden');
         }
+        updatePlayMode();
         return;
     }
 
@@ -4077,6 +4094,7 @@ function openChartGame() {
   modal.classList.add('active');
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
+  updatePlayMode();
   if (!chartGameState.data) {
     startNewChartGameRound();
   } else {
@@ -4091,6 +4109,7 @@ function closeChartGame() {
   modal.classList.remove('active');
   modal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
+  updatePlayMode();
   stopChartGame();
 }
 
